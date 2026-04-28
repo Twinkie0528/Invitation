@@ -20,6 +20,7 @@ const config: Config = {
       fontFamily: {
         display: ["var(--font-fraunces)", "serif"],
         sans: ["var(--font-inter)", "system-ui", "sans-serif"],
+        script: ["var(--font-ingkar)", "cursive"],
       },
       letterSpacing: {
         ultra: "0.3em",

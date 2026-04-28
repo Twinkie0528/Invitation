@@ -4,19 +4,27 @@ import Image from "next/image";
 import { useSectionReveal } from "@/hooks/useSectionReveal";
 import { useSceneEntered } from "@/hooks/useScrollProgress";
 import { useLoadGate } from "@/hooks/useLoadGate";
+import { useGuestName } from "@/lib/guestContext";
 import { RevealText } from "@/components/ui/RevealText";
 
-// Scene 0 → Scene 1 coverage. The hero is fully visible from p=0 (start
-// negative so the reveal formula lands on hold immediately) and stays
-// pinned through the hold range before collapsing into the gala scene.
+// Hero (scene 0) — personalised invitation.
 //
-// The dust-figure is rendered separately by <DustFigure /> at the canvas
-// root so its compositing isn't isolated by this section's stacking ctx.
+// Layout uses absolute anchors rather than flex distribution so each
+// landmark sits at a stable percentage of the viewport regardless of
+// content length (the script flourish for "Esteemed Guest" is wider
+// than for short names like "Ryechi", and a flex stack would shift the
+// centre block off-axis as a result).
 //
-// Mobile layout: all spacing/typography scales down via Tailwind's `md:`
-// prefix. The body copy column is constrained to keep line-length
-// comfortable on small phones; signature row stacks vertically below the
-// CEO credit when there's no horizontal room.
+//   ~6vh   : Unitel · 20th anniversary lockup
+//   50%    : "UNITEL GROUP / is pleased to invite / {Name} / to an exclusive evening"
+//   ~5vh   : scroll cue ("Explore the experience below" + chevron)
+//
+// Mobile renders an autoplay <video> behind the copy.  Desktop hides
+// the video so the canvas-rendered DustFigure remains the centrepiece.
+//
+// `useGuestName()` reads the slug-driven name from <GuestProvider>; on
+// the un-personalised root URL it falls back to a generic line so the
+// script flourish still has an anchor.
 export default function HeroSection() {
   const ref = useSectionReveal<HTMLElement>({
     start: -0.02,
@@ -25,30 +33,38 @@ export default function HeroSection() {
     end: 0.19,
   });
   const entered = useSceneEntered(0);
-  // The hero lockup stays invisible until LoadingOverlay finishes its
-  // FLIP transition. After `introDone` fires the static logo cross-fades
-  // in at exactly the same position the overlay logo flew to.
+  // The lockup stays invisible until LoadingOverlay finishes its FLIP
+  // transition — the static logo cross-fades in at the exact position
+  // the overlay logo flew to.
   const { introDone } = useLoadGate();
-
-  // Body sizing scales aggressively at md/lg so the desktop hero reads
-  // as a confident editorial spread, not a cramped paragraph.  Mobile
-  // base is dialled tight so all three paragraphs + signature fit on
-  // a typical phone viewport without colliding with the dust mascot.
-  const bodyClass =
-    "font-sans text-[12.5px] font-light leading-[1.55] text-white/95 sm:text-[16px] md:text-[19px] lg:text-[22px]";
+  const guestName = useGuestName() ?? "Esteemed Guest";
 
   return (
     <section
       ref={ref}
       data-reveal
-      // Mobile: align content to the top with explicit padding so it
-      // sits just below the dust mascot — vertical-centring pushes the
-      // signature off-screen on shorter phone viewports.  Desktop
-      // (md+) keeps the original optical-centre composition.
-      className="pointer-events-none fixed inset-0 z-20 flex items-start justify-center pt-[32vh] md:items-center md:pt-0"
+      className="pointer-events-none fixed inset-0 z-20"
     >
-      <div className="relative mx-auto flex w-full max-w-[1320px] flex-col px-6 sm:px-14 md:px-20 lg:px-28">
-        <div className="mb-3 flex justify-center sm:mb-8 md:mb-14">
+      {/* Mobile-only ambient video.  `md:hidden` suppresses it on
+          desktop where the canvas DustFigure plays the same role. */}
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        preload="auto"
+        src="/media/hero/asset1.mp4"
+        aria-hidden
+        className="absolute inset-0 h-full w-full object-cover md:hidden"
+      />
+
+      {/* The single inner wrapper carries `flex` so the existing 1024+
+          desktop zoom rule in globals.css (which scopes via
+          `section[data-reveal] > div.flex`) keeps working. */}
+      <div className="relative z-10 flex h-full w-full">
+        {/* TOP — anniversary lockup, anchored ~8vh from the top edge to
+            match the Figma artboard's optical placement. */}
+        <div className="absolute inset-x-0 top-[7vh] flex justify-center sm:top-[8vh]">
           <Image
             id="hero-lockup"
             src="/media/hero/unitel-20-lockup.svg"
@@ -56,7 +72,7 @@ export default function HeroSection() {
             width={520}
             height={58}
             priority
-            className="h-6 w-auto sm:h-9 md:h-14 lg:h-16"
+            className="h-9 w-auto sm:h-10 md:h-14 lg:h-16"
             style={{
               opacity: introDone ? 1 : 0,
               transition: "opacity 220ms ease-out",
@@ -64,71 +80,109 @@ export default function HeroSection() {
           />
         </div>
 
-        <div className="max-w-[560px] space-y-2.5 sm:space-y-4 md:max-w-[680px] md:space-y-6 lg:max-w-[720px]">
+        {/* CENTRE — invitation copy, vertically centred on the viewport.
+            Sizes mirror the Figma spec (script flourish at 120px /
+            font-weight 400) so the rendered output reads at parity with
+            the design when both are viewed at the same zoom. */}
+        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex flex-col items-center px-4 text-center">
           <RevealText
-            as="p"
-            className={bodyClass}
-            stagger={32}
+            as="div"
+            className="font-sans text-[19px] font-semibold tracking-[0.18em] text-white md:text-xl lg:text-2xl"
+            stagger={36}
             duration={700}
             trigger={entered}
           >
-            {"Over the past two decades, Unitel Group has played a meaningful role in advancing Mongolia’s telecommunications landscape, introducing technological innovations and helping shape the evolution of connectivity across the nation."}
+            UNITEL GROUP
           </RevealText>
           <RevealText
-            as="p"
-            className={bodyClass}
+            as="div"
+            className="mt-2 font-sans text-[15px] font-light text-white/85 md:text-base lg:text-lg"
             stagger={32}
             duration={700}
-            delay={220}
+            delay={140}
             trigger={entered}
           >
-            {"This 20 year milestone is not only a celebration of our journey, but an opportunity to share that progress with those who have been part of it."}
+            is pleased to invite
           </RevealText>
+
+          {/* Guest name — Ingkar Janji handwriting at the Figma 120px
+              spec.  `clamp()` keeps narrow phones (<430px) and very
+              wide names from blowing past the viewport while still
+              hitting 120px on the iPhone 14 Pro Max design width.
+              Rendered as a vertical gradient so the script reads with
+              the same soft top-bright / bottom-cool cadence as the
+              source.  Reveal lifts + fades the whole gesture in —
+              word-staggering would fragment the calligraphy. */}
+          <div
+            className="mt-4 font-script leading-[1] tracking-tight md:mt-6 lg:mt-8"
+            style={{
+              fontSize: "clamp(64px, 28vw, 120px)",
+              opacity: entered ? 1 : 0,
+              transform: entered ? "translateY(0)" : "translateY(14px)",
+              transition:
+                "opacity 900ms cubic-bezier(0.16, 1, 0.3, 1) 320ms, transform 900ms cubic-bezier(0.16, 1, 0.3, 1) 320ms",
+              backgroundImage:
+                "linear-gradient(180deg, #e6ecff 0%, #94a8d8 60%, #6a7fb8 100%)",
+              WebkitBackgroundClip: "text",
+              backgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              color: "transparent",
+              filter: "drop-shadow(0 0 22px rgba(150, 175, 230, 0.25))",
+            }}
+          >
+            {guestName}
+          </div>
+
           <RevealText
-            as="p"
-            className={bodyClass}
-            stagger={32}
+            as="div"
+            className="mt-3 font-sans text-[11px] uppercase tracking-[0.34em] text-[#a8bce0] md:mt-4 md:text-xs md:tracking-[0.5em]"
+            stagger={26}
             duration={700}
-            delay={440}
+            delay={780}
             trigger={entered}
           >
-            {"To mark this occasion, we are curating an immersive experience dedicated to our customers and partners — one that reflects the transformation of the industry, the milestones we have achieved together, and the future we continue to build."}
+            to an exclusive evening
           </RevealText>
         </div>
 
-        <div className="mt-4 flex flex-row items-center gap-3 sm:mt-10 sm:gap-6 md:mt-14">
-          <div>
-            <RevealText
-              as="div"
-              className="font-sans text-[12px] font-semibold tracking-wide text-white sm:text-[15px] md:text-[18px] lg:text-[20px]"
-              stagger={50}
-              duration={700}
-              delay={600}
-              trigger={entered}
-            >
-              Jamiyan-Sharav D.
-            </RevealText>
-            <RevealText
-              as="div"
-              className="mt-0.5 text-[8.5px] uppercase tracking-[0.24em] text-white/70 sm:text-[11px] sm:tracking-[0.28em] md:text-[12px] md:tracking-[0.34em]"
-              stagger={28}
-              duration={600}
-              delay={820}
-              trigger={entered}
-            >
-              CEO of Unitel Group
-            </RevealText>
-          </div>
-          <Image
-            src="/media/hero/signature.png"
-            alt=""
-            width={180}
-            height={90}
-            priority
-            className="h-7 w-auto opacity-95 sm:h-14 md:h-16 lg:h-20"
-          />
+        {/* BOTTOM — scroll cue, anchored near the bottom edge.  Pure
+            visual indicator (no click handler) because the parent
+            section is pointer-events-none. */}
+        <div
+          className="absolute inset-x-0 bottom-[6vh] flex flex-col items-center gap-2 text-white/60 md:bottom-[7vh]"
+          style={{
+            opacity: entered ? 1 : 0,
+            transition: "opacity 600ms ease-out 1100ms",
+          }}
+        >
+          <span className="font-sans text-[13px] md:text-sm">
+            Explore the experience below
+          </span>
+          <ChevronDown />
         </div>
       </div>
     </section>
+  );
+}
+
+function ChevronDown() {
+  return (
+    <svg
+      width="22"
+      height="12"
+      viewBox="0 0 22 12"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      className="opacity-80"
+    >
+      <path
+        d="M1 1L11 11L21 1"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }

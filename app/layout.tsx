@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Inter } from "next/font/google";
+import localFont from "next/font/local";
 import Providers from "./providers";
 import LoadingOverlay from "@/components/ui/LoadingOverlay";
 import LumaAlphaFilter from "@/components/ui/LumaAlphaFilter";
@@ -16,6 +17,16 @@ const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
   weight: ["300", "400", "500", "600"],
+  display: "swap",
+});
+
+// Hand-script display face used for the personalised guest name in the
+// Hero section. Self-hosted from /public/fonts so we own the cadence
+// of the typeface and avoid the FOUT a remote handwriting font would
+// introduce on first paint.
+const ingkar = localFont({
+  src: "../public/fonts/IngkarJanji.ttf",
+  variable: "--font-ingkar",
   display: "swap",
 });
 
@@ -50,7 +61,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${fraunces.variable} ${inter.variable}`}>
+    <html
+      lang="en"
+      className={`${fraunces.variable} ${inter.variable} ${ingkar.variable}`}
+    >
       <head>
         {/* Hero assets are above the fold and gate the loading overlay —
             preload kicks off their network fetch before React hydrates.
