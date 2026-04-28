@@ -5,7 +5,7 @@ import { useEffect, useRef } from "react";
 import { sceneRef, subscribeScene } from "@/hooks/useScrollProgress";
 
 // Hero exit window — figure stays at rest until scroll passes hold,
-// then collapses (slide + scale) into the dissolve scene.
+// then collapses (slide + scale) as the page moves out of the hero scene.
 const TRANSITION_START = 0.13;
 const TRANSITION_END = 0.2;
 
@@ -71,11 +71,12 @@ export default function DustFigure() {
     <div
       ref={wrapperRef}
       aria-hidden
-      // Mobile: figure occupies the upper portion only (~3-37vh) so the
-      // body copy sitting at the optical centre of the viewport stays
-      // unobstructed. scale-125 on the image keeps the mascot reading
-      // as substantial despite the smaller container height.
-      className="pointer-events-none absolute top-[3vh] left-0 right-0 flex h-[34vh] items-center justify-center will-change-transform md:top-0 md:inset-y-0 md:right-[1vw] md:left-auto md:h-auto md:w-[72vw] md:justify-end"
+      // Mobile: figure occupies the upper portion (~2-32vh) so the
+      // body copy below has its own clean band of viewport. The mascot
+      // is the dominant motif on first paint, so we want it large and
+      // legible — `scale-115` lets the alpha-keyed silhouette overspill
+      // the container softly, reading as a substantial portrait.
+      className="pointer-events-none absolute top-[2vh] left-0 right-0 flex h-[30vh] items-center justify-center will-change-transform md:top-0 md:inset-y-0 md:right-[1vw] md:left-auto md:h-auto md:w-[72vw] md:justify-end"
       style={{
         // Centre origin on mobile so the collapse-on-scroll shrinks
         // toward the figure's middle; bottom-right on desktop matches
@@ -97,11 +98,11 @@ export default function DustFigure() {
           height={744}
           priority
           unoptimized
-          // Mobile: scale the figure up — `scale-125` overspills the
-          // 34vh container so the mascot reads as a substantial
-          // portrait rather than a thumbnail. Desktop keeps its
+          // Mobile: scale the figure up — `scale-115` overspills the
+          // 30vh container so the mascot reads as a substantial
+          // portrait against the dark cosmos.  Desktop keeps its
           // absolute h-[108vh].
-          className="h-full w-auto scale-125 object-contain opacity-95 md:h-[108vh] md:scale-100 md:opacity-100"
+          className="h-full w-auto scale-[1.15] object-contain opacity-95 md:h-[108vh] md:scale-100 md:opacity-100"
           style={{
             transform: "translateZ(0)",
             willChange: "transform, opacity",

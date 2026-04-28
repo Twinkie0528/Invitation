@@ -56,34 +56,25 @@ export default function EdgeGradient() {
         }}
       />
 
-      {/* Left curtain — softer purple/teal, doesn't compete with right. */}
+      {/* Left primary — mirrors the right curtain so the page reads
+          symmetrically. */}
       <div
         aria-hidden
-        className="absolute left-0 top-0 h-full w-[34vw] aurora-left"
+        className="absolute left-0 top-0 h-full w-[42vw] aurora-left"
         style={{
           background:
-            "radial-gradient(ellipse 72% 95% at 0% 50%, rgba(80, 30, 180, 0.28) 0%, rgba(40, 80, 200, 0.12) 40%, rgba(0,0,0,0) 78%)",
-          filter: "blur(36px)",
+            "radial-gradient(ellipse 75% 100% at 0% 50%, rgba(0, 84, 220, 0.5) 0%, rgba(0, 57, 255, 0.18) 30%, rgba(80, 30, 180, 0.10) 55%, rgba(0,0,0,0) 80%)",
+          filter: "blur(32px)",
         }}
       />
-      {/* Left secondary — pale aurora green hint, faint. */}
+      {/* Left secondary — mirrors the right cyan/green high band. */}
       <div
         aria-hidden
-        className="absolute left-0 top-0 h-full w-[26vw] aurora-left-alt"
+        className="absolute left-0 top-0 h-full w-[32vw] aurora-left-alt"
         style={{
           background:
-            "radial-gradient(ellipse 60% 75% at 0% 70%, rgba(0, 217, 95, 0.14) 0%, rgba(0,0,0,0) 75%)",
-          filter: "blur(44px)",
-        }}
-      />
-
-      {/* Original dotted rail — kept as a designed accent on the right. */}
-      <div
-        aria-hidden
-        className="absolute right-[1.25rem] top-0 h-full w-px"
-        style={{
-          backgroundImage:
-            "repeating-linear-gradient(to bottom, rgba(255,255,255,0.18) 0 2px, transparent 2px 6px)",
+            "radial-gradient(ellipse 65% 90% at 0% 25%, rgba(0, 217, 95, 0.22) 0%, rgba(0, 200, 200, 0.10) 38%, rgba(0,0,0,0) 80%)",
+          filter: "blur(40px)",
         }}
       />
 

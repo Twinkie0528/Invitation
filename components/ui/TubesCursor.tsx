@@ -4,11 +4,10 @@ import { useEffect, useRef } from "react";
 import { sceneRef, subscribeScene } from "@/hooks/useScrollProgress";
 
 // Scroll-progress windows during which TubesCursor is hidden so its
-// separate WebGL context stops competing with the section <video> tags
-// for GPU/decode bandwidth. Two ranges, one per video-backed section.
+// separate WebGL context stops competing with the section <video> tag
+// for GPU/decode bandwidth.
 const HIDE_RANGES: Array<readonly [number, number]> = [
-  [0.18, 0.46], // ImmersiveSection — Spirit of Japan
-  [0.6, 0.9], // UrtuuSection     — TeamLab
+  [0.5, 0.87], // UrtuuSection — Spirit of Japan
 ];
 
 function shouldHide(p: number): boolean {

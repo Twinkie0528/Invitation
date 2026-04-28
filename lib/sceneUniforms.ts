@@ -110,55 +110,7 @@ const AUTHORED: Record<SceneId, AuthoredScene> = {
     sideOuterY: 0.9,
   },
 
-  // SCENE 2 — dissolve. Field opens up — slightly faster currents and
-  // more shimmer so the hero-to-immersive transition feels alive.
-  dissolve: {
-    attractors: pad([
-      { pos: [-3.5, 0.0, 0], strength: 0.06 },
-      { pos: [3.5, 0.0, 0], strength: 0.06 },
-    ]),
-    noiseScale: 0.85,
-    noiseStrength: 0.12,
-    drag: 0.984,
-    maxSpeed: 0.36,
-    oscAmp: 0.034,
-    pointSize: 4.2,
-    opacity: 0.88,
-    colorA: "#cdd5e8",
-    colorB: "#ffffff",
-    velocityToColor: 0.8,
-    sideOnly: 1.0,
-    sideInner: 0.65,
-    sideOuter: 0.92,
-    sideInnerY: 0.5,
-    sideOuterY: 0.88,
-  },
-
-  // SCENE 3 — immersive. Background video + centred copy; clear a wide
-  // rectangle so dust doesn't ghost across the cinematic frame.
-  immersive: {
-    attractors: pad([
-      { pos: [-3.6, 0.0, 0], strength: 0.06 },
-      { pos: [3.6, 0.0, 0], strength: 0.06 },
-    ]),
-    noiseScale: 0.8,
-    noiseStrength: 0.10,
-    drag: 0.986,
-    maxSpeed: 0.32,
-    oscAmp: 0.030,
-    pointSize: 4.1,
-    opacity: 0.85,
-    colorA: "#c8d2ec",
-    colorB: "#ffffff",
-    velocityToColor: 0.75,
-    sideOnly: 1.0,
-    sideInner: 0.7,
-    sideOuter: 0.95,
-    sideInnerY: 0.55,
-    sideOuterY: 0.9,
-  },
-
-  // SCENE 4 — gala. Bloom occupies the right half; clearance keeps the
+  // SCENE 2 — gala. Bloom occupies the right half; clearance keeps the
   // particles off the left-side heading without flooding the bloom.
   gala: {
     attractors: pad([
@@ -182,8 +134,8 @@ const AUTHORED: Record<SceneId, AuthoredScene> = {
     sideOuterY: 0.88,
   },
 
-  // SCENE 5 — urtuu. Background video + centred copy; same wide clearance
-  // as immersive so the two video sections feel consistent.
+  // SCENE 3 — urtuu. Background video + centred copy; wide rectangular
+  // clearance so dust doesn't ghost across the cinematic frame.
   urtuu: {
     attractors: pad([
       { pos: [-3.5, 0.0, 0], strength: 0.07 },
@@ -206,7 +158,7 @@ const AUTHORED: Record<SceneId, AuthoredScene> = {
     sideOuterY: 0.9,
   },
 
-  // SCENE 6 — rsvp. Closing message centred on screen — clear the entire
+  // SCENE 4 — rsvp. Closing message centred on screen — clear the entire
   // central rectangle so the heading sits on a pure backdrop with only
   // the corners and outer frame breathing with dust.
   rsvp: {

@@ -22,6 +22,19 @@ html {
   scroll-behavior: auto;
 }
 
+/* Lock the desktop design at a single visual scale.  The page was
+   authored on a large screen, so at 100% zoom the typography reads
+   as oversized on a default laptop.  Section content wrappers all
+   carry the `flex` utility (no other direct-child div in any section
+   does), so we use that as a marker to apply the desktop zoom.
+   Background-video / vignette layers — which are absolutely
+   positioned with no flex — keep rendering at native viewport scale. */
+@media (min-width: 1024px) {
+  section[data-reveal] > div.flex {
+    zoom: 0.8;
+  }
+}
+
 body {
   overscroll-behavior: none;
   /* `pan-y` lets the page scroll natively on touch devices (where Lenis

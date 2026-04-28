@@ -1,7 +1,7 @@
 // Single source of truth for scroll → scene state.
 // Every shader uniform, DOM fade, and audio layer reads from this.
 
-export type SceneId = "cold" | "hero" | "dissolve" | "immersive" | "gala" | "urtuu" | "rsvp";
+export type SceneId = "cold" | "hero" | "gala" | "urtuu" | "rsvp";
 
 export type SceneBreakpoint = {
   id: SceneId;
@@ -13,19 +13,17 @@ export type SceneBreakpoint = {
 // Master scroll timeline. Breakpoints match the narrative in the brief.
 export const SCENES: SceneBreakpoint[] = [
   { id: "cold", start: -0.01, end: 0.0, label: "Cold start" },
-  { id: "hero", start: 0.0, end: 0.15, label: "Hero · Seal breathes" },
-  { id: "dissolve", start: 0.15, end: 0.25, label: "Dissolve to field" },
-  { id: "immersive", start: 0.25, end: 0.4, label: "Immersive intro" },
-  { id: "gala", start: 0.4, end: 0.6, label: "Gala bloom" },
-  { id: "urtuu", start: 0.6, end: 0.85, label: "Urtuu journey" },
+  { id: "hero", start: 0.0, end: 0.18, label: "Hero · Seal breathes" },
+  { id: "gala", start: 0.18, end: 0.5, label: "Gala bloom" },
+  { id: "urtuu", start: 0.5, end: 0.85, label: "Urtuu journey" },
   { id: "rsvp", start: 0.85, end: 1.01, label: "Convergence · RSVP" },
 ];
 
 // Sub-scenes inside Urtuu for the 5a/5b/5c beats.
 export const URTUU_SUB = {
-  horizon: { start: 0.6, end: 0.68 },
-  columns: { start: 0.68, end: 0.76 },
-  fire: { start: 0.76, end: 0.85 },
+  horizon: { start: 0.55, end: 0.65 },
+  columns: { start: 0.65, end: 0.75 },
+  fire: { start: 0.75, end: 0.85 },
 };
 
 export type SceneState = {

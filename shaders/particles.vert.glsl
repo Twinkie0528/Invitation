@@ -15,6 +15,10 @@ varying float vVelMag;
 varying float vLife;
 varying float vNdcX;
 varying float vNdcY;
+// Per-particle twinkle phase + speed — derived from aPid so each star
+// pulses on its own clock and the field never beats in unison.
+varying float vTwinklePhase;
+varying float vTwinkleSpeed;
 
 void main() {
   vec4 pos = texture2D(uPosTex, aPid);
@@ -32,6 +36,14 @@ void main() {
   float w = max(clip.w, 1e-4);
   vNdcX = clip.x / w;
   vNdcY = clip.y / w;
+
+  // Hash the particle id into a phase (0..2π) and a speed multiplier so
+  // every star twinkles at a slightly different rate — a few slow, a few
+  // fast, the rest in between.  Cheap fract() hash keeps the look stable
+  // across frames without needing a noise texture.
+  float h = fract(sin(aPid.x * 421.7 + aPid.y * 271.3) * 43758.5453);
+  vTwinklePhase = h * 6.2831853;
+  vTwinkleSpeed = 0.35 + h * 1.1;
 
   // Constant point size — independent of distance. Any perspective scaling
   // produced occasional bright "balloon" particles when a point drifted

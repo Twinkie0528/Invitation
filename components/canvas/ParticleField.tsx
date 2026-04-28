@@ -48,6 +48,8 @@ export default function ParticleField() {
         uColorB: { value: new THREE.Color("#ffffff") },
         uVelocityToColor: { value: 1.2 },
         uOpacity: { value: 1.0 },
+        // Drives the per-particle twinkle in the fragment shader.
+        uTime: { value: 0 },
         uSideOnly: { value: 1.0 },
         uSideInner: { value: 0.28 },
         uSideOuter: { value: 0.62 },
@@ -123,6 +125,7 @@ export default function ParticleField() {
     material.uniforms.uPointSize.value = u.pointSize;
     material.uniforms.uOpacity.value = u.opacity;
     material.uniforms.uVelocityToColor.value = u.velocityToColor;
+    material.uniforms.uTime.value = state.clock.getElapsedTime();
     material.uniforms.uSideOnly.value = u.sideOnly;
     material.uniforms.uSideInner.value = u.sideInner;
     material.uniforms.uSideOuter.value = u.sideOuter;

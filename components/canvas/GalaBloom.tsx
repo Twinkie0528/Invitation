@@ -6,10 +6,10 @@ import { sceneRef, subscribeScene } from "@/hooks/useScrollProgress";
 
 // Reveal window — matches GalaSection's useSectionReveal range so the
 // bloom fades in/out exactly with the heading and copy.
-const REVEAL_START = 0.42;
-const REVEAL_PEAK = 0.48;
-const REVEAL_HOLD = 0.58;
-const REVEAL_END = 0.63;
+const REVEAL_START = 0.19;
+const REVEAL_PEAK = 0.25;
+const REVEAL_HOLD = 0.45;
+const REVEAL_END = 0.52;
 
 // The bloom is served as a premium-quality animated WebP (truecolor
 // RGBA, 1500 px wide, ~50 frames) generated from the source GIF by
@@ -44,17 +44,17 @@ export default function GalaBloom() {
     <div
       ref={wrapperRef}
       aria-hidden
-      // Mobile: bloom is lifted off the floor (`bottom-[10vh]`) so it
-      // sits just below the centred headline/body, giving the section
-      // a balanced "card with halo" composition rather than dropping
-      // out the bottom of the screen. h-[44vh] makes the halo feel
-      // generous — its alpha-keyed edges fade into the page so the
-      // larger size doesn't crowd the copy above, just immerses it.
-      // sm+ reverts to the original bottom-right cinematic anchor.
-      // `bloom-drift` runs a slow translate+scale loop on the
-      // compositor so the halo breathes on top of the APNG's own
-      // particle motion.
-      className="bloom-drift pointer-events-none absolute bottom-[10vh] left-[-6vw] right-[-6vw] flex h-[44vh] items-center justify-center sm:top-auto sm:bottom-[-2vh] sm:left-auto sm:right-[-4vw] sm:h-[82vh] sm:w-[96vw] sm:items-end sm:justify-end md:bottom-0 md:right-[-2vw] md:h-[100vh] md:w-[80vw] lg:right-0 lg:h-[108vh] lg:w-[78vw]"
+      // Mobile: bloom dominates the lower third of the viewport.  The
+      // wrapper sits flush with the bottom edge and overshoots the
+      // sides so the alpha-keyed image isn't constrained by the narrow
+      // viewport width — letting the halo render at its full vertical
+      // extent rather than getting shrunk to fit the device width.
+      // `object-cover` (mobile) fills the wrapper top-to-bottom,
+      // cropping only the soft outer wings.  sm+ reverts to the
+      // cinematic bottom-right anchor.  `bloom-drift` runs a slow
+      // translate+scale loop on the compositor so the halo breathes
+      // on top of the APNG's own particle motion.
+      className="bloom-drift pointer-events-none absolute bottom-[8vh] left-[-8vw] right-[-8vw] flex h-[40vh] items-center justify-center sm:top-auto sm:bottom-[-2vh] sm:left-auto sm:right-[-4vw] sm:h-[82vh] sm:w-[96vw] sm:items-end sm:justify-end md:bottom-0 md:right-[-2vw] md:h-[100vh] md:w-[80vw] lg:right-0 lg:h-[108vh] lg:w-[78vw]"
     >
       <Image
         src="/media/common/gala-bloom.webp"
@@ -62,7 +62,7 @@ export default function GalaBloom() {
         width={1500}
         height={642}
         unoptimized
-        className="h-full w-auto object-contain"
+        className="h-full w-full object-cover sm:w-auto sm:object-contain"
         // Pinned to a compositor layer so the WebP playback stays on
         // the GPU thread instead of repainting through layout each
         // tick — same trick that smooths the hero dust figure.

@@ -16,14 +16,13 @@ export type GpuProfile = {
 // Tier 2 is the safe middle so initial paint is close to the final state
 // without hydration mismatches.
 //
-// Particle sizes were dialled back ~30% from the original tuning so the
-// cosmos field reads as ambient dust (not a wall of stars) and leaves
-// more visual room for the aurora curtains to breathe.
+// Counts kept deliberately low so each particle reads as a discrete
+// twinkling star rather than fogging together into a dust haze.
 const DEFAULT: GpuProfile = {
   tier: 2,
   isMobile: false,
-  gpgpuSize: 75, // ~5,600 particles
-  particleCount: 75 * 75,
+  gpgpuSize: 58, // ~3,400 particles
+  particleCount: 58 * 58,
   postFx: "light",
   ready: false,
 };
@@ -44,8 +43,8 @@ function resolveProfile(t: TierResult): GpuProfile {
       // Extra-sparse on phone-sized viewports so the cosmos reads as a
       // distant starfield, not a dense field competing with the dust
       // figure mascot above the copy.
-      gpgpuSize: 38, // ~1,450 particles
-      particleCount: 38 * 38,
+      gpgpuSize: 32, // ~1,000 particles
+      particleCount: 32 * 32,
       postFx: "none",
       ready: true,
     };
@@ -54,8 +53,8 @@ function resolveProfile(t: TierResult): GpuProfile {
     return {
       tier: 2,
       isMobile: false,
-      gpgpuSize: 75, // ~5,600 particles
-      particleCount: 75 * 75,
+      gpgpuSize: 58, // ~3,400 particles
+      particleCount: 58 * 58,
       postFx: "light",
       ready: true,
     };
@@ -63,8 +62,8 @@ function resolveProfile(t: TierResult): GpuProfile {
   return {
     tier: 3,
     isMobile: false,
-    gpgpuSize: 105, // ~11,000 particles
-    particleCount: 105 * 105,
+    gpgpuSize: 80, // ~6,400 particles
+    particleCount: 80 * 80,
     postFx: "full",
     ready: true,
   };

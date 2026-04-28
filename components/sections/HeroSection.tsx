@@ -8,7 +8,7 @@ import { RevealText } from "@/components/ui/RevealText";
 
 // Scene 0 → Scene 1 coverage. The hero is fully visible from p=0 (start
 // negative so the reveal formula lands on hold immediately) and stays
-// pinned through the hold range before collapsing into dissolve.
+// pinned through the hold range before collapsing into the gala scene.
 //
 // The dust-figure is rendered separately by <DustFigure /> at the canvas
 // root so its compositing isn't isolated by this section's stacking ctx.
@@ -31,21 +31,24 @@ export default function HeroSection() {
   const { introDone } = useLoadGate();
 
   // Body sizing scales aggressively at md/lg so the desktop hero reads
-  // as a confident editorial spread, not a cramped paragraph.
+  // as a confident editorial spread, not a cramped paragraph.  Mobile
+  // base is dialled tight so all three paragraphs + signature fit on
+  // a typical phone viewport without colliding with the dust mascot.
   const bodyClass =
-    "font-sans text-[14px] font-light leading-[1.65] text-white/95 sm:text-[16px] md:text-[19px] lg:text-[22px]";
+    "font-sans text-[12.5px] font-light leading-[1.55] text-white/95 sm:text-[16px] md:text-[19px] lg:text-[22px]";
 
   return (
     <section
       ref={ref}
       data-reveal
-      // Content is vertically centred on every breakpoint — the dust
-      // figure decorates the upper portion via its own absolute layer,
-      // so the body copy reads from the optical centre of the page.
-      className="pointer-events-none fixed inset-0 z-20 flex items-center justify-center"
+      // Mobile: align content to the top with explicit padding so it
+      // sits just below the dust mascot — vertical-centring pushes the
+      // signature off-screen on shorter phone viewports.  Desktop
+      // (md+) keeps the original optical-centre composition.
+      className="pointer-events-none fixed inset-0 z-20 flex items-start justify-center pt-[32vh] md:items-center md:pt-0"
     >
-      <div className="relative mx-auto flex w-full max-w-[1320px] flex-col px-8 sm:px-14 md:px-20 lg:px-28">
-        <div className="mb-4 flex justify-center sm:mb-8 md:mb-14">
+      <div className="relative mx-auto flex w-full max-w-[1320px] flex-col px-6 sm:px-14 md:px-20 lg:px-28">
+        <div className="mb-3 flex justify-center sm:mb-8 md:mb-14">
           <Image
             id="hero-lockup"
             src="/media/hero/unitel-20-lockup.svg"
@@ -53,7 +56,7 @@ export default function HeroSection() {
             width={520}
             height={58}
             priority
-            className="h-7 w-auto sm:h-9 md:h-14 lg:h-16"
+            className="h-6 w-auto sm:h-9 md:h-14 lg:h-16"
             style={{
               opacity: introDone ? 1 : 0,
               transition: "opacity 220ms ease-out",
@@ -61,7 +64,7 @@ export default function HeroSection() {
           />
         </div>
 
-        <div className="max-w-[560px] space-y-3 sm:space-y-4 md:max-w-[680px] md:space-y-6 lg:max-w-[720px]">
+        <div className="max-w-[560px] space-y-2.5 sm:space-y-4 md:max-w-[680px] md:space-y-6 lg:max-w-[720px]">
           <RevealText
             as="p"
             className={bodyClass}
@@ -93,11 +96,11 @@ export default function HeroSection() {
           </RevealText>
         </div>
 
-        <div className="mt-5 flex flex-row items-center gap-4 sm:mt-10 sm:gap-6 md:mt-14">
+        <div className="mt-4 flex flex-row items-center gap-3 sm:mt-10 sm:gap-6 md:mt-14">
           <div>
             <RevealText
               as="div"
-              className="font-sans text-[13px] font-semibold tracking-wide text-white sm:text-[15px] md:text-[18px] lg:text-[20px]"
+              className="font-sans text-[12px] font-semibold tracking-wide text-white sm:text-[15px] md:text-[18px] lg:text-[20px]"
               stagger={50}
               duration={700}
               delay={600}
@@ -107,7 +110,7 @@ export default function HeroSection() {
             </RevealText>
             <RevealText
               as="div"
-              className="mt-0.5 text-[9px] uppercase tracking-[0.26em] text-white/70 sm:text-[11px] sm:tracking-[0.28em] md:text-[12px] md:tracking-[0.34em]"
+              className="mt-0.5 text-[8.5px] uppercase tracking-[0.24em] text-white/70 sm:text-[11px] sm:tracking-[0.28em] md:text-[12px] md:tracking-[0.34em]"
               stagger={28}
               duration={600}
               delay={820}
@@ -122,7 +125,7 @@ export default function HeroSection() {
             width={180}
             height={90}
             priority
-            className="h-9 w-auto opacity-95 sm:h-14 md:h-16 lg:h-20"
+            className="h-7 w-auto opacity-95 sm:h-14 md:h-16 lg:h-20"
           />
         </div>
       </div>

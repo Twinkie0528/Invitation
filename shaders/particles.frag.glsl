@@ -1,5 +1,7 @@
-// Particle fragment shader. Circular point with soft alpha, color mixes
-// from uColorA → uColorB → white as velocity rises.
+// Particle fragment shader. Each point is rendered as a shining star —
+// a tight bright core wrapped in a softer halo, modulated by a per-
+// particle twinkle so the field reads as a living constellation rather
+// than uniform dust.
 
 precision highp float;
 
@@ -7,6 +9,7 @@ uniform vec3 uColorA;
 uniform vec3 uColorB;
 uniform float uVelocityToColor;
 uniform float uOpacity;
+uniform float uTime;
 uniform float uSideOnly;     // 0 = uniform field, 1 = fully clear the centre
 uniform float uSideInner;    // NDC |x| below which X-mask is dimmest
 uniform float uSideOuter;    // NDC |x| above which X-mask is at full brightness
@@ -17,6 +20,8 @@ varying float vVelMag;
 varying float vLife;
 varying float vNdcX;
 varying float vNdcY;
+varying float vTwinklePhase;
+varying float vTwinkleSpeed;
 
 void main() {
   vec2 p = gl_PointCoord - 0.5;
@@ -25,9 +30,22 @@ void main() {
   // Hard reject outside the circle.
   if (d > 0.5) discard;
 
-  // Core bright, soft falloff at rim.
-  float alpha = smoothstep(0.5, 0.0, d);
-  alpha = pow(alpha, 1.6);
+  // Two-zone falloff: a tight pin-point core (high power) plus a softer
+  // wide halo. Adding them together gives the "shining star" silhouette
+  // — sharp center, glowing rim — that pure smoothstep cannot produce.
+  // Core punched harder + halo widened so each star throws a real glow.
+  float core = pow(1.0 - smoothstep(0.0, 0.16, d), 2.4);
+  float halo = pow(1.0 - smoothstep(0.0, 0.5, d), 1.5);
+  float intensity = core * 2.2 + halo * 0.85;
+
+  // Per-particle twinkle — biased sine pulse with hashed phase + speed
+  // so each star spends most of its time at a moderate glow but flashes
+  // sharply on the upbeat. The curve `pow((sin+1)/2, 3)` gives that
+  // "scintillating starlight" feel: long quiet troughs, brief bright
+  // peaks. Range ≈ [0.20, 1.55].
+  float tw = sin(uTime * vTwinkleSpeed + vTwinklePhase);
+  float pulse = pow(0.5 + 0.5 * tw, 3.0);
+  float twinkle = 0.20 + 1.35 * pulse;
 
   float t = clamp(vVelMag * uVelocityToColor, 0.0, 1.0);
   vec3 col = mix(uColorA, uColorB, t);
@@ -45,5 +63,6 @@ void main() {
   float sides = max(sideX, sideY);
   float sideMask = mix(1.0, sides, uSideOnly);
 
-  gl_FragColor = vec4(col, alpha * uOpacity * clamp(vLife, 0.0, 1.0) * sideMask);
+  float alpha = intensity * twinkle * uOpacity * clamp(vLife, 0.0, 1.0) * sideMask;
+  gl_FragColor = vec4(col, alpha);
 }

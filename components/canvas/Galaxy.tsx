@@ -10,7 +10,7 @@ import { useGPUTier } from "@/hooks/useGPUTier";
  * Black-galaxy / green-star nebula shader by Matthias Hurrle (@atzedent).
  *
  * Used as a HEADER-ONLY effect: it's fully visible during the hero scroll
- * window and fades out as the page moves into `dissolve`. Once invisible
+ * window and fades out as the page leaves the hero scene. Once invisible
  * the mesh toggles off so the fullscreen fragment shader stops sampling
  * and the GPU is free for the particle field and tubes cursor.
  *

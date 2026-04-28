@@ -7,3 +7,16 @@ out
 .DS_Store
 *.log
 .pnp.*
+
+# TypeScript incremental build cache.
+tsconfig.tsbuildinfo
+
+# Claude Code project settings.
+.claude/
+
+# Generated invitation link export — regenerate with `npm run guests`.
+guests-links.csv
+
+# Raw working assets (large source videos / images). Processed copies
+# live in public/media and are the tracked ones.
+assets/

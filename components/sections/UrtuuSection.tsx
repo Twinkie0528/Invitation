@@ -7,26 +7,24 @@ import TopMark from "@/components/ui/TopMark";
 import { RevealText } from "@/components/ui/RevealText";
 import { TypeText } from "@/components/ui/TypeText";
 
-// Cinematic background — Van Gogh plays muted/loop while the section is
-// in view. Lazy-mounted by BackgroundVideoFrame so it doesn't burden the
-// initial page load. Same pattern as ImmersiveSection's Spirit of Japan.
-// (TeamLab was tried first but its source footage carries baked-in text
-// that fought with this section's overlay copy.)
-const BG_VIDEO = "/media/cards/van-gogh.mp4";
-const BG_POSTER = "/media/cards/van-gogh-poster.png";
+// Cinematic background — Spirit of Japan plays muted/loop while the
+// section is in view. Lazy-mounted by BackgroundVideoFrame so it doesn't
+// burden the initial page load.
+const BG_VIDEO = "/media/cards/spirit-of-japan.mp4";
+const BG_POSTER = "/media/cards/spirit-of-japan-poster.png";
 
 // Reveal range — also drives the video play/pause window.
 const REVEAL_RANGE = {
-  start: 0.62,
-  peak: 0.68,
-  hold: 0.83,
-  end: 0.88,
+  start: 0.52,
+  peak: 0.58,
+  hold: 0.81,
+  end: 0.86,
 };
 
 // Covers scene `urtuu` — the emotional peak with the Mongolian script logo.
 export default function UrtuuSection() {
   const ref = useSectionReveal<HTMLElement>(REVEAL_RANGE);
-  const entered = useSceneEntered(0.64);
+  const entered = useSceneEntered(0.53);
 
   return (
     <section
@@ -42,20 +40,21 @@ export default function UrtuuSection() {
           end={REVEAL_RANGE.end}
           className="absolute inset-0 h-full w-full"
         />
-        {/* Vignette: heavy on the left where the heading sits, lighter on
-            the right so the imagery still reads. Mirrors the immersive
-            section's treatment for a consistent feel between the two. */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/55 to-black/30" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/40" />
+        {/* Vignette.  Mobile uses a softer, more even darken so the
+            footage stays legible behind the centred copy.  sm+ reverts
+            to the heavier left-biased gradient that frames the desktop
+            split-layout heading. */}
+        <div className="absolute inset-0 bg-black/55 sm:bg-gradient-to-r sm:from-black/85 sm:via-black/55 sm:to-black/30" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/30 sm:to-black/40" />
       </div>
 
       <TopMark />
 
-      <div className="relative mx-auto flex h-full w-full max-w-[1320px] flex-col justify-center px-7 py-16 sm:px-14 sm:py-20 md:px-20 md:py-24 lg:px-28 lg:py-28">
-        <div className="max-w-[660px] pt-2 sm:pt-4 md:max-w-[820px] md:pt-8">
+      <div className="absolute inset-0 mx-auto flex w-full max-w-[1320px] flex-col items-center justify-center px-6 py-8 text-center sm:items-start sm:px-14 sm:py-20 sm:text-left md:px-20 md:py-24 lg:px-28 lg:py-28">
+        <div className="w-full max-w-[420px] sm:max-w-[660px] md:max-w-[820px]">
           <RevealText
             as="div"
-            className="mb-3 font-display text-[18px] font-light italic text-white/80 sm:mb-4 sm:text-[22px] md:text-[32px] lg:text-[36px]"
+            className="mb-2 font-display text-[15px] font-light italic text-white/80 sm:mb-4 sm:text-[22px] md:text-[32px] lg:text-[36px]"
             stagger={60}
             duration={650}
             trigger={entered}
@@ -64,17 +63,17 @@ export default function UrtuuSection() {
           </RevealText>
           <TypeText
             as="h2"
-            className="mb-6 font-sans text-[28px] font-bold leading-[1.08] tracking-tight text-white sm:mb-8 sm:text-[40px] md:mb-10 md:text-[56px] lg:text-[68px] xl:text-[76px]"
+            className="mb-4 font-sans text-[22px] font-bold leading-[1.1] tracking-tight text-white sm:mb-8 sm:text-[40px] md:mb-10 md:text-[56px] lg:text-[68px] xl:text-[76px]"
             speed={50}
             delay={350}
             trigger={entered}
           >
             {"“The Urtuu” Immersive Experience"}
           </TypeText>
-          <div className="space-y-4 sm:space-y-5 md:space-y-6">
+          <div className="space-y-3 sm:space-y-5 md:space-y-6">
             <RevealText
               as="p"
-              className="font-sans text-[14px] font-light leading-[1.6] text-white/95 sm:text-[16px] md:text-[20px] lg:text-[23px]"
+              className="font-sans text-[12.5px] font-light leading-[1.5] text-white/95 sm:text-[16px] sm:leading-[1.6] md:text-[20px] lg:text-[23px]"
               stagger={28}
               duration={700}
               delay={2000}
@@ -84,7 +83,7 @@ export default function UrtuuSection() {
             </RevealText>
             <RevealText
               as="p"
-              className="font-sans text-[14px] font-light leading-[1.6] text-white/95 sm:text-[16px] md:text-[20px] lg:text-[23px]"
+              className="font-sans text-[12.5px] font-light leading-[1.5] text-white/95 sm:text-[16px] sm:leading-[1.6] md:text-[20px] lg:text-[23px]"
               stagger={28}
               duration={700}
               delay={2300}
