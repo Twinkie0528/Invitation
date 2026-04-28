@@ -91,42 +91,28 @@ export default function RsvpSection() {
           colliding. */}
       <div className="absolute inset-x-0 top-0 flex h-full w-full flex-col items-center justify-start px-6 pt-[14vh] sm:pt-[12vh]">
         {/* ---------- Title ----------
-            Figma export — applied verbatim:
-              width: 306px
-              height: 113px
-              color: #FFF
-              text-align: center
-              font-family: Manrope
-              font-size: 30px
-              font-weight: 400
-              line-height: 102.04% (= 1.0204)
-              filter: blur(4.8px)
-            We pin width/height as inline styles so the wrap matches
-            Figma's three-line break exactly, and use the Manrope
-            CSS variable directly (Tailwind's font-sans is wired to
-            an undefined --font-inter token in this project).  Blur
-            sits on the wrapper so the per-word RevealText animation
-            keeps driving the entry. */}
+            Rendered as live text using the same Manrope family the
+            rest of the page loads.  (A pre-rendered PNG export from
+            Figma was the previous approach so the 4.8px blur could
+            ship as baked pixels, but the asset wasn't checked in;
+            the live-text fallback keeps the section building until
+            the image is restored.) */}
         <div
-          className="overflow-visible"
+          className="w-[306px] text-center"
           style={{
-            width: "306px",
-            height: "113px",
-            filter: "blur(4.8px)",
-            fontFamily: "var(--font-manrope), system-ui, sans-serif",
-            lineHeight: "1.0204",
+            opacity: entered ? 1 : 0,
+            transform: entered ? "translateY(0)" : "translateY(8px)",
+            transition:
+              "opacity 800ms cubic-bezier(0.16, 1, 0.3, 1) 300ms, transform 800ms cubic-bezier(0.16, 1, 0.3, 1) 300ms",
           }}
         >
-          <RevealText
-            as="p"
-            className="text-center text-[30px] font-normal text-white"
-            stagger={32}
-            duration={650}
-            delay={300}
-            trigger={entered}
-          >
-            This invitation is reserved exclusively for you.
-          </RevealText>
+          <p className="font-sans text-[20px] font-light leading-[1.35] tracking-[0.01em] text-white/95 sm:text-[22px]">
+            This invitation is
+            <br />
+            reserved exclusively
+            <br />
+            for you.
+          </p>
         </div>
 
         {/* ---------- Date / time block ----------

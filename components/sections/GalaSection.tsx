@@ -5,14 +5,12 @@ import { useSceneEntered } from "@/hooks/useScrollProgress";
 import BackgroundVideoFrame from "@/components/ui/BackgroundVideoFrame";
 import TopMark from "@/components/ui/TopMark";
 import { RevealText } from "@/components/ui/RevealText";
-// Static-import the MP4 (mirrors UrtuuSection's pattern).  Webpack
-// resolves this via the `mp4` rule in next.config.js and emits a
-// hashed URL — no need to also stage the file under /public/media.
-import galaVideo from "@/assets/image13.mp4";
 
 // Cinematic background — Gala bloom particles, mounted only once
-// the user is within scroll range.
-const BG_VIDEO = galaVideo;
+// the user is within scroll range.  Served from /public/media so the
+// file ships through Next.js's static asset pipeline (no webpack
+// /assets import needed; that path is gitignored on CI).
+const BG_VIDEO = "/media/common/gala-bloom.mp4";
 // Static-frame fallback shown by BackgroundVideoFrame until the MP4
 // has been mounted/decoded.  `gala-bloom.gif` already exists at this
 // path so we don't have to ship a separate poster.

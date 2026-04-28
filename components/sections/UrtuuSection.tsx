@@ -5,16 +5,13 @@ import { useSceneEntered } from "@/hooks/useScrollProgress";
 import BackgroundVideoFrame from "@/components/ui/BackgroundVideoFrame";
 import TopMark from "@/components/ui/TopMark";
 import { RevealText } from "@/components/ui/RevealText";
-// Static-import the MP4 so webpack bundles it from /assets and we get
-// a hashed URL back at build time — no need to also stage it under
-// /public/media. Resolution is wired up by the `mp4` rule in
-// next.config.js (asset/resource → static/media/[name].[hash][ext]).
-import urtuuVideo from "@/assets/image14.mp4";
 
 // Cinematic background — Urtuu particle figure animation, mounted
 // only once the user is within scroll range so the initial page load
-// doesn't pay for a video the visitor may never reach.
-const BG_VIDEO = urtuuVideo;
+// doesn't pay for a video the visitor may never reach.  Served from
+// /public/media (no webpack /assets import — that path is gitignored
+// on CI).
+const BG_VIDEO = "/media/urtuu/urtuu-script.mp4";
 // Static-frame fallback shown by BackgroundVideoFrame until the MP4
 // has been mounted/decoded.  We reuse the existing animated WebP
 // (its first frame paints fine through an <img>) so we don't have to

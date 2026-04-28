@@ -6,17 +6,15 @@ import { useSceneEntered } from "@/hooks/useScrollProgress";
 import BackgroundVideoFrame from "@/components/ui/BackgroundVideoFrame";
 import TopMark from "@/components/ui/TopMark";
 import { RevealText } from "@/components/ui/RevealText";
-// Static-import the MP4 (mirrors Urtuu/Gala's pattern).  Webpack
-// resolves this via the `mp4` rule in next.config.js and emits a
-// hashed URL — no need to also stage the file under /public/media.
-import ceoVideo from "@/assets/asset1.mp4";
-// Signature SVG — Next.js's static image handler returns a
-// StaticImageData object (src/width/height), which next/image accepts.
-import ceoSignature from "@/assets/image5.svg";
 
 // Cinematic background — atmospheric particle flow, mounted only
-// once the user is within scroll range.
-const BG_VIDEO = ceoVideo;
+// once the user is within scroll range.  Served from /public/media so
+// the file ships through Next.js's static asset pipeline (no webpack
+// /assets import needed; that path is gitignored on CI).
+const BG_VIDEO = "/media/hero/asset1.mp4";
+// Signature SVG — `next/image` accepts a string `src` for files in
+// /public; we just supply the width/height here.
+const CEO_SIGNATURE_SRC = "/media/ceo/signature.svg";
 // Static-frame fallback shown by BackgroundVideoFrame until the MP4
 // has been mounted/decoded.  Reuse the existing dust-figure poster
 // (already in /public/media/hero) so we don't ship a separate file.
@@ -167,7 +165,7 @@ export default function CeoLetterSection() {
         {/* Signature mark — green hand-drawn SVG.  Sized to match
             Figma (107×64 mobile) and scaled with breakpoints. */}
         <Image
-          src={ceoSignature}
+          src={CEO_SIGNATURE_SRC}
           alt="Jamiyan-Sharav D. signature"
           width={107}
           height={64}
