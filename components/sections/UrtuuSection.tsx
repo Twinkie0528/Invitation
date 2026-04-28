@@ -65,9 +65,11 @@ export default function UrtuuSection() {
           end={REVEAL_RANGE.end}
           className="absolute inset-0 h-full w-full opacity-95"
         />
-        {/* Vertical vignette — slightly heavier at the edges so the
-            centred copy stays readable on top of the moving figure. */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/20 to-black/80 sm:from-black/55 sm:via-black/25 sm:to-black/70" />
+        {/* Vertical vignette — figure stays visible at the top + bottom
+            edges (matching the Figma frame where the mascot blooms in
+            from above and below) and the middle is darkened so the
+            centred copy reads cleanly on top of the moving particles. */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/15 via-black/55 to-black/75 sm:from-black/55 sm:via-black/25 sm:to-black/70" />
         {/* Desktop-only side darken so the left-aligned heading reads
             against the figure at wide widths. */}
         <div className="absolute inset-0 hidden sm:block sm:bg-gradient-to-r sm:from-black/70 sm:via-black/35 sm:to-black/15" />
@@ -75,9 +77,13 @@ export default function UrtuuSection() {
 
       <TopMark />
 
-      {/* ---------- Foreground content ---------- */}
+      {/* ---------- Foreground content ----------
+          Mobile: narrow column (`max-w-[320px]`) so the body paragraphs
+          break to the same rhythm as the Figma frame (5–6 short lines
+          per paragraph rather than 3–4 long ones).  Desktop opens up
+          again for the cinematic split-layout. */}
       <div className="absolute inset-0 mx-auto flex w-full max-w-[1320px] flex-col items-center justify-center px-6 py-8 text-center sm:items-start sm:px-14 sm:py-20 sm:text-left md:px-20 md:py-24 lg:px-28 lg:py-28">
-        <div className="w-full max-w-[420px] sm:max-w-[660px] md:max-w-[820px]">
+        <div className="w-full max-w-[320px] sm:max-w-[660px] md:max-w-[820px]">
           {/* Eyebrow — Figma: 16px, color #b7b7b7, letter-spacing
               6.4px (= 0.4em).  No italics. */}
           <RevealText
@@ -117,10 +123,10 @@ export default function UrtuuSection() {
           </h2>
 
           {/* Body — two paragraphs of immersive copy. */}
-          <div className="space-y-3 sm:space-y-5 md:space-y-6">
+          <div className="space-y-5 sm:space-y-5 md:space-y-6">
             <RevealText
               as="p"
-              className="font-sans text-[12.5px] font-light leading-[1.55] text-white/95 sm:text-[16px] sm:leading-[1.6] md:text-[20px] lg:text-[23px]"
+              className="font-sans text-[14px] font-light leading-[1.55] text-white/95 sm:text-[16px] sm:leading-[1.6] md:text-[20px] lg:text-[23px]"
               stagger={28}
               duration={700}
               delay={1500}
@@ -130,7 +136,7 @@ export default function UrtuuSection() {
             </RevealText>
             <RevealText
               as="p"
-              className="font-sans text-[12.5px] font-light leading-[1.55] text-white/95 sm:text-[16px] sm:leading-[1.6] md:text-[20px] lg:text-[23px]"
+              className="font-sans text-[14px] font-light leading-[1.55] text-white/95 sm:text-[16px] sm:leading-[1.6] md:text-[20px] lg:text-[23px]"
               stagger={28}
               duration={700}
               delay={1800}

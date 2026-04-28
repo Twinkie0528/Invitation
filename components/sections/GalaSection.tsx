@@ -51,11 +51,12 @@ export default function GalaSection() {
       className="pointer-events-none fixed inset-0 z-20 overflow-hidden bg-black"
     >
       {/* ---------- Background stack ---------- */}
-      <div className="absolute inset-0">
-        {/* Atmospheric bloom — MP4 loops while user is within
-            REVEAL_RANGE.  Section bg is already black so we render
-            the video plain (no blend mode) and let `object-cover`
-            keep the bloom visible. */}
+      {/* Mobile: bloom is constrained to the lower 45% of the viewport
+          so the upper copy area reads on a clean black backdrop, matching
+          the Figma frame where the bloom only blooms beneath the body
+          paragraphs.  Desktop reverts to a full-bleed bloom for the
+          cinematic split-layout. */}
+      <div className="absolute inset-x-0 bottom-0 top-[55%] sm:top-0">
         <BackgroundVideoFrame
           src={BG_VIDEO}
           poster={BG_POSTER}
@@ -63,9 +64,9 @@ export default function GalaSection() {
           end={REVEAL_RANGE.end}
           className="absolute inset-0 h-full w-full opacity-95"
         />
-        {/* Vertical vignette — slightly heavier at the edges so the
-            centred copy stays readable on top of the moving particles. */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/25 to-black/80 sm:from-black/60 sm:via-black/30 sm:to-black/70" />
+        {/* Soft fade from black into the bloom so the boundary isn't
+            a hard line — only on mobile (above the bloom). */}
+        <div className="absolute inset-x-0 top-0 h-[28%] bg-gradient-to-b from-black to-transparent sm:hidden" />
         {/* Desktop-only side darken for the left-aligned heading on
             wide widths. */}
         <div className="absolute inset-0 hidden sm:block sm:bg-gradient-to-r sm:from-black/70 sm:via-black/35 sm:to-black/15" />
@@ -77,8 +78,8 @@ export default function GalaSection() {
       {/* Mobile: top-aligned content (matches Figma `top: 182/210/307`
           positions) with the bloom glowing in the lower portion.
           Desktop reverts to the cinematic flex-centred split-layout. */}
-      <div className="relative mx-auto flex w-full max-w-[1320px] flex-col items-center px-6 pt-[22vh] pb-[28vh] text-center sm:items-start sm:px-14 sm:pt-0 sm:pb-0 sm:text-left md:px-20 lg:px-28 sm:h-full sm:justify-center">
-        <div className="w-full max-w-[420px] sm:max-w-[660px] md:max-w-[820px]">
+      <div className="relative mx-auto flex w-full max-w-[1320px] flex-col items-center px-6 pt-[26vh] pb-[42vh] text-center sm:items-start sm:px-14 sm:pt-0 sm:pb-0 sm:text-left md:px-20 lg:px-28 sm:h-full sm:justify-center">
+        <div className="w-full max-w-[360px] sm:max-w-[660px] md:max-w-[820px]">
           {/* Eyebrow — Figma: Manrope Regular 16px, #b7b7b7,
               letter-spacing 6.4px (= 0.4em).  No italics. */}
           <RevealText
@@ -98,8 +99,12 @@ export default function GalaSection() {
               - background-clip: text + transparent fill
               Plain heading + fade+lift reveal — TypeText's nested
               spans don't propagate `background-clip: text` cleanly. */}
+          {/* Title — mobile breaks to two lines ("IMMERSIVE GALA" /
+              "DINNER") via the inline `<br>`; on sm+ the desktop layout
+              relaxes the break with `sm:hidden` so it reads as a wider
+              single-line headline. */}
           <h2
-            className="mb-5 font-sans text-[26px] font-bold leading-[1.2] tracking-tight sm:mb-8 sm:text-[44px] md:mb-10 md:text-[60px] lg:text-[72px] xl:text-[84px]"
+            className="mb-7 font-sans text-[28px] font-bold leading-[1.15] tracking-tight sm:mb-8 sm:text-[44px] md:mb-10 md:text-[60px] lg:text-[72px] xl:text-[84px]"
             style={{
               backgroundImage:
                 "linear-gradient(190.14deg, #73A4FF 14.69%, #E1E1E1 83.64%)",
@@ -114,16 +119,16 @@ export default function GalaSection() {
                 "opacity 800ms cubic-bezier(0.16, 1, 0.3, 1) 350ms, transform 800ms cubic-bezier(0.16, 1, 0.3, 1) 350ms",
             }}
           >
-            IMMERSIVE GALA DINNER
+            IMMERSIVE GALA<br className="sm:hidden" /> DINNER
           </h2>
 
           {/* Body — four short paragraphs of gala copy.  Mobile sits
               tight (space-y-2) so the whole block fits above the
               bloom; desktop opens up the rhythm. */}
-          <div className="space-y-2 sm:space-y-5 md:space-y-6">
+          <div className="space-y-4 sm:space-y-5 md:space-y-6">
             <RevealText
               as="p"
-              className="font-sans text-[12.5px] font-light leading-[1.5] text-white/95 sm:text-[16px] sm:leading-[1.6] md:text-[20px] lg:text-[23px]"
+              className="font-sans text-[14px] font-light leading-[1.55] text-white/95 sm:text-[16px] sm:leading-[1.6] md:text-[20px] lg:text-[23px]"
               stagger={28}
               duration={700}
               delay={1500}
@@ -133,7 +138,7 @@ export default function GalaSection() {
             </RevealText>
             <RevealText
               as="p"
-              className="font-sans text-[12.5px] font-light leading-[1.5] text-white/95 sm:text-[16px] sm:leading-[1.6] md:text-[20px] lg:text-[23px]"
+              className="font-sans text-[14px] font-light leading-[1.55] text-white/95 sm:text-[16px] sm:leading-[1.6] md:text-[20px] lg:text-[23px]"
               stagger={28}
               duration={700}
               delay={1750}
@@ -143,7 +148,7 @@ export default function GalaSection() {
             </RevealText>
             <RevealText
               as="p"
-              className="font-sans text-[12.5px] font-light leading-[1.5] text-white/95 sm:text-[16px] sm:leading-[1.6] md:text-[20px] lg:text-[23px]"
+              className="font-sans text-[14px] font-light leading-[1.55] text-white/95 sm:text-[16px] sm:leading-[1.6] md:text-[20px] lg:text-[23px]"
               stagger={28}
               duration={700}
               delay={2000}
@@ -153,7 +158,7 @@ export default function GalaSection() {
             </RevealText>
             <RevealText
               as="p"
-              className="font-sans text-[12.5px] font-light leading-[1.5] text-white/95 sm:text-[16px] sm:leading-[1.6] md:text-[20px] lg:text-[23px]"
+              className="font-sans text-[14px] font-light leading-[1.55] text-white/95 sm:text-[16px] sm:leading-[1.6] md:text-[20px] lg:text-[23px]"
               stagger={40}
               duration={700}
               delay={2250}

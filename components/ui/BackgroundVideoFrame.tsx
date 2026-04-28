@@ -14,6 +14,12 @@ type Props = {
   // at the cost of a slightly earlier network fetch.
   preloadMargin?: number;
   className?: string;
+  // How the video fills its container.  "cover" (default) crops the
+  // video to fill — best for full-bleed cinematic backdrops where the
+  // exact framing doesn't matter.  "contain" letterboxes so the entire
+  // video frame is visible — use it when the asset is a mascot/figure
+  // that needs to be seen in full, against a black section base.
+  objectFit?: "cover" | "contain";
 };
 
 // Cinematic background video, mounted lazily and paused while out of the
@@ -34,6 +40,7 @@ export default function BackgroundVideoFrame({
   end,
   preloadMargin = 0.06,
   className,
+  objectFit = "cover",
 }: Props) {
   const [mounted, setMounted] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -72,7 +79,7 @@ export default function BackgroundVideoFrame({
         alt=""
         aria-hidden
         className={className}
-        style={{ objectFit: "cover", backgroundColor: "#030308" }}
+        style={{ objectFit, backgroundColor: "#030308" }}
       />
     );
   }
@@ -89,7 +96,7 @@ export default function BackgroundVideoFrame({
       aria-hidden
       className={className}
       style={{
-        objectFit: "cover",
+        objectFit,
         // Dark fallback so any one-frame gap during the loop seek paints
         // black instead of the browser's default white/transparent.
         backgroundColor: "#030308",

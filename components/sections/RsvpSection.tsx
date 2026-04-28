@@ -6,7 +6,7 @@ import { useSceneEntered } from "@/hooks/useScrollProgress";
 import { useGuest } from "@/lib/guestContext";
 import TopMark from "@/components/ui/TopMark";
 import { RevealText } from "@/components/ui/RevealText";
-import HorseRiderParticles from "@/components/ui/HorseRiderParticles";
+
 // Pre-rendered Figma title — the 4.8px blur, Manrope weight, and
 // 306×113 box are baked into the PNG itself, so we just drop it in
 // instead of fighting CSS blur / web-font swap drift.  Served from
@@ -14,6 +14,11 @@ import HorseRiderParticles from "@/components/ui/HorseRiderParticles";
 // pipeline (no webpack /assets import needed; that path is gitignored
 // on CI).
 const INVITATION_TITLE_SRC = "/media/rsvp/invitation-title.png";
+// Cosmos backdrop — galloping rider silhouette made of stars, exported
+// from Figma.  Animated with the existing `bloom-drift` keyframe (slow
+// vertical breathing + subtle scale pulse) so it feels alive without
+// the cost of a canvas particle simulation.
+const COSMOS_SRC = "/media/rsvp/cosmos.png";
 
 // The CSV / guests.json schema only carries `date` (e.g. "6.18") per
 // guest — the dinner time and year are the same for everyone.  If the
@@ -81,11 +86,30 @@ export default function RsvpSection() {
       // (Galaxy / ParticleField) canvas from bleeding through.
       className="pointer-events-none fixed inset-0 z-20 overflow-hidden bg-black"
     >
-      {/* ---------- Background — cosmos rider particles in the
-            lower half of the section, faded into the dark base. */}
-      <div className="absolute inset-x-0 bottom-0 top-[55%]">
-        <HorseRiderParticles className="absolute inset-0 h-full w-full" />
-        <div className="absolute inset-x-0 top-0 h-[28%] bg-gradient-to-b from-black to-transparent" />
+      {/* ---------- Background — cosmos rider PNG anchored at the
+            bottom edge.  Two-layer wrapper:
+              outer layer pins the image full-bleed at the bottom and
+              centres it in the horizontal axis,
+              inner layer carries `bloom-drift` (the slow translate+scale
+              loop the gala bloom uses).
+            Splitting the duties means `bloom-drift`'s keyframe
+            `transform` doesn't clobber the centring transform — both
+            properties stay live, the image stays centred, and the
+            drift still animates. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 bottom-0 flex justify-center"
+      >
+        <div className="bloom-drift w-full max-w-[440px] sm:w-[80%] sm:max-w-[600px] md:max-w-[760px]">
+          <Image
+            src={COSMOS_SRC}
+            alt=""
+            width={440}
+            height={494}
+            priority={false}
+            className="h-auto w-full opacity-90"
+          />
+        </div>
       </div>
 
       <TopMark />
@@ -184,11 +208,15 @@ export default function RsvpSection() {
           <span className="font-bold">Dress code:</span> Cocktail attire
         </p>
 
-        {/* ---------- Venue ---------- */}
+        {/* ---------- Venue ----------
+            Figma spec: 259×50 box, three lines.  At 12 px font-size
+            with 1.4 line-height the text wraps to exactly three rows
+            and totals ~50.4 px tall — matching the Figma frame on
+            iPhone-class viewports. */}
         <div className="mt-3 sm:mt-4">
           <RevealText
             as="p"
-            className="max-w-[280px] text-center font-sans text-[12px] font-normal leading-[1.4] text-white sm:max-w-[420px] sm:text-[14px] md:max-w-[540px] md:text-[16px]"
+            className="w-[259px] text-center font-sans text-[12px] font-normal leading-[1.4] text-white sm:w-auto sm:max-w-[420px] sm:text-[14px] md:max-w-[540px] md:text-[16px]"
             stagger={22}
             duration={650}
             delay={1950}
