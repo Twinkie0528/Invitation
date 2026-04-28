@@ -1,11 +1,19 @@
 "use client";
 
+import Image from "next/image";
 import { useSectionReveal } from "@/hooks/useSectionReveal";
 import { useSceneEntered } from "@/hooks/useScrollProgress";
 import { useGuest } from "@/lib/guestContext";
 import TopMark from "@/components/ui/TopMark";
 import { RevealText } from "@/components/ui/RevealText";
 import HorseRiderParticles from "@/components/ui/HorseRiderParticles";
+// Pre-rendered Figma title — the 4.8px blur, Manrope weight, and
+// 306×113 box are baked into the PNG itself, so we just drop it in
+// instead of fighting CSS blur / web-font swap drift.  Served from
+// /public/media so the file ships through Next.js's static asset
+// pipeline (no webpack /assets import needed; that path is gitignored
+// on CI).
+const INVITATION_TITLE_SRC = "/media/rsvp/invitation-title.png";
 
 // The CSV / guests.json schema only carries `date` (e.g. "6.18") per
 // guest — the dinner time and year are the same for everyone.  If the
@@ -91,14 +99,12 @@ export default function RsvpSection() {
           colliding. */}
       <div className="absolute inset-x-0 top-0 flex h-full w-full flex-col items-center justify-start px-6 pt-[14vh] sm:pt-[12vh]">
         {/* ---------- Title ----------
-            Rendered as live text using the same Manrope family the
-            rest of the page loads.  (A pre-rendered PNG export from
-            Figma was the previous approach so the 4.8px blur could
-            ship as baked pixels, but the asset wasn't checked in;
-            the live-text fallback keeps the section building until
-            the image is restored.) */}
+            Pre-rendered Figma export at /assets/invitation-title.png.
+            The 4.8px blur, Manrope weight, line-height, and exact
+            306×113 box are baked into the pixels so we don't have
+            to fight CSS-blur or web-font swap drift. */}
         <div
-          className="w-[306px] text-center"
+          className="w-[306px]"
           style={{
             opacity: entered ? 1 : 0,
             transform: entered ? "translateY(0)" : "translateY(8px)",
@@ -106,13 +112,14 @@ export default function RsvpSection() {
               "opacity 800ms cubic-bezier(0.16, 1, 0.3, 1) 300ms, transform 800ms cubic-bezier(0.16, 1, 0.3, 1) 300ms",
           }}
         >
-          <p className="font-sans text-[20px] font-light leading-[1.35] tracking-[0.01em] text-white/95 sm:text-[22px]">
-            This invitation is
-            <br />
-            reserved exclusively
-            <br />
-            for you.
-          </p>
+          <Image
+            src={INVITATION_TITLE_SRC}
+            alt="This invitation is reserved exclusively for you."
+            width={306}
+            height={113}
+            priority={false}
+            className="h-auto w-full"
+          />
         </div>
 
         {/* ---------- Date / time block ----------
