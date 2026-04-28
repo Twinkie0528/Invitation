@@ -6,12 +6,11 @@ import { useSceneEntered } from "@/hooks/useScrollProgress";
 import BackgroundVideoFrame from "@/components/ui/BackgroundVideoFrame";
 import TopMark from "@/components/ui/TopMark";
 import { RevealText } from "@/components/ui/RevealText";
-
-// Cinematic background — atmospheric particle flow, mounted only
-// once the user is within scroll range.  Served from /public/media so
-// the file ships through Next.js's static asset pipeline (no webpack
-// /assets import needed; that path is gitignored on CI).
-const BG_VIDEO = "/media/hero/asset1.mp4";
+// Cinematic background — Jamiyan-Sharav mascot animation, mounted
+// only once the user is within scroll range.  Served from /public/media
+// so the file ships through Next.js's static asset pipeline (no
+// webpack /assets import — that path is gitignored on CI).
+const BG_VIDEO = "/media/ceo/mascot.mp4";
 // Signature SVG — `next/image` accepts a string `src` for files in
 // /public; we just supply the width/height here.
 const CEO_SIGNATURE_SRC = "/media/ceo/signature.svg";
@@ -22,10 +21,13 @@ const BG_POSTER = "/media/hero/dust-figure.gif";
 
 // Reveal range — also drives the video play/pause window.
 // CEO Letter is page 4 (after Hero + Urtuu + Gala): scroll 0.64 → 0.85.
+// Hold extends to 0.84 so the section stays at 100% opacity right up to
+// the RSVP handoff — earlier hold values left a 5% window where the
+// CEO bg-black faded enough to expose the global MainScene cosmos.
 const REVEAL_RANGE = {
   start: 0.64,
   peak: 0.69,
-  hold: 0.80,
+  hold: 0.84,
   end: 0.85,
 };
 
@@ -53,23 +55,25 @@ export default function CeoLetterSection() {
       // (Galaxy / ParticleField) canvas from bleeding through.
       className="pointer-events-none fixed inset-0 z-20 overflow-hidden bg-black"
     >
-      {/* ---------- Background — full-bleed MP4 ----------
-          No opacity dim, no blend mode: the user wants the particle
-          asset to read at full intensity, exactly as authored. The
-          section's bg-black already isolates it from the global
-          MainScene cosmos. */}
+      {/* ---------- Background — MP4 mascot ----------
+          `object-cover` lets the mascot fill the section vertically
+          edge-to-edge, matching the Figma reference where the figure
+          dominates the whole canvas.  The horizontal crop falls on
+          the empty edges of the source frame, so the mascot itself
+          reads at its authored size. */}
       <BackgroundVideoFrame
         src={BG_VIDEO}
         poster={BG_POSTER}
         start={REVEAL_RANGE.start}
         end={REVEAL_RANGE.end}
-        className="absolute inset-0 h-full w-full object-cover"
+        objectFit="cover"
+        className="absolute inset-0 h-full w-full"
       />
-      {/* Subtle horizontal dimming behind the body copy only — keeps
-          contrast for the letter without flattening the figure on
-          the sides.  Tuned soft enough that the particle field is
-          still clearly visible through it. */}
-      <div className="absolute inset-x-0 top-[18%] bottom-[12%] bg-gradient-to-b from-black/35 via-black/15 to-black/55" />
+      {/* Light dimming behind the body copy only — soft enough that
+          the mascot stays clearly visible through it.  Previous
+          combined gradient dimmed the figure to ~80% which made the
+          mp4 read as washed out. */}
+      <div className="absolute inset-x-0 top-[18%] bottom-[18%] bg-gradient-to-b from-black/15 via-transparent to-black/25" />
 
       <TopMark />
 
@@ -80,11 +84,18 @@ export default function CeoLetterSection() {
           margin is `mt-2` (a single blank line) so the whole letter
           fits cleanly between the title and the signature row, even
           on shorter phones where viewport height runs ~840–880px. */}
-      <div className="absolute inset-x-0 top-[18%] mx-auto flex w-full justify-center px-6 sm:px-14 md:px-20">
-        <div className="w-full max-w-[300px] text-center sm:max-w-[460px] md:max-w-[560px]">
+      <div
+        className="absolute inset-x-0 top-[22%] mx-auto flex w-full justify-center px-6 sm:px-14 md:px-20"
+        style={{ fontFamily: "var(--font-manrope), system-ui, sans-serif" }}
+      >
+        {/* All five paragraphs share the same typography stack so the
+            letter reads as a single voice (matches the Figma frame).
+            `paraClass` collects the common classes; per-paragraph
+            margin-tops drive the rhythm. */}
+        <div className="w-full max-w-[360px] text-center sm:max-w-[500px] md:max-w-[600px]">
           <RevealText
             as="p"
-            className="font-sans text-[11.5px] font-normal leading-[1.4] text-white sm:text-[14px] sm:leading-[1.5] md:text-[16px] md:leading-[1.55]"
+            className="text-[15px] font-normal leading-[1.5] text-white sm:text-[18px] sm:leading-[1.55] md:text-[20px] md:leading-[1.6] lg:text-[22px]"
             stagger={26}
             duration={650}
             delay={300}
@@ -94,7 +105,7 @@ export default function CeoLetterSection() {
           </RevealText>
           <RevealText
             as="p"
-            className="font-sans text-[11.5px] font-normal leading-[1.4] text-white sm:text-[14px] sm:leading-[1.5] md:text-[16px] md:leading-[1.55]"
+            className="text-[15px] font-normal leading-[1.5] text-white sm:text-[18px] sm:leading-[1.55] md:text-[20px] md:leading-[1.6] lg:text-[22px]"
             stagger={26}
             duration={650}
             delay={500}
@@ -104,7 +115,7 @@ export default function CeoLetterSection() {
           </RevealText>
           <RevealText
             as="p"
-            className="mt-3 font-sans text-[11.5px] font-normal leading-[1.4] text-white sm:mt-4 sm:text-[14px] sm:leading-[1.5] md:text-[16px] md:leading-[1.55]"
+            className="mt-5 text-[15px] font-normal leading-[1.5] text-white sm:mt-7 sm:text-[18px] sm:leading-[1.55] md:mt-8 md:text-[20px] md:leading-[1.6] lg:text-[22px]"
             stagger={24}
             duration={700}
             delay={1000}
@@ -114,7 +125,7 @@ export default function CeoLetterSection() {
           </RevealText>
           <RevealText
             as="p"
-            className="mt-3 font-sans text-[11.5px] font-normal leading-[1.4] text-white sm:mt-4 sm:text-[14px] sm:leading-[1.5] md:text-[16px] md:leading-[1.55]"
+            className="mt-5 text-[15px] font-normal leading-[1.5] text-white sm:mt-7 sm:text-[18px] sm:leading-[1.55] md:mt-8 md:text-[20px] md:leading-[1.6] lg:text-[22px]"
             stagger={24}
             duration={700}
             delay={1400}
@@ -124,7 +135,7 @@ export default function CeoLetterSection() {
           </RevealText>
           <RevealText
             as="p"
-            className="mt-3 font-sans text-[11.5px] font-normal leading-[1.4] text-white sm:mt-4 sm:text-[14px] sm:leading-[1.5] md:text-[16px] md:leading-[1.55]"
+            className="mt-5 text-[15px] font-normal leading-[1.5] text-white sm:mt-7 sm:text-[18px] sm:leading-[1.55] md:mt-8 md:text-[20px] md:leading-[1.6] lg:text-[22px]"
             stagger={24}
             duration={700}
             delay={1800}
@@ -146,19 +157,29 @@ export default function CeoLetterSection() {
       <div
         className="absolute inset-x-0 top-[83%] mx-auto flex w-full items-center justify-center gap-4 px-6 sm:gap-6 sm:px-14 md:gap-8 md:px-20"
         style={{
+          fontFamily: "var(--font-manrope), system-ui, sans-serif",
           opacity: entered ? 1 : 0,
           transform: entered ? "translateY(0)" : "translateY(8px)",
           transition:
             "opacity 700ms cubic-bezier(0.16, 1, 0.3, 1) 2300ms, transform 700ms cubic-bezier(0.16, 1, 0.3, 1) 2300ms",
         }}
       >
-        {/* Name + title.  ExtraBold 14-18px white name on top, small
-            wide-tracked grey title beneath. */}
+        {/* Name + title block — Figma export values applied verbatim:
+              "Jamiyan-Sharav D." — Manrope 800 (ExtraBold), 16px,
+                line-height 100%, letter-spacing 0%.
+              "CEO of Unitel Group" — Manrope 400 (Regular), 10px,
+                line-height 100%, letter-spacing 40% (= 0.4em). */}
         <div className="text-left">
-          <p className="font-sans text-[13px] font-extrabold leading-[1.2] text-white sm:text-[15px] md:text-[17px]">
+          <p
+            className="text-[16px] font-extrabold text-white"
+            style={{ lineHeight: 1, letterSpacing: 0 }}
+          >
             Jamiyan-Sharav D.
           </p>
-          <p className="mt-1 font-sans text-[8.5px] font-normal leading-[1.2] tracking-[0.4em] text-[#b7b7b7] sm:text-[10px] md:text-[11px]">
+          <p
+            className="mt-1.5 text-[10px] font-normal text-[#b7b7b7]"
+            style={{ lineHeight: 1, letterSpacing: "0.4em" }}
+          >
             CEO of Unitel Group
           </p>
         </div>
@@ -170,7 +191,7 @@ export default function CeoLetterSection() {
           width={107}
           height={64}
           priority={false}
-          className="h-[40px] w-auto sm:h-[50px] md:h-[60px]"
+          className="h-[44px] w-auto sm:h-[54px] md:h-[64px]"
         />
       </div>
     </section>
