@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Inter } from "next/font/google";
+import { Fraunces, Manrope } from "next/font/google";
 import localFont from "next/font/local";
 import Providers from "./providers";
 import LoadingOverlay from "@/components/ui/LoadingOverlay";
@@ -13,10 +13,10 @@ const fraunces = Fraunces({
   display: "swap",
 });
 
-const inter = Inter({
+const manrope = Manrope({
   subsets: ["latin"],
-  variable: "--font-inter",
-  weight: ["300", "400", "500", "600"],
+  variable: "--font-manrope",
+  weight: ["300", "400", "500", "600", "700"],
   display: "swap",
 });
 
@@ -63,7 +63,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${fraunces.variable} ${inter.variable} ${ingkar.variable}`}
+      className={`${fraunces.variable} ${manrope.variable} ${ingkar.variable}`}
     >
       <head>
         {/* Hero assets are above the fold and gate the loading overlay —

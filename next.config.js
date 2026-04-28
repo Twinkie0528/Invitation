@@ -14,6 +14,16 @@ const nextConfig = {
       exclude: /node_modules/,
       use: ["raw-loader"],
     });
+    // Handle video imports (mp4/webm) from anywhere in the project — lets
+    // us `import vid from "@/assets/foo.mp4"` and have webpack copy the
+    // file into the build output and resolve the import to a URL string.
+    config.module.rules.push({
+      test: /\.(mp4|webm|ogv)$/i,
+      type: "asset/resource",
+      generator: {
+        filename: "static/media/[name].[hash:8][ext]",
+      },
+    });
     return config;
   },
 };

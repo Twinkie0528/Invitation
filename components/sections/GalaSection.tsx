@@ -2,91 +2,168 @@
 
 import { useSectionReveal } from "@/hooks/useSectionReveal";
 import { useSceneEntered } from "@/hooks/useScrollProgress";
+import BackgroundVideoFrame from "@/components/ui/BackgroundVideoFrame";
 import TopMark from "@/components/ui/TopMark";
 import { RevealText } from "@/components/ui/RevealText";
-import { TypeText } from "@/components/ui/TypeText";
+// Static-import the MP4 (mirrors UrtuuSection's pattern).  Webpack
+// resolves this via the `mp4` rule in next.config.js and emits a
+// hashed URL — no need to also stage the file under /public/media.
+import galaVideo from "@/assets/image13.mp4";
 
-// Covers scene `gala` — the purple/magenta bloom beat.
-// The bloom GIF is rendered separately by <GalaBloom /> at the canvas
-// root so it can blend with the WebGL canvas without the section's
-// stacking-context isolation (mobile flicker fix).
+// Cinematic background — Gala bloom particles, mounted only once
+// the user is within scroll range.
+const BG_VIDEO = galaVideo;
+// Static-frame fallback shown by BackgroundVideoFrame until the MP4
+// has been mounted/decoded.  `gala-bloom.gif` already exists at this
+// path so we don't have to ship a separate poster.
+const BG_POSTER = "/media/common/gala-bloom.gif";
+
+// Reveal range — also drives the video play/pause window.
+// Gala is page 3: scroll progress 0.42 → 0.64.
+const REVEAL_RANGE = {
+  start: 0.42,
+  peak: 0.48,
+  hold: 0.59,
+  end: 0.64,
+};
+
+// Covers scene `gala` — "Immersive Gala Dinner" reveal.
+//
+// Layout follows the Figma `Mobile Version` (node 6:241) and
+// `Screen PC` (node 4:80) frames.
+//
+//   - Solid black base on the <section> so the global MainScene
+//     cosmos/Galaxy canvas is fully hidden behind this scene.
+//   - Particle bloom plays as a muted/looped MP4 via
+//     BackgroundVideoFrame (lazy-mounted, scroll-gated play/pause).
+//   - "An Exclusive" eyebrow → wide-tracked, soft-grey caps line.
+//   - Title — Manrope 700, 26px (mobile), gradient 190.14° from the
+//     Figma Inspect panel (#73A4FF 14.69% → #E1E1E1 83.64%).
+//   - Multi-paragraph body — gala dinner copy.
 export default function GalaSection() {
-  const ref = useSectionReveal<HTMLElement>({
-    start: 0.19,
-    peak: 0.25,
-    hold: 0.45,
-    end: 0.52,
-  });
-  const entered = useSceneEntered(0.21);
+  const ref = useSectionReveal<HTMLElement>(REVEAL_RANGE);
+  const entered = useSceneEntered(0.44);
 
   return (
     <section
       ref={ref}
       data-reveal
-      // Content is vertically centred on every breakpoint — the bloom
-      // GIF decorates the lower portion via its own absolute layer.
-      className="pointer-events-none fixed inset-0 z-20 flex items-center justify-center"
+      // bg-black on the section itself blocks the global MainScene
+      // (Galaxy / ParticleField) canvas from bleeding through.
+      className="pointer-events-none fixed inset-0 z-20 overflow-hidden bg-black"
     >
+      {/* ---------- Background stack ---------- */}
+      <div className="absolute inset-0">
+        {/* Atmospheric bloom — MP4 loops while user is within
+            REVEAL_RANGE.  Section bg is already black so we render
+            the video plain (no blend mode) and let `object-cover`
+            keep the bloom visible. */}
+        <BackgroundVideoFrame
+          src={BG_VIDEO}
+          poster={BG_POSTER}
+          start={REVEAL_RANGE.start}
+          end={REVEAL_RANGE.end}
+          className="absolute inset-0 h-full w-full opacity-95"
+        />
+        {/* Vertical vignette — slightly heavier at the edges so the
+            centred copy stays readable on top of the moving particles. */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/25 to-black/80 sm:from-black/60 sm:via-black/30 sm:to-black/70" />
+        {/* Desktop-only side darken for the left-aligned heading on
+            wide widths. */}
+        <div className="absolute inset-0 hidden sm:block sm:bg-gradient-to-r sm:from-black/70 sm:via-black/35 sm:to-black/15" />
+      </div>
+
       <TopMark />
 
-      {/* Mobile: content is centred horizontally (text-center + items-
-          center) so the invitation reads as a poster card with the bloom
-          glowing beneath. `pb-[30vh]` reserves space for that bloom so
-          the flex centre lands in the UPPER part of the viewport — the
-          headline + body sit comfortably above the glow rather than
-          colliding with it. From sm+ the desktop split-layout returns:
-          heading/body left-aligned, bloom anchored bottom-right, no
-          bottom padding needed. */}
-      <div className="relative mx-auto flex w-full max-w-[1320px] flex-col items-center px-6 pb-[36vh] text-center sm:items-stretch sm:px-14 sm:pb-0 sm:text-left md:px-20 lg:px-28">
-        <RevealText
-          as="div"
-          className="mb-2 font-display text-[15px] font-light italic text-white/75 sm:mb-4 sm:text-[24px] md:text-[32px] lg:text-[36px]"
-          stagger={60}
-          duration={650}
-          trigger={entered}
-        >
-          An Exclusive
-        </RevealText>
-        <TypeText
-          as="h2"
-          className="mb-4 font-sans text-[26px] font-bold leading-[1.04] tracking-tight text-white sm:mb-8 sm:text-[48px] md:mb-10 md:text-[64px] lg:text-[80px] xl:text-[88px]"
-          speed={55}
-          delay={350}
-          trigger={entered}
-        >
-          IMMERSIVE GALA DINNER
-        </TypeText>
-        <div className="mx-auto w-full max-w-[480px] space-y-3 sm:mx-0 sm:max-w-[640px] sm:space-y-5 md:max-w-[760px] md:space-y-6">
+      {/* ---------- Foreground content ---------- */}
+      {/* Mobile: top-aligned content (matches Figma `top: 182/210/307`
+          positions) with the bloom glowing in the lower portion.
+          Desktop reverts to the cinematic flex-centred split-layout. */}
+      <div className="relative mx-auto flex w-full max-w-[1320px] flex-col items-center px-6 pt-[22vh] pb-[28vh] text-center sm:items-start sm:px-14 sm:pt-0 sm:pb-0 sm:text-left md:px-20 lg:px-28 sm:h-full sm:justify-center">
+        <div className="w-full max-w-[420px] sm:max-w-[660px] md:max-w-[820px]">
+          {/* Eyebrow — Figma: Manrope Regular 16px, #b7b7b7,
+              letter-spacing 6.4px (= 0.4em).  No italics. */}
           <RevealText
-            as="p"
-            className="font-sans text-[13px] font-light leading-[1.5] text-white/92 sm:text-[16px] sm:leading-[1.6] md:text-[20px] lg:text-[23px]"
-            stagger={28}
-            duration={700}
-            delay={1500}
+            as="div"
+            className="mb-3 font-sans text-[13px] font-normal tracking-[0.4em] text-[#b7b7b7] sm:mb-5 sm:text-[15px] md:text-[17px] lg:text-[19px]"
+            stagger={60}
+            duration={650}
             trigger={entered}
           >
-            {"Created exclusively for you, this immersive gala dinner is designed as an evening beyond the ordinary."}
+            An Exclusive
           </RevealText>
-          <RevealText
-            as="p"
-            className="font-sans text-[13px] font-light leading-[1.5] text-white/92 sm:text-[16px] sm:leading-[1.6] md:text-[20px] lg:text-[23px]"
-            stagger={28}
-            duration={700}
-            delay={1750}
-            trigger={entered}
+
+          {/* Title — Figma confirmed:
+              - font: Manrope 700, 26px (mobile)
+              - line-height: 120%
+              - background: linear-gradient(190.14deg, #73A4FF 14.69%, #E1E1E1 83.64%)
+              - background-clip: text + transparent fill
+              Plain heading + fade+lift reveal — TypeText's nested
+              spans don't propagate `background-clip: text` cleanly. */}
+          <h2
+            className="mb-5 font-sans text-[26px] font-bold leading-[1.2] tracking-tight sm:mb-8 sm:text-[44px] md:mb-10 md:text-[60px] lg:text-[72px] xl:text-[84px]"
+            style={{
+              backgroundImage:
+                "linear-gradient(190.14deg, #73A4FF 14.69%, #E1E1E1 83.64%)",
+              WebkitBackgroundClip: "text",
+              backgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              color: "transparent",
+              filter: "drop-shadow(0 0 18px rgba(115, 164, 255, 0.18))",
+              opacity: entered ? 1 : 0,
+              transform: entered ? "translateY(0)" : "translateY(10px)",
+              transition:
+                "opacity 800ms cubic-bezier(0.16, 1, 0.3, 1) 350ms, transform 800ms cubic-bezier(0.16, 1, 0.3, 1) 350ms",
+            }}
           >
-            {"Throughout the night, you will journey across three distinct thematic settings, each offering a unique atmosphere for dining and discovery. As the experience unfolds, exceptional live performances will accompany you, engaging both sight and sound in a seamless flow of art and ambiance."}
-          </RevealText>
-          <RevealText
-            as="p"
-            className="font-sans text-[11.5px] font-light leading-[1.45] text-white/80 sm:text-[14px] sm:leading-[1.55] md:text-[18px] lg:text-[20px]"
-            stagger={40}
-            duration={700}
-            delay={2100}
-            trigger={entered}
-          >
-            {"A night designed exclusively for invited guests."}
-          </RevealText>
+            IMMERSIVE GALA DINNER
+          </h2>
+
+          {/* Body — four short paragraphs of gala copy.  Mobile sits
+              tight (space-y-2) so the whole block fits above the
+              bloom; desktop opens up the rhythm. */}
+          <div className="space-y-2 sm:space-y-5 md:space-y-6">
+            <RevealText
+              as="p"
+              className="font-sans text-[12.5px] font-light leading-[1.5] text-white/95 sm:text-[16px] sm:leading-[1.6] md:text-[20px] lg:text-[23px]"
+              stagger={28}
+              duration={700}
+              delay={1500}
+              trigger={entered}
+            >
+              {"Created exclusively for you, this immersive gala dinner is designed as an evening beyond the ordinary where storytelling is not simply observed, but experienced."}
+            </RevealText>
+            <RevealText
+              as="p"
+              className="font-sans text-[12.5px] font-light leading-[1.5] text-white/95 sm:text-[16px] sm:leading-[1.6] md:text-[20px] lg:text-[23px]"
+              stagger={28}
+              duration={700}
+              delay={1750}
+              trigger={entered}
+            >
+              {"Throughout the night, you will move through three distinct thematic settings, each offering its own atmosphere for dining and discovery."}
+            </RevealText>
+            <RevealText
+              as="p"
+              className="font-sans text-[12.5px] font-light leading-[1.5] text-white/95 sm:text-[16px] sm:leading-[1.6] md:text-[20px] lg:text-[23px]"
+              stagger={28}
+              duration={700}
+              delay={2000}
+              trigger={entered}
+            >
+              {"Live performances unfold seamlessly around you, blending space, sound, and visuals into a continuous sensory experience. A night where you don’t just attend—you step in, explore, and become part of the moment."}
+            </RevealText>
+            <RevealText
+              as="p"
+              className="font-sans text-[12.5px] font-light leading-[1.5] text-white/95 sm:text-[16px] sm:leading-[1.6] md:text-[20px] lg:text-[23px]"
+              stagger={40}
+              duration={700}
+              delay={2250}
+              trigger={entered}
+            >
+              {"A night designed exclusively for invited guests."}
+            </RevealText>
+          </div>
         </div>
       </div>
     </section>

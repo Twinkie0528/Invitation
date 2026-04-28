@@ -110,7 +110,33 @@ const AUTHORED: Record<SceneId, AuthoredScene> = {
     sideOuterY: 0.9,
   },
 
-  // SCENE 2 — gala. Bloom occupies the right half; clearance keeps the
+  // SCENE 2 — ceo letter.  Calm formal welcome from the CEO; particles
+  // settle into a slow drift with wide centre clearance so the letter
+  // copy sits on a quiet backdrop.  Tonally between cold and hero —
+  // cooler palette, lower energy than hero proper.
+  ceo: {
+    attractors: pad([
+      { pos: [-3.5, 0.0, 0], strength: 0.06 },
+      { pos: [3.5, 0.0, 0], strength: 0.06 },
+    ]),
+    noiseScale: 0.72,
+    noiseStrength: 0.09,
+    drag: 0.988,
+    maxSpeed: 0.28,
+    oscAmp: 0.03,
+    pointSize: 4.2,
+    opacity: 0.88,
+    colorA: "#cdd5e8",
+    colorB: "#f0f3ff",
+    velocityToColor: 0.7,
+    sideOnly: 1.0,
+    sideInner: 0.7,
+    sideOuter: 0.95,
+    sideInnerY: 0.55,
+    sideOuterY: 0.9,
+  },
+
+  // SCENE 3 — gala. Bloom occupies the right half; clearance keeps the
   // particles off the left-side heading without flooding the bloom.
   gala: {
     attractors: pad([

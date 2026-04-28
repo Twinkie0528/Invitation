@@ -1,0 +1,180 @@
+"use client";
+
+import Image from "next/image";
+import { useSectionReveal } from "@/hooks/useSectionReveal";
+import { useSceneEntered } from "@/hooks/useScrollProgress";
+import BackgroundVideoFrame from "@/components/ui/BackgroundVideoFrame";
+import TopMark from "@/components/ui/TopMark";
+import { RevealText } from "@/components/ui/RevealText";
+// Static-import the MP4 (mirrors Urtuu/Gala's pattern).  Webpack
+// resolves this via the `mp4` rule in next.config.js and emits a
+// hashed URL — no need to also stage the file under /public/media.
+import ceoVideo from "@/assets/asset1.mp4";
+// Signature SVG — Next.js's static image handler returns a
+// StaticImageData object (src/width/height), which next/image accepts.
+import ceoSignature from "@/assets/image5.svg";
+
+// Cinematic background — atmospheric particle flow, mounted only
+// once the user is within scroll range.
+const BG_VIDEO = ceoVideo;
+// Static-frame fallback shown by BackgroundVideoFrame until the MP4
+// has been mounted/decoded.  Reuse the existing dust-figure poster
+// (already in /public/media/hero) so we don't ship a separate file.
+const BG_POSTER = "/media/hero/dust-figure.gif";
+
+// Reveal range — also drives the video play/pause window.
+// CEO Letter is page 4 (after Hero + Urtuu + Gala): scroll 0.64 → 0.85.
+const REVEAL_RANGE = {
+  start: 0.64,
+  peak: 0.69,
+  hold: 0.80,
+  end: 0.85,
+};
+
+// Covers scene `ceo` — formal welcome letter from Jamiyan-Sharav D.
+//
+// Layout follows the Figma `Mobile Version` (node 6:260) frame at
+// pixel-accurate proportional positions:
+//
+//   - Body text:  top 197 / 956  ≈ 20.6% from top
+//   - Signature:  top 752 / 956  ≈ 78.6% from top
+//   - Pagination: top 854 / 956  ≈ 89.3% from top
+//
+// We pin the body and signature blocks with absolute top-percent
+// positioning so the layout maps to the same rhythm on any phone
+// height instead of getting compressed by a flex column.
+export default function CeoLetterSection() {
+  const ref = useSectionReveal<HTMLElement>(REVEAL_RANGE);
+  const entered = useSceneEntered(0.66);
+
+  return (
+    <section
+      ref={ref}
+      data-reveal
+      // bg-black on the section itself blocks the global MainScene
+      // (Galaxy / ParticleField) canvas from bleeding through.
+      className="pointer-events-none fixed inset-0 z-20 overflow-hidden bg-black"
+    >
+      {/* ---------- Background — full-bleed MP4 ----------
+          No opacity dim, no blend mode: the user wants the particle
+          asset to read at full intensity, exactly as authored. The
+          section's bg-black already isolates it from the global
+          MainScene cosmos. */}
+      <BackgroundVideoFrame
+        src={BG_VIDEO}
+        poster={BG_POSTER}
+        start={REVEAL_RANGE.start}
+        end={REVEAL_RANGE.end}
+        className="absolute inset-0 h-full w-full object-cover"
+      />
+      {/* Subtle horizontal dimming behind the body copy only — keeps
+          contrast for the letter without flattening the figure on
+          the sides.  Tuned soft enough that the particle field is
+          still clearly visible through it. */}
+      <div className="absolute inset-x-0 top-[18%] bottom-[12%] bg-gradient-to-b from-black/35 via-black/15 to-black/55" />
+
+      <TopMark />
+
+      {/* ---------- Body letter ----------
+          Pinned at ~18% from the top of the viewport (Figma
+          y=197/956).  Centred horizontally with a constrained width
+          that matches Figma's 321/440 ≈ 73% mobile column.  Paragraph
+          margin is `mt-2` (a single blank line) so the whole letter
+          fits cleanly between the title and the signature row, even
+          on shorter phones where viewport height runs ~840–880px. */}
+      <div className="absolute inset-x-0 top-[18%] mx-auto flex w-full justify-center px-6 sm:px-14 md:px-20">
+        <div className="w-full max-w-[300px] text-center sm:max-w-[460px] md:max-w-[560px]">
+          <RevealText
+            as="p"
+            className="font-sans text-[11.5px] font-normal leading-[1.4] text-white sm:text-[14px] sm:leading-[1.5] md:text-[16px] md:leading-[1.55]"
+            stagger={26}
+            duration={650}
+            delay={300}
+            trigger={entered}
+          >
+            {"Dear Valued Partner,"}
+          </RevealText>
+          <RevealText
+            as="p"
+            className="font-sans text-[11.5px] font-normal leading-[1.4] text-white sm:text-[14px] sm:leading-[1.5] md:text-[16px] md:leading-[1.55]"
+            stagger={26}
+            duration={650}
+            delay={500}
+            trigger={entered}
+          >
+            {"I am proud to acknowledge the role you have played in shaping this journey."}
+          </RevealText>
+          <RevealText
+            as="p"
+            className="mt-3 font-sans text-[11.5px] font-normal leading-[1.4] text-white sm:mt-4 sm:text-[14px] sm:leading-[1.5] md:text-[16px] md:leading-[1.55]"
+            stagger={24}
+            duration={700}
+            delay={1000}
+            trigger={entered}
+          >
+            {"Over the past two decades, Unitel Group has played a meaningful role in advancing Mongolia’s telecommunications landscape introducing technological innovations and helping shape the evolution of connectivity across the nation."}
+          </RevealText>
+          <RevealText
+            as="p"
+            className="mt-3 font-sans text-[11.5px] font-normal leading-[1.4] text-white sm:mt-4 sm:text-[14px] sm:leading-[1.5] md:text-[16px] md:leading-[1.55]"
+            stagger={24}
+            duration={700}
+            delay={1400}
+            trigger={entered}
+          >
+            {"This 20 year milestone is not only a celebration of our journey, but an opportunity to share that progress with those who have been part of it."}
+          </RevealText>
+          <RevealText
+            as="p"
+            className="mt-3 font-sans text-[11.5px] font-normal leading-[1.4] text-white sm:mt-4 sm:text-[14px] sm:leading-[1.5] md:text-[16px] md:leading-[1.55]"
+            stagger={24}
+            duration={700}
+            delay={1800}
+            trigger={entered}
+          >
+            {"To mark this occasion, we are curating immersive experience dedicated to our customers and partners one that reflects the transformation of the industry, the milestones we have achieved together, and the future we continue to build."}
+          </RevealText>
+        </div>
+      </div>
+
+      {/* ---------- Signature row ----------
+          Pinned at ~83% from top so it always sits clearly below the
+          longest body case on a short viewport.  Figma reference is
+          y=752/956 ≈ 79% but the original Figma frame is 956px tall;
+          on shorter phones we push it slightly further down so the
+          paragraph above never overlaps it.  Layout mirrors the
+          Figma: name + title on the left, green Image5 signature
+          mark to the right of it. */}
+      <div
+        className="absolute inset-x-0 top-[83%] mx-auto flex w-full items-center justify-center gap-4 px-6 sm:gap-6 sm:px-14 md:gap-8 md:px-20"
+        style={{
+          opacity: entered ? 1 : 0,
+          transform: entered ? "translateY(0)" : "translateY(8px)",
+          transition:
+            "opacity 700ms cubic-bezier(0.16, 1, 0.3, 1) 2300ms, transform 700ms cubic-bezier(0.16, 1, 0.3, 1) 2300ms",
+        }}
+      >
+        {/* Name + title.  ExtraBold 14-18px white name on top, small
+            wide-tracked grey title beneath. */}
+        <div className="text-left">
+          <p className="font-sans text-[13px] font-extrabold leading-[1.2] text-white sm:text-[15px] md:text-[17px]">
+            Jamiyan-Sharav D.
+          </p>
+          <p className="mt-1 font-sans text-[8.5px] font-normal leading-[1.2] tracking-[0.4em] text-[#b7b7b7] sm:text-[10px] md:text-[11px]">
+            CEO of Unitel Group
+          </p>
+        </div>
+        {/* Signature mark — green hand-drawn SVG.  Sized to match
+            Figma (107×64 mobile) and scaled with breakpoints. */}
+        <Image
+          src={ceoSignature}
+          alt="Jamiyan-Sharav D. signature"
+          width={107}
+          height={64}
+          priority={false}
+          className="h-[40px] w-auto sm:h-[50px] md:h-[60px]"
+        />
+      </div>
+    </section>
+  );
+}

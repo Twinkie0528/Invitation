@@ -5,88 +5,138 @@ import { useSceneEntered } from "@/hooks/useScrollProgress";
 import BackgroundVideoFrame from "@/components/ui/BackgroundVideoFrame";
 import TopMark from "@/components/ui/TopMark";
 import { RevealText } from "@/components/ui/RevealText";
-import { TypeText } from "@/components/ui/TypeText";
+// Static-import the MP4 so webpack bundles it from /assets and we get
+// a hashed URL back at build time — no need to also stage it under
+// /public/media. Resolution is wired up by the `mp4` rule in
+// next.config.js (asset/resource → static/media/[name].[hash][ext]).
+import urtuuVideo from "@/assets/image14.mp4";
 
-// Cinematic background — Spirit of Japan plays muted/loop while the
-// section is in view. Lazy-mounted by BackgroundVideoFrame so it doesn't
-// burden the initial page load.
-const BG_VIDEO = "/media/cards/spirit-of-japan.mp4";
-const BG_POSTER = "/media/cards/spirit-of-japan-poster.png";
+// Cinematic background — Urtuu particle figure animation, mounted
+// only once the user is within scroll range so the initial page load
+// doesn't pay for a video the visitor may never reach.
+const BG_VIDEO = urtuuVideo;
+// Static-frame fallback shown by BackgroundVideoFrame until the MP4
+// has been mounted/decoded.  We reuse the existing animated WebP
+// (its first frame paints fine through an <img>) so we don't have to
+// ship a separate poster file.
+const BG_POSTER = "/media/urtuu/urtuu-script.webp";
 
 // Reveal range — also drives the video play/pause window.
+// Urtuu is page 2: scroll progress 0.16 → 0.42.
 const REVEAL_RANGE = {
-  start: 0.52,
-  peak: 0.58,
-  hold: 0.81,
-  end: 0.86,
+  start: 0.16,
+  peak: 0.22,
+  hold: 0.37,
+  end: 0.42,
 };
 
-// Covers scene `urtuu` — the emotional peak with the Mongolian script logo.
+// Covers scene `urtuu` — "The Urtuu" immersive experience reveal.
+//
+// Layout follows the Figma `Mobile Version` (node 6:150) and
+// `Screen PC` (node 4:48) frames.
+//
+//   - Solid black base on the <section> itself so the global
+//     MainScene cosmos/Galaxy canvas is fully hidden behind this scene.
+//   - Atmospheric particle figure plays as a muted/looped MP4 via
+//     BackgroundVideoFrame (lazy-mounted, scroll-gated play/pause).
+//   - "Introducing" eyebrow → wide-tracked, soft-grey caps.
+//   - Title — Manrope 700, 26px (mobile), gradient 215° from the
+//     Figma Inspect panel (#73A4FF 14.69% → #E1E1E1 83.64%).
+//   - Two body paragraphs of immersive copy.
 export default function UrtuuSection() {
   const ref = useSectionReveal<HTMLElement>(REVEAL_RANGE);
-  const entered = useSceneEntered(0.53);
+  const entered = useSceneEntered(0.18);
 
   return (
     <section
       ref={ref}
       data-reveal
-      className="pointer-events-none fixed inset-0 z-20 overflow-hidden"
+      // bg-black on the section itself blocks the global MainScene
+      // (Galaxy / ParticleField) canvas from bleeding through.
+      className="pointer-events-none fixed inset-0 z-20 overflow-hidden bg-black"
     >
+      {/* ---------- Background stack ---------- */}
       <div className="absolute inset-0">
+        {/* Atmospheric figure — MP4 loops while user is within
+            REVEAL_RANGE.  The video already carries a dark background
+            so we don't need a blend mode; plain `object-cover` reads
+            cleanly on the section's black base. */}
         <BackgroundVideoFrame
           src={BG_VIDEO}
           poster={BG_POSTER}
           start={REVEAL_RANGE.start}
           end={REVEAL_RANGE.end}
-          className="absolute inset-0 h-full w-full"
+          className="absolute inset-0 h-full w-full opacity-95"
         />
-        {/* Vignette.  Mobile uses a softer, more even darken so the
-            footage stays legible behind the centred copy.  sm+ reverts
-            to the heavier left-biased gradient that frames the desktop
-            split-layout heading. */}
-        <div className="absolute inset-0 bg-black/55 sm:bg-gradient-to-r sm:from-black/85 sm:via-black/55 sm:to-black/30" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/30 sm:to-black/40" />
+        {/* Vertical vignette — slightly heavier at the edges so the
+            centred copy stays readable on top of the moving figure. */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/20 to-black/80 sm:from-black/55 sm:via-black/25 sm:to-black/70" />
+        {/* Desktop-only side darken so the left-aligned heading reads
+            against the figure at wide widths. */}
+        <div className="absolute inset-0 hidden sm:block sm:bg-gradient-to-r sm:from-black/70 sm:via-black/35 sm:to-black/15" />
       </div>
 
       <TopMark />
 
+      {/* ---------- Foreground content ---------- */}
       <div className="absolute inset-0 mx-auto flex w-full max-w-[1320px] flex-col items-center justify-center px-6 py-8 text-center sm:items-start sm:px-14 sm:py-20 sm:text-left md:px-20 md:py-24 lg:px-28 lg:py-28">
         <div className="w-full max-w-[420px] sm:max-w-[660px] md:max-w-[820px]">
+          {/* Eyebrow — Figma: 16px, color #b7b7b7, letter-spacing
+              6.4px (= 0.4em).  No italics. */}
           <RevealText
             as="div"
-            className="mb-2 font-display text-[15px] font-light italic text-white/80 sm:mb-4 sm:text-[22px] md:text-[32px] lg:text-[36px]"
+            className="mb-3 font-sans text-[13px] font-normal uppercase tracking-[0.4em] text-[#b7b7b7] sm:mb-5 sm:text-[15px] md:text-[17px] lg:text-[19px]"
             stagger={60}
             duration={650}
             trigger={entered}
           >
-            Introducing the
+            Introducing
           </RevealText>
-          <TypeText
-            as="h2"
-            className="mb-4 font-sans text-[22px] font-bold leading-[1.1] tracking-tight text-white sm:mb-8 sm:text-[40px] md:mb-10 md:text-[56px] lg:text-[68px] xl:text-[76px]"
-            speed={50}
-            delay={350}
-            trigger={entered}
+
+          {/* Title — Figma confirmed:
+              - font: Manrope 700, 26px (mobile)
+              - line-height: 120%
+              - background: linear-gradient(215deg, #73A4FF 14.69%, #E1E1E1 83.64%)
+              - background-clip: text + transparent fill
+              Plain heading + fade+lift reveal — TypeText's nested
+              spans don't propagate `background-clip: text` cleanly. */}
+          <h2
+            className="mb-5 font-sans text-[26px] font-bold leading-[1.2] tracking-tight sm:mb-8 sm:text-[40px] md:mb-10 md:text-[54px] lg:text-[64px] xl:text-[72px]"
+            style={{
+              backgroundImage:
+                "linear-gradient(215deg, #73A4FF 14.69%, #E1E1E1 83.64%)",
+              WebkitBackgroundClip: "text",
+              backgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              color: "transparent",
+              filter: "drop-shadow(0 0 18px rgba(115, 164, 255, 0.18))",
+              opacity: entered ? 1 : 0,
+              transform: entered ? "translateY(0)" : "translateY(10px)",
+              transition:
+                "opacity 800ms cubic-bezier(0.16, 1, 0.3, 1) 350ms, transform 800ms cubic-bezier(0.16, 1, 0.3, 1) 350ms",
+            }}
           >
-            {"“The Urtuu” Immersive Experience"}
-          </TypeText>
+            {"“The Urtuu” immersive Experience"}
+          </h2>
+
+          {/* Body — two paragraphs of immersive copy. */}
           <div className="space-y-3 sm:space-y-5 md:space-y-6">
             <RevealText
               as="p"
-              className="font-sans text-[12.5px] font-light leading-[1.5] text-white/95 sm:text-[16px] sm:leading-[1.6] md:text-[20px] lg:text-[23px]"
+              className="font-sans text-[12.5px] font-light leading-[1.55] text-white/95 sm:text-[16px] sm:leading-[1.6] md:text-[20px] lg:text-[23px]"
               stagger={28}
               duration={700}
-              delay={2000}
+              delay={1500}
               trigger={entered}
             >
               {"Past and present converge within Urtuu, where time itself comes alive before you. Visuals, sound, and space come together as one, drawing you into the past as if you were truly there. Ancient rock carvings awaken into motion, horses neigh beyond the walls, the first telephone rings through the room, and the story of an unbroken connection unfolds beside you."}
             </RevealText>
             <RevealText
               as="p"
-              className="font-sans text-[12.5px] font-light leading-[1.5] text-white/95 sm:text-[16px] sm:leading-[1.6] md:text-[20px] lg:text-[23px]"
+              className="font-sans text-[12.5px] font-light leading-[1.55] text-white/95 sm:text-[16px] sm:leading-[1.6] md:text-[20px] lg:text-[23px]"
               stagger={28}
               duration={700}
-              delay={2300}
+              delay={1800}
               trigger={entered}
             >
               {"Unitel Group proudly presents Mongolia’s largest immersive experience in celebration of its 20th anniversary. We are honored to invite you to experience it."}

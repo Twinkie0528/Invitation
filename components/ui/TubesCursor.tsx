@@ -7,7 +7,7 @@ import { sceneRef, subscribeScene } from "@/hooks/useScrollProgress";
 // separate WebGL context stops competing with the section <video> tag
 // for GPU/decode bandwidth.
 const HIDE_RANGES: Array<readonly [number, number]> = [
-  [0.5, 0.87], // UrtuuSection — Spirit of Japan
+  [0.18, 0.52], // UrtuuSection — Spirit of Japan (new page 2 window)
 ];
 
 function shouldHide(p: number): boolean {

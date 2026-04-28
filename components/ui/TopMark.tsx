@@ -1,11 +1,13 @@
 import Image from "next/image";
 
-// The small "UNITEL" wordmark that sits in the top-right of every slide
-// except the hero (which uses the full Unitel | 20th lockup in the center).
-// Smaller positioning + size on mobile so it doesn't crowd the heading.
+// The small "UNITEL" wordmark that sits at the top of every slide
+// except the hero (which uses the full Unitel | 20th lockup in the centre).
+// Anchored top-centre on every breakpoint to match the Figma frames —
+// `inset-x-0 + flex justify-center` keeps it perfectly centred without
+// the half-pixel rounding `left-1/2 -translate-x-1/2` introduces.
 export default function TopMark() {
   return (
-    <div className="pointer-events-none fixed right-5 top-5 z-40 md:right-10 md:top-8 lg:right-12 lg:top-10">
+    <div className="pointer-events-none fixed inset-x-0 top-5 z-40 flex justify-center md:top-8 lg:top-10">
       <Image
         src="/media/common/unitel-wordmark.svg"
         alt="Unitel"

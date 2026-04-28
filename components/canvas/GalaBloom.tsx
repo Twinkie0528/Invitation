@@ -5,11 +5,12 @@ import { useEffect, useRef } from "react";
 import { sceneRef, subscribeScene } from "@/hooks/useScrollProgress";
 
 // Reveal window — matches GalaSection's useSectionReveal range so the
-// bloom fades in/out exactly with the heading and copy.
-const REVEAL_START = 0.19;
-const REVEAL_PEAK = 0.25;
-const REVEAL_HOLD = 0.45;
-const REVEAL_END = 0.52;
+// bloom fades in/out exactly with the heading and copy.  Gala is now
+// page 3 (0.5 → 0.85) after the urtuu/gala swap.
+const REVEAL_START = 0.52;
+const REVEAL_PEAK = 0.58;
+const REVEAL_HOLD = 0.81;
+const REVEAL_END = 0.86;
 
 // The bloom is served as a premium-quality animated WebP (truecolor
 // RGBA, 1500 px wide, ~50 frames) generated from the source GIF by

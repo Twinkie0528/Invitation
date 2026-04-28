@@ -60,6 +60,21 @@ const ASSETS = {
     quality: 88,
     alphaQuality: 100,
   },
+  // Urtuu reveal backdrop — the figure GIF behind "Introducing The Urtuu".
+  // Matches the dust-figure tuning since both are dark-backdrop particle
+  // animations punched through with `mix-blend-screen`.
+  urtuu: {
+    src: "public/media/urtuu/urtuu-script.gif",
+    out: "public/media/urtuu/urtuu-script.webp",
+    outWidth: 1500,
+    blackFloor: 8,
+    whiteCeil: 110,
+    rgbGain: 3.0,
+    saturation: 1.25,
+    frameStride: 2,
+    quality: 88,
+    alphaQuality: 100,
+  },
 };
 
 // Bilinear sample at fractional source coords.

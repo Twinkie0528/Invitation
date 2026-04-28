@@ -7,6 +7,8 @@ type Tag = "h1" | "h2" | "h3" | "h4" | "p" | "div" | "span";
 type Props = {
   as?: Tag;
   className?: string;
+  /** Inline styles merged on top of the component's own (e.g. minHeight). */
+  style?: React.CSSProperties;
   /** ms per character (default 42). */
   speed?: number;
   /** ms delay after `trigger` flips true before typing begins. */
@@ -26,6 +28,7 @@ type Props = {
 export function TypeText({
   as: Tag = "h2",
   className,
+  style,
   speed = 42,
   delay = 0,
   trigger = false,
@@ -65,7 +68,7 @@ export function TypeText({
     <Component
       ref={elRef as React.Ref<HTMLElement>}
       className={className}
-      style={{ minHeight: "1.1em" }}
+      style={{ minHeight: "1.1em", ...style }}
     >
       {/* Invisible placeholder preserves final layout so lines below don't jump. */}
       <span className="relative inline-block">

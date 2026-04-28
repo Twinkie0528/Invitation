@@ -29,8 +29,8 @@ export default function HeroSection() {
   const ref = useSectionReveal<HTMLElement>({
     start: -0.02,
     peak: 0.0,
-    hold: 0.13,
-    end: 0.19,
+    hold: 0.10,
+    end: 0.16,
   });
   const entered = useSceneEntered(0);
   // The lockup stays invisible until LoadingOverlay finishes its FLIP
