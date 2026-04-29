@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useEffect, useRef } from "react";
 import { useSectionReveal } from "@/hooks/useSectionReveal";
 import { useSceneEntered } from "@/hooks/useScrollProgress";
 import { useLoadGate } from "@/hooks/useLoadGate";
@@ -40,6 +41,49 @@ export default function HeroSection() {
   const { introDone } = useLoadGate();
   const guestName = useGuestName() ?? "Esteemed Guest";
 
+  // Some Android browsers (Mi Browser, MIUI, Samsung Internet, in-app
+  // webviews) silently refuse to autoplay even with `muted playsInline` —
+  // especially under data-saver / low-battery modes — and the user just
+  // sees a black box because the first frame never paints.  Force a
+  // programmatic .play() on mount, and if the browser blocks it, retry
+  // on the first user gesture (touch/scroll/click) which counts as the
+  // activation needed for the autoplay policy.  Also set Tencent X5 /
+  // Mi Browser hints that prevent the video tag from being hijacked into
+  // a native fullscreen player.
+  const videoRef = useRef<HTMLVideoElement>(null);
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    video.setAttribute("x5-video-player-type", "h5-page");
+    video.setAttribute("x5-video-player-fullscreen", "false");
+    video.setAttribute("x5-playsinline", "true");
+    video.setAttribute("webkit-playsinline", "true");
+
+    const tryPlay = () => {
+      const p = video.play();
+      if (p && typeof p.catch === "function") p.catch(() => {});
+    };
+
+    tryPlay();
+
+    const onGesture = () => {
+      tryPlay();
+      document.removeEventListener("touchstart", onGesture);
+      document.removeEventListener("click", onGesture);
+      document.removeEventListener("scroll", onGesture);
+    };
+    document.addEventListener("touchstart", onGesture, { passive: true });
+    document.addEventListener("click", onGesture);
+    document.addEventListener("scroll", onGesture, { passive: true });
+
+    return () => {
+      document.removeEventListener("touchstart", onGesture);
+      document.removeEventListener("click", onGesture);
+      document.removeEventListener("scroll", onGesture);
+    };
+  }, []);
+
   return (
     <section
       ref={ref}
@@ -58,6 +102,7 @@ export default function HeroSection() {
           since been removed.  Without this, desktop hero loaded with no
           backdrop at all (just the global ParticleField cosmos). */}
       <video
+        ref={videoRef}
         autoPlay
         loop
         muted
