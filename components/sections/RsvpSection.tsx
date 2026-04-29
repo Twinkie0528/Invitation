@@ -6,6 +6,7 @@ import { useSceneEntered } from "@/hooks/useScrollProgress";
 import { useGuest } from "@/lib/guestContext";
 import TopMark from "@/components/ui/TopMark";
 import { RevealText } from "@/components/ui/RevealText";
+import BackgroundVideoFrame from "@/components/ui/BackgroundVideoFrame";
 
 // Pre-rendered Figma title — the 4.8px blur, Manrope weight, and
 // 306×113 box are baked into the PNG itself, so we just drop it in
@@ -14,11 +15,12 @@ import { RevealText } from "@/components/ui/RevealText";
 // pipeline (no webpack /assets import needed; that path is gitignored
 // on CI).
 const INVITATION_TITLE_SRC = "/media/rsvp/invitation-title.png";
-// Cosmos backdrop — galloping rider silhouette made of stars, exported
-// from Figma.  Animated with the existing `bloom-drift` keyframe (slow
-// vertical breathing + subtle scale pulse) so it feels alive without
-// the cost of a canvas particle simulation.
-const COSMOS_SRC = "/media/rsvp/cosmos.png";
+// Cosmos backdrop — galloping rider silhouette built from drifting
+// stars.  Replaced the static PNG with the new MP4 export so the rider
+// actually moves; cosmos.png stays around as the poster fallback shown
+// while the video is buffering / out of scroll range.
+const COSMOS_SRC = "/media/rsvp/cosmos.mp4";
+const COSMOS_POSTER = "/media/rsvp/cosmos.png";
 
 // The CSV / guests.json schema only carries `date` (e.g. "6.18") per
 // guest — the dinner time and year are the same for everyone.  If the
@@ -101,13 +103,16 @@ export default function RsvpSection() {
         className="pointer-events-none absolute inset-x-0 bottom-0 flex justify-center"
       >
         <div className="bloom-drift w-full max-w-[440px] sm:w-[80%] sm:max-w-[600px] md:max-w-[760px]">
-          <Image
+          {/* MP4 starts a touch before the section's full reveal so the
+              first frames are decoded by the time the rider is visible.
+              `h-auto` lets the video render at its intrinsic aspect — no
+              cropping, no letterboxing — once metadata is parsed. */}
+          <BackgroundVideoFrame
             src={COSMOS_SRC}
-            alt=""
-            width={440}
-            height={494}
-            priority={false}
-            className="h-auto w-full opacity-90"
+            poster={COSMOS_POSTER}
+            start={0.83}
+            end={1.05}
+            className="block h-auto w-full opacity-90"
           />
         </div>
       </div>
