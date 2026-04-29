@@ -72,6 +72,42 @@ export default function BackgroundVideoFrame({
     return subscribeScene((s) => apply(s.progress));
   }, [start, end, preloadMargin]);
 
+  // Mobile-browser autoplay hardening.  Some Android engines (Mi Browser,
+  // MIUI, Samsung Internet, in-app webviews) silently refuse muted +
+  // playsInline autoplay under data-saver / low-battery modes — the
+  // first frame never paints and the section reads as a black box.  When
+  // the video element mounts, set Tencent X5 hints so the tag isn't
+  // hijacked into a native fullscreen player, and arm a one-shot retry
+  // on the first user gesture (touch/scroll/click) which counts as the
+  // activation needed for the autoplay policy to relent.
+  useEffect(() => {
+    if (!mounted) return;
+    const v = videoRef.current;
+    if (!v) return;
+
+    v.setAttribute("x5-video-player-type", "h5-page");
+    v.setAttribute("x5-video-player-fullscreen", "false");
+    v.setAttribute("x5-playsinline", "true");
+    v.setAttribute("webkit-playsinline", "true");
+
+    const onGesture = () => {
+      // Only retry if the video element is supposed to be playing right
+      // now — i.e. we're in the section's scroll window.
+      if (!playingRef.current) return;
+      const result = v.play();
+      if (result && typeof result.catch === "function") result.catch(() => {});
+    };
+    document.addEventListener("touchstart", onGesture, { passive: true, once: true });
+    document.addEventListener("click", onGesture, { once: true });
+    document.addEventListener("scroll", onGesture, { passive: true, once: true });
+
+    return () => {
+      document.removeEventListener("touchstart", onGesture);
+      document.removeEventListener("click", onGesture);
+      document.removeEventListener("scroll", onGesture);
+    };
+  }, [mounted]);
+
   // Static poster (or plain dark stand-in) until the section approaches
   // view — zero network/decode cost on initial page load.
   if (!mounted) {
