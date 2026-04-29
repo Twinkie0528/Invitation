@@ -55,18 +55,21 @@ export default function CeoLetterSection() {
       className="pointer-events-none fixed inset-0 z-20 overflow-hidden bg-black"
     >
       {/* ---------- Background — MP4 mascot ----------
-          `object-cover` lets the mascot fill the section vertically
-          edge-to-edge, matching the Figma reference where the figure
-          dominates the whole canvas.  The horizontal crop falls on
-          the empty edges of the source frame, so the mascot itself
-          reads at its authored size. */}
-      <BackgroundVideoFrame
-        src={BG_VIDEO}
-        start={REVEAL_RANGE.start}
-        end={REVEAL_RANGE.end}
-        objectFit="cover"
-        className="absolute inset-0 h-full w-full"
-      />
+          Constrained to a vertical band leaving ~10 % of the viewport
+          dark above and below.  The Figma frame keeps clear black
+          space around the wordmark (top) and pagination dots (bottom),
+          so the mascot fills only the central area instead of going
+          full-bleed.  `object-cover` keeps the figure edge-to-edge
+          horizontally inside that band. */}
+      <div className="absolute inset-x-0 top-[10vh] bottom-[10vh]">
+        <BackgroundVideoFrame
+          src={BG_VIDEO}
+          start={REVEAL_RANGE.start}
+          end={REVEAL_RANGE.end}
+          objectFit="cover"
+          className="absolute inset-0 h-full w-full"
+        />
+      </div>
       {/* Light dimming behind the body copy only — soft enough that
           the mascot stays clearly visible through it.  Previous
           combined gradient dimmed the figure to ~80% which made the
