@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import { sceneRef, subscribeScene } from "@/hooks/useScrollProgress";
-import { useGestureUnlock } from "@/hooks/useGestureUnlock";
 
 type Props = {
   src: string;
@@ -46,35 +45,32 @@ export default function BackgroundVideoFrame({
   className,
   objectFit = "cover",
 }: Props) {
-  // Two independent gates control whether the <video> element exists:
+  // Mount window — within scroll-progress preload margin of this
+  // section's reveal window.  Hero starts within range on page load
+  // (start - preloadMargin ≤ 0); other sections wait until the user
+  // scrolls toward them.
   //
-  //   1. `inMountWindow` — within scroll-progress preload margin of
-  //      this section's reveal window.  Hero starts within range on
-  //      page load (start - preloadMargin ≤ 0); other sections wait
-  //      until the user scrolls toward them.
-  //
-  //   2. `gestureUnlocked` — the user has performed any input
-  //      (touch/click/scroll/wheel/keydown) during this page session.
-  //      We hold the <video> tag back behind this gate even when the
-  //      section is in range, because mounting a paused video on iOS
-  //      Safari before any user gesture has landed causes the engine
-  //      to paint its tap-to-play overlay (the autoplay-block
-  //      indicator).  Holding back means the first frame the engine
-  //      ever sees is mounted from inside a user-gesture handler, so
-  //      autoplay is granted and no overlay paints.
-  //
-  // The two gates AND together — the video mounts only when both are
-  // true.  The poster (or dark placeholder) is shown until then.
-  const [inMountWindow, setInMountWindow] = useState(() => start - preloadMargin <= 0);
-  const gestureUnlocked = useGestureUnlock();
-  const mounted = inMountWindow && gestureUnlocked;
+  // The previous version of this component additionally gated the
+  // <video> mount behind a global "first user gesture" flag so iOS
+  // Safari's tap-to-play overlay would never paint.  In practice
+  // that gate broke the hero on real iOS / Android phones: a user
+  // who opened the page and didn't immediately scroll/tap stared at
+  // a black box because the <video> hadn't mounted yet.  We now
+  // mount the video as soon as the section enters its preload
+  // range and rely on muted+playsInline+autoplay (plus the
+  // onLoadedMetadata force-decode trick and the gesture retry
+  // below) to actually start it.  The risk in exchange: iOS users
+  // with Low Power Mode on may briefly see the autoplay-block
+  // overlay, but the overwhelmingly common case (autoplay allowed)
+  // now works without a required gesture.
+  const [mounted, setMounted] = useState(() => start - preloadMargin <= 0);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const playingRef = useRef(false);
 
   useEffect(() => {
     const apply = (p: number) => {
       const inWindow = p >= start - preloadMargin && p <= end + preloadMargin;
-      if (inWindow) setInMountWindow(true);
+      if (inWindow) setMounted(true);
 
       const v = videoRef.current;
       if (!v) return;
