@@ -45,7 +45,16 @@ export default function BackgroundVideoFrame({
   className,
   objectFit = "cover",
 }: Props) {
-  const [mounted, setMounted] = useState(false);
+  // If the section's mount window already includes progress 0 (i.e. the
+  // section is visible on initial page load — Hero is the obvious case),
+  // start with `mounted` already true so the SSR HTML carries the actual
+  // <video> element instead of the dark placeholder.  Without this the
+  // hero section ships SSR HTML with only the poster div, then relies on
+  // a useEffect → setState → re-render cycle to swap in the video; on
+  // mobile we were seeing that swap silently fail (Mi Browser / data-
+  // saver), leaving the user staring at the #030308 placeholder for the
+  // whole session.
+  const [mounted, setMounted] = useState(() => start - preloadMargin <= 0);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const playingRef = useRef(false);
 
@@ -152,6 +161,24 @@ export default function BackgroundVideoFrame({
         // into a texture that the page composites without re-laying out.
         transform: "translateZ(0)",
         willChange: "transform",
+      }}
+      onLoadedMetadata={(e) => {
+        // "Force-decode the first frame" trick — on Android browsers
+        // that block muted+inline autoplay (Mi Browser / MIUI under
+        // data-saver), the <video> sits unpainted until something
+        // explicitly drives the decoder.  Seeking to a tiny non-zero
+        // offset triggers a decode → frame paint without needing
+        // play() to succeed, so even if autoplay is denied the first
+        // frame shows instead of pure black.  Then re-issue play() so
+        // animation kicks in once the decoder is warm.
+        const v = e.currentTarget;
+        try {
+          v.currentTime = 0.01;
+        } catch {
+          /* no-op — some streams disallow seeking before canplay */
+        }
+        const result = v.play();
+        if (result && typeof result.catch === "function") result.catch(() => {});
       }}
       onTimeUpdate={(e) => {
         const v = e.currentTarget;
