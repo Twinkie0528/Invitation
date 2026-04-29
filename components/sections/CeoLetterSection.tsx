@@ -73,6 +73,20 @@ export default function CeoLetterSection() {
           mp4 read as washed out. */}
       <div className="absolute inset-x-0 top-[18%] bottom-[18%] bg-gradient-to-b from-black/15 via-transparent to-black/25" />
 
+      {/* Figma shader overlay — pre-rendered radial darkening behind
+          the letter copy so the queen mascot stops fighting the body
+          text on mobile.  Authored at 440×879 (iPhone aspect); desktop
+          falls back to the existing top/bottom gradient above. */}
+      <Image
+        src="/media/common/shader.png"
+        alt=""
+        fill
+        aria-hidden
+        priority={false}
+        sizes="100vw"
+        className="pointer-events-none object-cover sm:hidden"
+      />
+
       <TopMark />
 
       {/* ---------- Body letter ----------

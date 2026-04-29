@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useSectionReveal } from "@/hooks/useSectionReveal";
 import { useSceneEntered } from "@/hooks/useScrollProgress";
 import BackgroundVideoFrame from "@/components/ui/BackgroundVideoFrame";
@@ -72,6 +73,21 @@ export default function GalaSection() {
             wide widths. */}
         <div className="absolute inset-0 hidden sm:block sm:bg-gradient-to-r sm:from-black/70 sm:via-black/35 sm:to-black/15" />
       </div>
+
+      {/* Figma shader overlay — full-bleed mobile-only dim that sits
+          above the bloom and below the text so the new high-bitrate
+          mp4 doesn't fight the paragraphs.  Authored at 440×879
+          (iPhone aspect), so we keep it mobile-only and let desktop
+          fall back to the existing side-darken gradient. */}
+      <Image
+        src="/media/common/shader.png"
+        alt=""
+        fill
+        aria-hidden
+        priority={false}
+        sizes="100vw"
+        className="pointer-events-none object-cover sm:hidden"
+      />
 
       <TopMark />
 

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useSectionReveal } from "@/hooks/useSectionReveal";
 import { useSceneEntered } from "@/hooks/useScrollProgress";
 import BackgroundVideoFrame from "@/components/ui/BackgroundVideoFrame";
@@ -73,6 +74,20 @@ export default function UrtuuSection() {
         {/* Desktop-only side darken so the left-aligned heading reads
             against the figure at wide widths. */}
         <div className="absolute inset-0 hidden sm:block sm:bg-gradient-to-r sm:from-black/70 sm:via-black/35 sm:to-black/15" />
+        {/* Figma shader overlay — pre-rendered radial darkening behind
+            the body copy so the new high-bitrate mp4 stops fighting the
+            paragraphs.  Mobile-only because the asset is authored at
+            440×879 (iPhone aspect); desktop reads against the existing
+            side-darken gradient already declared above. */}
+        <Image
+          src="/media/common/shader.png"
+          alt=""
+          fill
+          aria-hidden
+          priority={false}
+          sizes="100vw"
+          className="pointer-events-none object-cover sm:hidden"
+        />
       </div>
 
       <TopMark />
