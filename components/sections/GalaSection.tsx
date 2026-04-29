@@ -67,27 +67,30 @@ export default function GalaSection() {
           className="absolute inset-0 h-full w-full opacity-95"
         />
         {/* Soft fade from black into the bloom so the boundary isn't
-            a hard line — only on mobile (above the bloom). */}
-        <div className="absolute inset-x-0 top-0 h-[28%] bg-gradient-to-b from-black to-transparent sm:hidden" />
+            a hard line.  Trimmed to 12 % so the bloom reads vividly
+            instead of getting washed out by an aggressive overlay. */}
+        <div className="absolute inset-x-0 top-0 h-[12%] bg-gradient-to-b from-black to-transparent sm:hidden" />
         {/* Desktop-only side darken for the left-aligned heading on
             wide widths. */}
         <div className="absolute inset-0 hidden sm:block sm:bg-gradient-to-r sm:from-black/70 sm:via-black/35 sm:to-black/15" />
       </div>
 
-      {/* Figma shader overlay — full-bleed mobile-only dim that sits
-          above the bloom and below the text so the new high-bitrate
-          mp4 doesn't fight the paragraphs.  Authored at 440×879
-          (iPhone aspect), so we keep it mobile-only and let desktop
-          fall back to the existing side-darken gradient. */}
-      <Image
-        src="/media/common/shader.png"
-        alt=""
-        fill
-        aria-hidden
-        priority={false}
-        sizes="100vw"
-        className="pointer-events-none object-cover sm:hidden"
-      />
+      {/* Figma shader overlay — confined to the upper text band on
+          mobile so the bloom mp4 in the lower 45 % keeps reading at
+          full saturation.  Without the bottom clip the shader was
+          dimming the bloom along with the paragraphs and the rider
+          looked muted vs the Figma reference. */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 bottom-[45%] sm:hidden">
+        <Image
+          src="/media/common/shader.png"
+          alt=""
+          fill
+          aria-hidden
+          priority={false}
+          sizes="100vw"
+          className="object-cover object-top"
+        />
+      </div>
 
       <TopMark />
 
@@ -95,8 +98,8 @@ export default function GalaSection() {
       {/* Mobile: top-aligned content (matches Figma `top: 182/210/307`
           positions) with the bloom glowing in the lower portion.
           Desktop reverts to the cinematic flex-centred split-layout. */}
-      <div className="relative mx-auto flex w-full max-w-[1320px] flex-col items-center px-6 pt-[26vh] pb-[42vh] text-center sm:items-start sm:px-14 sm:pt-0 sm:pb-0 sm:text-left md:px-20 lg:px-28 sm:h-full sm:justify-center">
-        <div className="w-full max-w-[360px] sm:max-w-[660px] md:max-w-[820px]">
+      <div className="relative mx-auto flex w-full max-w-[1320px] flex-col items-center px-6 pt-[14vh] pb-[42vh] text-center sm:items-start sm:px-14 sm:pt-0 sm:pb-0 sm:text-left md:px-20 lg:px-28 sm:h-full sm:justify-center">
+        <div className="w-full max-w-[280px] sm:max-w-[660px] md:max-w-[820px]">
           {/* Eyebrow — Figma: Manrope Regular 16px, #b7b7b7,
               letter-spacing 6.4px (= 0.4em).  No italics. */}
           <RevealText
