@@ -14,10 +14,9 @@ const BG_VIDEO = "/media/ceo/mascot.mp4";
 // Signature SVG — `next/image` accepts a string `src` for files in
 // /public; we just supply the width/height here.
 const CEO_SIGNATURE_SRC = "/media/ceo/signature.svg";
-// Static-frame fallback shown by BackgroundVideoFrame until the MP4
-// has been mounted/decoded.  Reuse the existing dust-figure poster
-// (already in /public/media/hero) so we don't ship a separate file.
-const BG_POSTER = "/media/hero/dust-figure.gif";
+// No poster — the section bg is already solid black, so we let
+// BackgroundVideoFrame fall through to its plain dark stand-in until
+// the mp4 mounts.  Saves ~7 MB of needless image fetch.
 
 // Reveal range — also drives the video play/pause window.
 // CEO Letter is page 4 (after Hero + Urtuu + Gala): scroll 0.64 → 0.85.
@@ -63,7 +62,6 @@ export default function CeoLetterSection() {
           reads at its authored size. */}
       <BackgroundVideoFrame
         src={BG_VIDEO}
-        poster={BG_POSTER}
         start={REVEAL_RANGE.start}
         end={REVEAL_RANGE.end}
         objectFit="cover"

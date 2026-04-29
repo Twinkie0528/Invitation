@@ -7,9 +7,7 @@ import { useLoadGate } from "@/hooks/useLoadGate";
 
 // Critical hero assets that must finish loading before the overlay fades.
 const HERO_IMAGES = [
-  "/media/hero/dust-figure.webp",
   "/media/hero/unitel-20-lockup.svg",
-  "/media/hero/signature.png",
 ];
 
 // Animation cadence — backdrop fades while the logo flies, then the

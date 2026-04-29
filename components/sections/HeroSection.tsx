@@ -19,8 +19,9 @@ import { RevealText } from "@/components/ui/RevealText";
 //   50%    : "UNITEL GROUP / is pleased to invite / {Name} / to an exclusive evening"
 //   ~5vh   : scroll cue ("Explore the experience below" + chevron)
 //
-// Mobile renders an autoplay <video> behind the copy.  Desktop hides
-// the video so the canvas-rendered DustFigure remains the centrepiece.
+// Mobile renders an autoplay <video> behind the copy.  Desktop falls
+// through to the section's transparent backdrop (the global MainScene
+// cosmos shows through).
 //
 // `useGuestName()` reads the slug-driven name from <GuestProvider>; on
 // the un-personalised root URL it falls back to a generic line so the
@@ -46,7 +47,7 @@ export default function HeroSection() {
       className="pointer-events-none fixed inset-0 z-20"
     >
       {/* Mobile-only ambient video.  `md:hidden` suppresses it on
-          desktop where the canvas DustFigure plays the same role. */}
+          desktop where the global cosmos canvas reads as the backdrop. */}
       <video
         autoPlay
         loop

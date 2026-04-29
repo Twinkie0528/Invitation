@@ -16,9 +16,27 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-family: var(--font-manrope), system-ui, sans-serif;
+  /* Lock text-size against the OS-level font-scale setting.  Without
+     these, Android Chrome and Samsung Internet honour the user's
+     "Display size / Font size" accessibility preference and end up
+     rendering the layout 1.1×–1.3× larger than iOS Safari, which
+     ignores it.  100% pins both platforms to the same baseline so the
+     design reads identically across phones. */
+  -webkit-text-size-adjust: 100%;
+  -moz-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  /* Strip the default tap-highlight rectangle Android draws on every
+     touch — the page already has explicit hover/active feedback where
+     needed, and the highlight clashes with the dark cinematic palette. */
+  -webkit-tap-highlight-color: transparent;
 }
 
 html {
+  /* Lock the root font-size to 16 px so anything Tailwind authored in
+     `rem` resolves to the same pixel value on every device, regardless
+     of the browser/system font-size preference.  Pairs with
+     text-size-adjust above to keep the layout deterministic. */
+  font-size: 16px;
   scroll-behavior: auto;
 }
 
@@ -96,39 +114,6 @@ html.lenis body {
 }
 @media (prefers-reduced-motion: reduce) {
   .bloom-drift {
-    animation: none;
-  }
-}
-
-/* Hero dust figure drift — gentle vertical float + tiny rotation
-   sway so the chess queen feels suspended in the cosmic dust rather
-   than statically pinned.  The drift is applied to an inner wrapper
-   so the parent wrapper's JS scroll-driven exit transform composes
-   cleanly on top: the browser multiplies both transforms on the
-   compositor without either having to commit a paint. */
-@keyframes dust-drift {
-  0%, 100% {
-    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
-  }
-  25% {
-    transform: translate3d(0, -1.2vh, 0) rotate(-0.4deg) scale(1.012);
-  }
-  50% {
-    transform: translate3d(0, -2.2vh, 0) rotate(0deg) scale(1.024);
-  }
-  75% {
-    transform: translate3d(0, -1.2vh, 0) rotate(0.4deg) scale(1.012);
-  }
-}
-.dust-drift {
-  animation: dust-drift 14s ease-in-out infinite;
-  will-change: transform;
-  /* Promote to a dedicated compositor layer so the keyframe never
-     contends with the parent wrapper's JS-written transform. */
-  transform: translateZ(0);
-}
-@media (prefers-reduced-motion: reduce) {
-  .dust-drift {
     animation: none;
   }
 }

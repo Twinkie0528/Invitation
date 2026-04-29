@@ -9,7 +9,6 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "build:anim": "node scripts/build-anim.mjs",
-    "build:anim:dust": "node scripts/build-anim.mjs dust",
     "build:anim:bloom": "node scripts/build-anim.mjs bloom",
     "guests": "node scripts/generate-guests.mjs"
   },

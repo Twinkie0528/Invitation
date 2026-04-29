@@ -5,7 +5,10 @@ import { sceneRef, subscribeScene } from "@/hooks/useScrollProgress";
 
 type Props = {
   src: string;
-  poster: string;
+  // Optional static-frame fallback shown until the video has mounted +
+  // decoded its first frame.  Omit when the section bg is already a
+  // solid colour and a poster would just duplicate that.
+  poster?: string;
   // Scroll-progress range during which the video should be playing.
   start: number;
   end: number;
@@ -69,9 +72,18 @@ export default function BackgroundVideoFrame({
     return subscribeScene((s) => apply(s.progress));
   }, [start, end, preloadMargin]);
 
-  // Static poster stands in until the section approaches view — same
-  // visual footprint, zero network/decode cost on initial page load.
+  // Static poster (or plain dark stand-in) until the section approaches
+  // view — zero network/decode cost on initial page load.
   if (!mounted) {
+    if (!poster) {
+      return (
+        <div
+          aria-hidden
+          className={className}
+          style={{ backgroundColor: "#030308" }}
+        />
+      );
+    }
     return (
       // eslint-disable-next-line @next/next/no-img-element
       <img

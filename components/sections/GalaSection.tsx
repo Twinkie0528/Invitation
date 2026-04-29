@@ -12,9 +12,10 @@ import { RevealText } from "@/components/ui/RevealText";
 // /assets import needed; that path is gitignored on CI).
 const BG_VIDEO = "/media/common/gala-bloom.mp4";
 // Static-frame fallback shown by BackgroundVideoFrame until the MP4
-// has been mounted/decoded.  `gala-bloom.gif` already exists at this
-// path so we don't have to ship a separate poster.
-const BG_POSTER = "/media/common/gala-bloom.gif";
+// has been mounted/decoded.  Use the existing animated WebP — its
+// first frame paints fine through an <img> and we avoid shipping a
+// separate (15 MB) GIF just for a poster.
+const BG_POSTER = "/media/common/gala-bloom.webp";
 
 // Reveal range — also drives the video play/pause window.
 // Gala is page 3: scroll progress 0.42 → 0.64.

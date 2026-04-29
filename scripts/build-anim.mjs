@@ -27,7 +27,7 @@
 //      original per-frame delays preserved exactly.
 //
 // Usage:  node scripts/build-anim.mjs [name]
-//   name = "dust" | "bloom" | "all" (default: "all")
+//   name = "bloom" | "urtuu" | "all" (default: "all")
 
 import { readFileSync, statSync } from "node:fs";
 import { parseGIF, decompressFrames } from "gifuct-js";
@@ -36,18 +36,6 @@ import sharp from "sharp";
 
 // Per-asset tuning ---------------------------------------------------
 const ASSETS = {
-  dust: {
-    src: "public/media/hero/dust-figure.gif",
-    out: "public/media/hero/dust-figure.webp",
-    outWidth: 1500,
-    blackFloor: 8,
-    whiteCeil: 110,
-    rgbGain: 3.0,
-    saturation: 1.25,
-    frameStride: 2,
-    quality: 88,
-    alphaQuality: 100,
-  },
   bloom: {
     src: "public/media/common/gala-bloom.gif",
     out: "public/media/common/gala-bloom.webp",

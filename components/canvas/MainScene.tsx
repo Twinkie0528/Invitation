@@ -3,7 +3,6 @@
 import { Canvas, invalidate } from "@react-three/fiber";
 import { Suspense, useEffect, useState } from "react";
 import SceneContent from "./SceneContent";
-import DustFigure from "./DustFigure";
 import GalaBloom from "./GalaBloom";
 import { markReady } from "@/lib/loadGate";
 
@@ -50,10 +49,9 @@ export default function MainScene() {
           <SceneContent />
         </Suspense>
       </Canvas>
-      {/* DustFigure + GalaBloom render inside canvas-root so their
-          mix-blend-modes composite against the WebGL canvas pixels
-          (same stacking context — outside any section's isolation). */}
-      <DustFigure />
+      {/* GalaBloom renders inside canvas-root so its mix-blend-mode
+          composites against the WebGL canvas pixels (same stacking
+          context — outside any section's isolation). */}
       <GalaBloom />
     </div>
   );

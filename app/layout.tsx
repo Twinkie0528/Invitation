@@ -66,16 +66,9 @@ export default function RootLayout({
       className={`${fraunces.variable} ${manrope.variable} ${ingkar.variable}`}
     >
       <head>
-        {/* Hero assets are above the fold and gate the loading overlay —
-            preload kicks off their network fetch before React hydrates.
-            signature.png is intentionally not preloaded; it appears below
-            the body copy and isn't on the loading-screen critical path. */}
-        <link
-          rel="preload"
-          as="image"
-          href="/media/hero/dust-figure.webp"
-          type="image/webp"
-        />
+        {/* Above-the-fold lockup gates the loading-overlay handoff —
+            preload kicks off its fetch before React hydrates so the
+            FLIP transition can land on a cached image. */}
         <link rel="preload" as="image" href="/media/hero/unitel-20-lockup.svg" />
       </head>
       <body>
