@@ -114,12 +114,27 @@ export default function RsvpSection() {
           start={0.83}
           end={1.05}
           objectFit="cover"
-          className="absolute inset-0 h-full w-full opacity-90"
+          className="absolute inset-0 h-full w-full opacity-90 sm:opacity-30"
         />
         <div className="absolute inset-x-0 top-0 h-[25%] bg-gradient-to-b from-black to-transparent" />
       </div>
 
-      <TopMark />
+      {/* TopMark renders the centred mobile wordmark; on sm+ we hide
+          it and drop a right-corner copy at 74×17 to match the
+          desktop Figma frame (same pattern as Gala / CEO / Urtuu). */}
+      <div className="sm:hidden">
+        <TopMark />
+      </div>
+      <div className="pointer-events-none fixed right-6 top-5 z-40 hidden sm:block md:right-8 md:top-8 lg:right-10 lg:top-10">
+        <Image
+          src="/media/common/unitel-wordmark.svg"
+          alt="Unitel"
+          width={74}
+          height={17}
+          priority
+          className="h-[17px] w-[74px]"
+        />
+      </div>
 
       {/* ---------- All foreground rows in a single flex stack ----------
           `justify-start` + `pt-[14vh]` pins the title slightly below
@@ -128,7 +143,7 @@ export default function RsvpSection() {
           uses absolute %-positioning, so on any phone height the
           layout just expands or compresses gracefully without rows
           colliding. */}
-      <div className="absolute inset-x-0 top-0 flex h-full w-full flex-col items-center justify-start px-6 pt-[14vh] sm:pt-[12vh]">
+      <div className="absolute inset-x-0 top-0 flex h-full w-full flex-col items-center justify-start px-6 pt-[14vh] sm:pt-[15vh]">
         {/* ---------- Title ----------
             Pre-rendered Figma export at
             /public/media/rsvp/invitation-title.png.  The 4.8px blur,
@@ -136,7 +151,7 @@ export default function RsvpSection() {
             baked into the pixels so we don't have to fight CSS-blur
             or web-font swap drift. */}
         <div
-          className="w-[306px]"
+          className="w-[306px] sm:w-[420px]"
           style={{
             opacity: entered ? 1 : 0,
             transform: entered ? "translateY(0)" : "translateY(8px)",
@@ -154,13 +169,13 @@ export default function RsvpSection() {
           />
         </div>
 
-        {/* ---------- Date / time block ----------
-            Three values flanked by two hairline rules.  Sizes are
-            scaled down a little versus the previous draft so the
-            whole stack fits comfortably on shorter phones without
-            running into the dress-code row below. */}
+        {/* ---------- Mobile-only date stack ----------
+            Three values flanked by two hairline rules.  This is the
+            mobile Figma frame's vertical layout — desktop swaps to
+            an inline single-line render below.  `sm:hidden` keeps
+            this block out of the desktop layout entirely. */}
         <div
-          className="mt-7 flex flex-col items-center sm:mt-9"
+          className="mt-7 flex flex-col items-center sm:hidden"
           style={{
             opacity: entered ? 1 : 0,
             transform: entered ? "translateY(0)" : "translateY(8px)",
@@ -170,7 +185,7 @@ export default function RsvpSection() {
         >
           {/* 18:00 — gradient blue→silver. */}
           <h2
-            className="font-sans text-[40px] font-bold leading-none tracking-tight sm:text-[56px] md:text-[68px] lg:text-[78px]"
+            className="font-sans text-[40px] font-bold leading-none tracking-tight"
             style={{
               backgroundImage:
                 "linear-gradient(190deg, #73A4FF 14.69%, #E1E1E1 83.64%)",
@@ -184,28 +199,66 @@ export default function RsvpSection() {
           </h2>
 
           {/* Hairline above June DD. */}
-          <span className="my-2 block h-px w-[170px] bg-white/85 sm:w-[240px] md:w-[300px]" />
+          <span className="my-2 block h-px w-[170px] bg-white/85" />
 
           {/* Month + Day — dynamic from guest CSV. */}
-          <h2 className="font-sans text-[34px] font-bold leading-none text-white sm:text-[48px] md:text-[60px] lg:text-[72px]">
+          <h2 className="font-sans text-[34px] font-bold leading-none text-white">
             {month} {day}
           </h2>
 
           {/* Hairline below June DD. */}
-          <span className="my-2 block h-px w-[170px] bg-white/85 sm:w-[240px] md:w-[300px]" />
+          <span className="my-2 block h-px w-[170px] bg-white/85" />
 
           {/* 2026 — same scale as the date row. */}
-          <h2 className="font-sans text-[34px] font-bold leading-none text-white sm:text-[48px] md:text-[60px] lg:text-[72px]">
+          <h2 className="font-sans text-[34px] font-bold leading-none text-white">
             {EVENT_YEAR}
           </h2>
         </div>
 
+        {/* ---------- Desktop-only date row ----------
+            Single inline line `18:00 June 18, 2026` per the desktop
+            Figma frame.  "18:00" keeps the gradient; month/day/year
+            stay white.  Hidden on mobile (mobile uses the vertical
+            stack above).  `sm:order-3` places this AFTER the dress
+            code on desktop without changing DOM order. */}
+        <h2
+          className="hidden font-sans font-bold leading-none tracking-tight sm:order-3 sm:mt-8 sm:flex sm:items-baseline sm:justify-center sm:gap-3"
+          style={{
+            opacity: entered ? 1 : 0,
+            transform: entered ? "translateY(0)" : "translateY(8px)",
+            transition:
+              "opacity 800ms cubic-bezier(0.16, 1, 0.3, 1) 900ms, transform 800ms cubic-bezier(0.16, 1, 0.3, 1) 900ms",
+          }}
+        >
+          <span
+            className="text-[48px] md:text-[58px] lg:text-[64px]"
+            style={{
+              backgroundImage:
+                "linear-gradient(190deg, #73A4FF 14.69%, #E1E1E1 83.64%)",
+              WebkitBackgroundClip: "text",
+              backgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              color: "transparent",
+            }}
+          >
+            {EVENT_TIME}
+          </span>
+          <span className="text-[42px] text-white md:text-[52px] lg:text-[56px]">
+            {month} {day},
+          </span>
+          <span className="text-[42px] text-white md:text-[52px] lg:text-[56px]">
+            {EVENT_YEAR}
+          </span>
+        </h2>
+
         {/* ---------- Dress code ----------
             "Dress code:" is bold per the Figma; the rest stays
             regular.  Hand-faded so the inline <span> bold weight
-            survives. */}
+            survives.  Desktop reorders to position 2 (between title
+            and date) via `sm:order-2`, with the gap to the title
+            tightened down from the mobile `mt-7`. */}
         <p
-          className="mt-7 font-sans text-[12px] font-normal leading-[1.4] text-white sm:mt-9 sm:text-[14px] md:text-[16px]"
+          className="mt-7 font-sans text-[12px] font-normal leading-[1.4] text-white sm:order-2 sm:mt-5 sm:text-[14px] md:text-[16px]"
           style={{
             opacity: entered ? 1 : 0,
             transform: entered ? "translateY(0)" : "translateY(6px)",
@@ -217,11 +270,10 @@ export default function RsvpSection() {
         </p>
 
         {/* ---------- Venue ----------
-            Figma spec: 259×50 box, three lines.  At 12 px font-size
-            with 1.4 line-height the text wraps to exactly three rows
-            and totals ~50.4 px tall — matching the Figma frame on
-            iPhone-class viewports. */}
-        <div className="mt-3 sm:mt-4">
+            Mobile Figma spec: 259×50 box, three lines.  At 12 px font-
+            size with 1.4 line-height the text wraps to exactly three
+            rows.  Desktop pinned to the last position via `sm:order-4`. */}
+        <div className="mt-3 sm:order-4 sm:mt-5">
           <RevealText
             as="p"
             className="w-[259px] text-center font-sans text-[12px] font-normal leading-[1.4] text-white sm:w-auto sm:max-w-[420px] sm:text-[14px] md:max-w-[540px] md:text-[16px]"

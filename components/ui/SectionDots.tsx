@@ -38,9 +38,9 @@ export default function SectionDots() {
   return (
     <div
       aria-hidden
-      className="pointer-events-none fixed inset-x-0 bottom-[3vh] z-40 flex justify-center"
+      className="pointer-events-none fixed inset-x-0 bottom-[3vh] z-40 flex justify-center sm:inset-x-auto sm:bottom-auto sm:right-6 sm:top-1/2 sm:-translate-y-1/2 md:right-8 lg:right-10"
     >
-      <div className="flex items-center gap-3 sm:gap-4">
+      <div className="flex items-center gap-3 sm:flex-col sm:gap-3">
         {PAGES.map((page, i) => {
           const isActive = i === active;
           return (

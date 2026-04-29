@@ -53,18 +53,20 @@ export default function GalaSection() {
       className="pointer-events-none fixed inset-0 z-20 overflow-hidden bg-black"
     >
       {/* ---------- Background stack ---------- */}
-      {/* Mobile: bloom is constrained to the lower 45% of the viewport
-          so the upper copy area reads on a clean black backdrop, matching
-          the Figma frame where the bloom only blooms beneath the body
-          paragraphs.  Desktop reverts to a full-bleed bloom for the
-          cinematic split-layout. */}
       {/* Mobile container is pushed down to top-[60%] AND extended 10vh
           below the viewport edge so the bloom renders ~15 % larger
           (object-cover scales it to fill the taller virtual container)
           while the visible portion sits visibly lower on the screen.
           Net effect on mobile: bigger blossom, anchored toward the
-          bottom — matches the user's Figma request. */}
-      <div className="absolute inset-x-0 bottom-[-10vh] top-[60%] sm:bottom-0 sm:top-0">
+          bottom — matches the user's Figma request.
+
+          Desktop matches Figma `Screen PC` (node 4:80) precisely:
+          particle gif anchored at left:177/1280≈14 %, top:429/832≈52 %,
+          bleeding 19 % past the right edge and 21 % past the bottom so
+          the bloom reads as a wide horizontal banner sitting beneath
+          the centered headline + body — overflow-hidden on the
+          <section> clips the bleed. */}
+      <div className="absolute inset-x-0 bottom-[-10vh] top-[60%] sm:inset-x-auto sm:left-[14%] sm:right-[-19%] sm:top-[52%] sm:bottom-[-21%]">
         <BackgroundVideoFrame
           src={BG_VIDEO}
           poster={BG_POSTER}
@@ -76,9 +78,6 @@ export default function GalaSection() {
             a hard line.  Trimmed to 12 % so the bloom reads vividly
             instead of getting washed out by an aggressive overlay. */}
         <div className="absolute inset-x-0 top-0 h-[12%] bg-gradient-to-b from-black to-transparent sm:hidden" />
-        {/* Desktop-only side darken for the left-aligned heading on
-            wide widths. */}
-        <div className="absolute inset-0 hidden sm:block sm:bg-gradient-to-r sm:from-black/70 sm:via-black/35 sm:to-black/15" />
       </div>
 
       {/* Figma shader overlay — confined to the upper text band on
@@ -108,19 +107,36 @@ export default function GalaSection() {
         />
       </div>
 
-      <TopMark />
+      {/* TopMark renders the centred mobile wordmark; on sm+ we hide
+          it and drop a right-corner copy of the same wordmark to
+          match the desktop Figma frame (UNITEL anchored top-right). */}
+      <div className="sm:hidden">
+        <TopMark />
+      </div>
+      <div className="pointer-events-none fixed right-6 top-5 z-40 hidden sm:block md:right-8 md:top-8 lg:right-10 lg:top-10">
+        <Image
+          src="/media/common/unitel-wordmark.svg"
+          alt="Unitel"
+          width={74}
+          height={17}
+          priority
+          className="h-[17px] w-[74px]"
+        />
+      </div>
 
       {/* ---------- Foreground content ---------- */}
       {/* Mobile: top-aligned content (matches Figma `top: 182/210/307`
           positions) with the bloom glowing in the lower portion.
-          Desktop reverts to the cinematic flex-centred split-layout. */}
-      <div className="relative mx-auto flex w-full max-w-[1320px] flex-col items-center px-6 pt-[14vh] pb-[42vh] text-center sm:items-start sm:px-14 sm:pt-0 sm:pb-0 sm:text-left md:px-20 lg:px-28 sm:h-full sm:justify-center">
-        <div className="w-full max-w-[280px] sm:max-w-[660px] md:max-w-[820px]">
+          Desktop matches Figma `Screen PC` (node 4:80): centered title
+          + 535-px body column sits in the upper-middle band (eyebrow
+          ~28 % from top), bloom banner underneath at top:52 %. */}
+      <div className="relative mx-auto flex w-full max-w-[1320px] flex-col items-center px-6 pt-[14vh] pb-[42vh] text-center sm:px-14 sm:pt-[24vh] sm:pb-[36vh] md:px-20 lg:px-28">
+        <div className="w-full max-w-[280px] sm:max-w-[535px]">
           {/* Eyebrow — Figma: Manrope Regular 16px, #b7b7b7,
               letter-spacing 6.4px (= 0.4em).  No italics. */}
           <RevealText
             as="div"
-            className="mb-3 font-sans text-[13px] font-normal tracking-[0.4em] text-[#b7b7b7] sm:mb-5 sm:text-[15px] md:text-[17px] lg:text-[19px]"
+            className="mb-3 font-sans text-[13px] font-normal tracking-[0.4em] text-[#b7b7b7] sm:mb-3 sm:text-[16px]"
             stagger={60}
             duration={650}
             trigger={entered}
@@ -140,7 +156,7 @@ export default function GalaSection() {
               relaxes the break with `sm:hidden` so it reads as a wider
               single-line headline. */}
           <h2
-            className="mb-7 font-sans text-[28px] font-bold leading-[1.15] tracking-tight sm:mb-8 sm:text-[44px] md:mb-10 md:text-[60px] lg:text-[72px] xl:text-[84px]"
+            className="mb-7 font-sans text-[28px] font-bold leading-[1.15] tracking-tight sm:mb-6 sm:text-[30px] sm:leading-normal"
             style={{
               backgroundImage:
                 "linear-gradient(190.14deg, #73A4FF 14.69%, #E1E1E1 83.64%)",
@@ -161,10 +177,10 @@ export default function GalaSection() {
           {/* Body — four short paragraphs of gala copy.  Mobile sits
               tight (space-y-2) so the whole block fits above the
               bloom; desktop opens up the rhythm. */}
-          <div className="space-y-4 sm:space-y-5 md:space-y-6">
+          <div className="space-y-4 sm:space-y-2">
             <RevealText
               as="p"
-              className="font-sans text-[14px] font-light leading-[1.55] text-white/95 sm:text-[16px] sm:leading-[1.6] md:text-[20px] lg:text-[23px]"
+              className="font-sans text-[14px] font-light leading-[1.55] text-white/95 sm:text-[16px] sm:font-normal sm:leading-normal sm:text-white"
               stagger={28}
               duration={700}
               delay={1500}
@@ -174,7 +190,7 @@ export default function GalaSection() {
             </RevealText>
             <RevealText
               as="p"
-              className="font-sans text-[14px] font-light leading-[1.55] text-white/95 sm:text-[16px] sm:leading-[1.6] md:text-[20px] lg:text-[23px]"
+              className="font-sans text-[14px] font-light leading-[1.55] text-white/95 sm:text-[16px] sm:font-normal sm:leading-normal sm:text-white"
               stagger={28}
               duration={700}
               delay={1750}
@@ -184,7 +200,7 @@ export default function GalaSection() {
             </RevealText>
             <RevealText
               as="p"
-              className="font-sans text-[14px] font-light leading-[1.55] text-white/95 sm:text-[16px] sm:leading-[1.6] md:text-[20px] lg:text-[23px]"
+              className="font-sans text-[14px] font-light leading-[1.55] text-white/95 sm:text-[16px] sm:font-normal sm:leading-normal sm:text-white"
               stagger={28}
               duration={700}
               delay={2000}
@@ -194,7 +210,7 @@ export default function GalaSection() {
             </RevealText>
             <RevealText
               as="p"
-              className="font-sans text-[14px] font-light leading-[1.55] text-white/95 sm:text-[16px] sm:leading-[1.6] md:text-[20px] lg:text-[23px]"
+              className="font-sans text-[14px] font-light leading-[1.55] text-white/95 sm:text-[16px] sm:font-normal sm:leading-normal sm:text-white"
               stagger={40}
               duration={700}
               delay={2250}

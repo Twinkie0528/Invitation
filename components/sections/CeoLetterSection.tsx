@@ -55,19 +55,33 @@ export default function CeoLetterSection() {
       className="pointer-events-none fixed inset-0 z-20 overflow-hidden bg-black"
     >
       {/* ---------- Background — MP4 mascot ----------
-          Constrained to a vertical band leaving ~10 % of the viewport
-          dark above and below.  The Figma frame keeps clear black
-          space around the wordmark (top) and pagination dots (bottom),
-          so the mascot fills only the central area instead of going
-          full-bleed.  `object-cover` keeps the figure edge-to-edge
-          horizontally inside that band. */}
-      <div className="absolute inset-x-0 top-[10vh] bottom-[10vh]">
+          The mascot.mp4 file is a PORTRAIT video (1842×2304, aspect
+          0.8 — taller than wide).  Figma's 1503×746 landscape box
+          was clipping the queen's head + tail because object-cover
+          on a landscape container scales a portrait source to fill
+          width and chops the top/bottom off.
+
+          Fix: on desktop only, render the mascot at its natural
+          portrait aspect via object-contain (so the queen's head
+          and tail stay visible), in a container inset 15 vh from
+          the top (clears the UNITEL wordmark) and 10 vh from the
+          bottom — that vertical inset bounds the mascot height
+          since portrait+contain is height-bound, both pushing the
+          figure down AND shrinking it.  Opacity 25 % so letter copy
+          reads cleanly.  MOBILE KEEPS object-fit:cover so the
+          existing full-bleed band rendering is preserved (contain
+          on mobile letterboxes the figure into a thin strip).  We
+          override the inline `object-fit` on the video/img children
+          via Tailwind's `!`-important arbitrary variants on sm+
+          only — the BackgroundVideoFrame component doesn't expose
+          a responsive prop for it. */}
+      <div className="absolute inset-x-0 top-[10vh] bottom-[10vh] sm:top-[15vh] sm:bottom-[10vh]">
         <BackgroundVideoFrame
           src={BG_VIDEO}
           start={REVEAL_RANGE.start}
           end={REVEAL_RANGE.end}
           objectFit="cover"
-          className="absolute inset-0 h-full w-full"
+          className="absolute inset-0 h-full w-full sm:opacity-25 sm:[&>video]:!object-contain sm:[&>img]:!object-contain"
         />
       </div>
       {/* Light dimming behind the body copy only — soft enough that
@@ -100,27 +114,43 @@ export default function CeoLetterSection() {
         }}
       />
 
-      <TopMark />
+      {/* TopMark renders the centred mobile wordmark; on sm+ we hide
+          it and drop a right-corner copy of the same wordmark to
+          match the desktop Figma frame (UNITEL anchored top-right
+          at 74×17, same as the Gala / Urtuu sections). */}
+      <div className="sm:hidden">
+        <TopMark />
+      </div>
+      <div className="pointer-events-none fixed right-6 top-5 z-40 hidden sm:block md:right-8 md:top-8 lg:right-10 lg:top-10">
+        <Image
+          src="/media/common/unitel-wordmark.svg"
+          alt="Unitel"
+          width={74}
+          height={17}
+          priority
+          className="h-[17px] w-[74px]"
+        />
+      </div>
 
       {/* ---------- Body letter ----------
-          Pinned at ~18% from the top of the viewport (Figma
+          Mobile: pinned at ~22% from the top of the viewport (Figma
           y=197/956).  Centred horizontally with a constrained width
-          that matches Figma's 321/440 ≈ 73% mobile column.  Paragraph
-          margin is `mt-2` (a single blank line) so the whole letter
-          fits cleanly between the title and the signature row, even
-          on shorter phones where viewport height runs ~840–880px. */}
+          that matches Figma's 321/440 ≈ 73% mobile column.
+          Desktop: pinned at ~31% from top so the letter sits in the
+          upper-middle band of the 1280×832 frame (matches the Figma
+          desktop reference) with the signature visible underneath. */}
       <div
-        className="absolute inset-x-0 top-[22%] mx-auto flex w-full justify-center px-6 sm:px-14 md:px-20"
+        className="absolute inset-x-0 top-[22%] mx-auto flex w-full justify-center px-6 sm:top-[31%] sm:px-14 md:px-20"
         style={{ fontFamily: "var(--font-manrope), system-ui, sans-serif" }}
       >
         {/* All five paragraphs share the same typography stack so the
             letter reads as a single voice (matches the Figma frame).
-            `paraClass` collects the common classes; per-paragraph
-            margin-tops drive the rhythm. */}
-        <div className="w-full max-w-[360px] text-center sm:max-w-[500px] md:max-w-[600px]">
+            Desktop column widens to 600px so the long sentences in
+            paragraphs 2 / 3 / 5 can break naturally at 14px. */}
+        <div className="w-full max-w-[360px] text-center sm:max-w-[600px]">
           <RevealText
             as="p"
-            className="text-[15px] font-normal leading-[1.5] text-white sm:text-[18px] sm:leading-[1.55] md:text-[20px] md:leading-[1.6] lg:text-[22px]"
+            className="text-[15px] font-normal leading-[1.5] text-white sm:text-[14px] sm:leading-[1.6]"
             stagger={26}
             duration={650}
             delay={300}
@@ -130,7 +160,7 @@ export default function CeoLetterSection() {
           </RevealText>
           <RevealText
             as="p"
-            className="text-[15px] font-normal leading-[1.5] text-white sm:text-[18px] sm:leading-[1.55] md:text-[20px] md:leading-[1.6] lg:text-[22px]"
+            className="text-[15px] font-normal leading-[1.5] text-white sm:text-[14px] sm:leading-[1.6]"
             stagger={26}
             duration={650}
             delay={500}
@@ -140,7 +170,7 @@ export default function CeoLetterSection() {
           </RevealText>
           <RevealText
             as="p"
-            className="mt-5 text-[15px] font-normal leading-[1.5] text-white sm:mt-7 sm:text-[18px] sm:leading-[1.55] md:mt-8 md:text-[20px] md:leading-[1.6] lg:text-[22px]"
+            className="mt-5 text-[15px] font-normal leading-[1.5] text-white sm:mt-3 sm:text-[14px] sm:leading-[1.6]"
             stagger={24}
             duration={700}
             delay={1000}
@@ -150,7 +180,7 @@ export default function CeoLetterSection() {
           </RevealText>
           <RevealText
             as="p"
-            className="mt-5 text-[15px] font-normal leading-[1.5] text-white sm:mt-7 sm:text-[18px] sm:leading-[1.55] md:mt-8 md:text-[20px] md:leading-[1.6] lg:text-[22px]"
+            className="mt-5 text-[15px] font-normal leading-[1.5] text-white sm:mt-3 sm:text-[14px] sm:leading-[1.6]"
             stagger={24}
             duration={700}
             delay={1400}
@@ -160,7 +190,7 @@ export default function CeoLetterSection() {
           </RevealText>
           <RevealText
             as="p"
-            className="mt-5 text-[15px] font-normal leading-[1.5] text-white sm:mt-7 sm:text-[18px] sm:leading-[1.55] md:mt-8 md:text-[20px] md:leading-[1.6] lg:text-[22px]"
+            className="mt-5 text-[15px] font-normal leading-[1.5] text-white sm:mt-3 sm:text-[14px] sm:leading-[1.6]"
             stagger={24}
             duration={700}
             delay={1800}
@@ -172,15 +202,15 @@ export default function CeoLetterSection() {
       </div>
 
       {/* ---------- Signature row ----------
-          Pinned at ~83% from top so it always sits clearly below the
-          longest body case on a short viewport.  Figma reference is
-          y=752/956 ≈ 79% but the original Figma frame is 956px tall;
-          on shorter phones we push it slightly further down so the
-          paragraph above never overlaps it.  Layout mirrors the
-          Figma: name + title on the left, green Image5 signature
-          mark to the right of it. */}
+          Mobile: pinned at ~83% so it sits clearly below the longest
+          body case on shorter phones.
+          Desktop: pinned at ~76% (Figma y≈630/832) so it tucks
+          underneath the body block with normal rhythm — the desktop
+          body ends much higher than mobile because the column is
+          wider and breaks fewer lines.  Layout mirrors the Figma:
+          name + title on the left, green signature mark to the right. */}
       <div
-        className="absolute inset-x-0 top-[83%] mx-auto flex w-full items-center justify-center gap-4 px-6 sm:gap-6 sm:px-14 md:gap-8 md:px-20"
+        className="absolute inset-x-0 top-[83%] mx-auto flex w-full items-center justify-center gap-4 px-6 sm:top-[76%] sm:gap-6 sm:px-14 md:gap-8 md:px-20"
         style={{
           fontFamily: "var(--font-manrope), system-ui, sans-serif",
           opacity: entered ? 1 : 0,
