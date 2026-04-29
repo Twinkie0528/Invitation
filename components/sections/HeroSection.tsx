@@ -44,7 +44,13 @@ export default function HeroSection() {
     <section
       ref={ref}
       data-reveal
-      className="pointer-events-none fixed inset-0 z-20"
+      // bg-black blocks the global MainScene cosmos canvas from
+      // bleeding through the section.  Without it, any moment the
+      // hero mp4 is buffering / paused / out-of-view leaves the
+      // ParticleField starfield visible behind the copy — the user
+      // saw "the old star effect" because the video was hidden by an
+      // earlier `md:hidden` and the canvas was leaking through.
+      className="pointer-events-none fixed inset-0 z-20 bg-black"
     >
       {/* Ambient hero mp4 (the new dust-mascot render).  Plays on every
           device — the previous `md:hidden` was a holdover from when the
