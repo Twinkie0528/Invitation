@@ -98,23 +98,25 @@ export default function RsvpSection() {
             `transform` doesn't clobber the centring transform — both
             properties stay live, the image stays centred, and the
             drift still animates. */}
+      {/* Cosmos rider mp4 — fills the bottom 50% of the viewport edge-
+          to-edge so the silhouette reads at the same scale as the
+          Figma frame.  `objectFit="cover"` keeps the rider centred
+          regardless of the source's authored aspect; the soft top fade
+          dissolves the upper edge of the video into the section's
+          black header area for a seamless transition. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-0 flex justify-center"
+        className="pointer-events-none absolute inset-x-0 bottom-0 top-[50%]"
       >
-        <div className="bloom-drift w-full max-w-[440px] sm:w-[80%] sm:max-w-[600px] md:max-w-[760px]">
-          {/* MP4 starts a touch before the section's full reveal so the
-              first frames are decoded by the time the rider is visible.
-              `h-auto` lets the video render at its intrinsic aspect — no
-              cropping, no letterboxing — once metadata is parsed. */}
-          <BackgroundVideoFrame
-            src={COSMOS_SRC}
-            poster={COSMOS_POSTER}
-            start={0.83}
-            end={1.05}
-            className="block h-auto w-full opacity-90"
-          />
-        </div>
+        <BackgroundVideoFrame
+          src={COSMOS_SRC}
+          poster={COSMOS_POSTER}
+          start={0.83}
+          end={1.05}
+          objectFit="cover"
+          className="absolute inset-0 h-full w-full opacity-90"
+        />
+        <div className="absolute inset-x-0 top-0 h-[25%] bg-gradient-to-b from-black to-transparent" />
       </div>
 
       <TopMark />
