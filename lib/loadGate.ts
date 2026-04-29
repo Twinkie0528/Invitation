@@ -6,9 +6,13 @@
 // Pure module-scope state — no React, no Zustand. Importable from non-React
 // callers (Lenis init, R3F onCreated, raw <img onload>) without a Provider.
 
+// "particles" was retired when the global ParticleField cosmos canvas
+// was dropped — keep the literal in the union so any straggling
+// `markReady("particles")` call from cached client bundles is still a
+// no-op rather than a type error, but stop *waiting* on it.
 export type ReadyKey = "canvas" | "particles" | "lenis" | "hero-images";
 
-const REQUIRED: ReadyKey[] = ["canvas", "particles", "lenis", "hero-images"];
+const REQUIRED: ReadyKey[] = ["canvas", "lenis", "hero-images"];
 
 const completed = new Set<ReadyKey>();
 const listeners = new Set<() => void>();
