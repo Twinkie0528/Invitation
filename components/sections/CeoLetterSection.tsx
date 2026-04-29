@@ -79,7 +79,11 @@ export default function CeoLetterSection() {
       {/* Figma shader overlay — pre-rendered radial darkening behind
           the letter copy so the queen mascot stops fighting the body
           text on mobile.  Authored at 440×879 (iPhone aspect); desktop
-          falls back to the existing top/bottom gradient above. */}
+          falls back to the existing top/bottom gradient above.
+          The radial mask softens the shader's hard rectangular edges
+          so the mascot keeps showing through along the perimeter
+          — without it the dim was clipping the prettier parts of the
+          queen frame. */}
       <Image
         src="/media/common/shader.png"
         alt=""
@@ -88,6 +92,12 @@ export default function CeoLetterSection() {
         priority={false}
         sizes="100vw"
         className="pointer-events-none object-cover sm:hidden"
+        style={{
+          maskImage:
+            "radial-gradient(ellipse 75% 65% at 50% 50%, black 30%, transparent 100%)",
+          WebkitMaskImage:
+            "radial-gradient(ellipse 75% 65% at 50% 50%, black 30%, transparent 100%)",
+        }}
       />
 
       <TopMark />

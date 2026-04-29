@@ -85,7 +85,11 @@ export default function GalaSection() {
           mobile so the bloom mp4 in the lower 45 % keeps reading at
           full saturation.  Without the bottom clip the shader was
           dimming the bloom along with the paragraphs and the rider
-          looked muted vs the Figma reference. */}
+          looked muted vs the Figma reference.
+          The radial mask softens the shader's hard rectangular edges
+          so the mascot/bloom keep showing through along the perimeter
+          — without it the dim was clipping the prettier parts of the
+          video frame. */}
       <div className="pointer-events-none absolute inset-x-0 top-0 bottom-[45%] sm:hidden">
         <Image
           src="/media/common/shader.png"
@@ -95,6 +99,12 @@ export default function GalaSection() {
           priority={false}
           sizes="100vw"
           className="object-cover object-top"
+          style={{
+            maskImage:
+              "radial-gradient(ellipse 75% 65% at 50% 50%, black 30%, transparent 100%)",
+            WebkitMaskImage:
+              "radial-gradient(ellipse 75% 65% at 50% 50%, black 30%, transparent 100%)",
+          }}
         />
       </div>
 

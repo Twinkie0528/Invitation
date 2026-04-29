@@ -78,7 +78,11 @@ export default function UrtuuSection() {
             the body copy so the new high-bitrate mp4 stops fighting the
             paragraphs.  Mobile-only because the asset is authored at
             440×879 (iPhone aspect); desktop reads against the existing
-            side-darken gradient already declared above. */}
+            side-darken gradient already declared above.
+            The radial mask softens the shader's hard rectangular edges
+            so the mascot/bloom keep showing through along the perimeter
+            — without it the dim was clipping the prettier parts of the
+            video frame. */}
         <Image
           src="/media/common/shader.png"
           alt=""
@@ -87,6 +91,12 @@ export default function UrtuuSection() {
           priority={false}
           sizes="100vw"
           className="pointer-events-none object-cover sm:hidden"
+          style={{
+            maskImage:
+              "radial-gradient(ellipse 75% 65% at 50% 50%, black 30%, transparent 100%)",
+            WebkitMaskImage:
+              "radial-gradient(ellipse 75% 65% at 50% 50%, black 30%, transparent 100%)",
+          }}
         />
       </div>
 
