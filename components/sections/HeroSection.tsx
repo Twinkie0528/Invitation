@@ -46,8 +46,11 @@ export default function HeroSection() {
       data-reveal
       className="pointer-events-none fixed inset-0 z-20"
     >
-      {/* Mobile-only ambient video.  `md:hidden` suppresses it on
-          desktop where the global cosmos canvas reads as the backdrop. */}
+      {/* Ambient hero mp4 (the new dust-mascot render).  Plays on every
+          device — the previous `md:hidden` was a holdover from when the
+          desktop fell back to the canvas DustFigure component, which has
+          since been removed.  Without this, desktop hero loaded with no
+          backdrop at all (just the global ParticleField cosmos). */}
       <video
         autoPlay
         loop
@@ -56,7 +59,7 @@ export default function HeroSection() {
         preload="auto"
         src="/media/hero/asset1.mp4"
         aria-hidden
-        className="absolute inset-0 h-full w-full object-cover md:hidden"
+        className="absolute inset-0 h-full w-full object-cover"
       />
 
       {/* The single inner wrapper carries `flex` so the existing 1024+

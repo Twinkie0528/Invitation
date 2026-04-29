@@ -58,7 +58,13 @@ export default function GalaSection() {
           the Figma frame where the bloom only blooms beneath the body
           paragraphs.  Desktop reverts to a full-bleed bloom for the
           cinematic split-layout. */}
-      <div className="absolute inset-x-0 bottom-0 top-[55%] sm:top-0">
+      {/* Mobile container is pushed down to top-[60%] AND extended 10vh
+          below the viewport edge so the bloom renders ~15 % larger
+          (object-cover scales it to fill the taller virtual container)
+          while the visible portion sits visibly lower on the screen.
+          Net effect on mobile: bigger blossom, anchored toward the
+          bottom — matches the user's Figma request. */}
+      <div className="absolute inset-x-0 bottom-[-10vh] top-[60%] sm:bottom-0 sm:top-0">
         <BackgroundVideoFrame
           src={BG_VIDEO}
           poster={BG_POSTER}
