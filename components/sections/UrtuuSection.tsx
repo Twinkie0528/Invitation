@@ -7,6 +7,12 @@ import BackgroundVideoFrame from "@/components/ui/BackgroundVideoFrame";
 import TopMark from "@/components/ui/TopMark";
 import { RevealText } from "@/components/ui/RevealText";
 
+// UNITEL wordmark for the desktop right-corner placement.  Same SVG
+// asset as TopMark, sized to match.  We render this in addition to
+// TopMark on desktop and hide TopMark via `sm:hidden` so the mobile
+// composition (centred wordmark) keeps reading correctly.
+const WORDMARK_SRC = "/media/common/unitel-wordmark.svg";
+
 // Cinematic background — Urtuu particle figure animation, mounted
 // only once the user is within scroll range so the initial page load
 // doesn't pay for a video the visitor may never reach.  Served from
@@ -56,33 +62,97 @@ export default function UrtuuSection() {
       {/* ---------- Background stack ---------- */}
       <div className="absolute inset-0">
         {/* Atmospheric figure — MP4 loops while user is within
-            REVEAL_RANGE.  The video already carries a dark background
-            so we don't need a blend mode; plain `object-cover` reads
-            cleanly on the section's black base. */}
-        <BackgroundVideoFrame
-          src={BG_VIDEO}
-          poster={BG_POSTER}
-          start={REVEAL_RANGE.start}
-          end={REVEAL_RANGE.end}
-          className="absolute inset-0 h-full w-full opacity-95"
-        />
+            REVEAL_RANGE.  Mobile keeps the full-bleed cover that the
+            phone Figma frame uses (mascot dominates the viewport).
+            Desktop constrains the mascot to a centred column ~45vw
+            wide so the script reads as a discreet centred figure
+            framed by the surrounding black, matching the desktop
+            Figma frame where the mascot is much smaller relative to
+            the viewport than on phone. */}
+        {/* Mobile: smaller mascot anchored at the top of the
+            viewport (NOT full-bleed) so the layout reads in three
+            stacked bands — mascot at the top, copy block in the
+            middle, floor plate at the bottom — exactly the Figma
+            mobile reference.  Aspect ratio held at the same 39/49
+            spec the desktop uses so the figure proportions stay
+            consistent across viewports.  `mix-blend-mode: screen`
+            and `objectFit: contain` match the Figma-prescribed
+            treatment (whole figure visible, dark regions dissolve
+            into the black base). */}
+        <div className="absolute inset-x-0 top-[6vh] mx-auto flex justify-center sm:hidden">
+          <div
+            className="relative h-[36vh] w-auto"
+            style={{
+              aspectRatio: "39 / 49",
+              mixBlendMode: "screen",
+            }}
+          >
+            <BackgroundVideoFrame
+              src={BG_VIDEO}
+              poster={BG_POSTER}
+              start={REVEAL_RANGE.start}
+              end={REVEAL_RANGE.end}
+              objectFit="contain"
+              className="absolute inset-0 h-full w-full"
+            />
+          </div>
+        </div>
+
+        {/* Desktop: centred mascot, sized to the Figma spec
+            (472×593 px on a 1280-wide artboard ⇒ 36.9vw width,
+            aspect-ratio 39/49 ≈ 0.796).  We hold the aspect ratio
+            via CSS `aspectRatio` so the box auto-sizes its height
+            from the responsive width without us having to maintain
+            a separate vh value per breakpoint.
+
+            `mix-blend-mode: screen` is the Figma-prescribed blend.
+            On the section's pure-black base, screen with black is
+            mathematically equivalent to the source video (black +
+            screen × source = source), so the practical effect is
+            the same as `opacity: 1` against the black plate — but
+            keeping the blend mode means any later layer change
+            (e.g. swapping the section base off pure black) will
+            still composite the way the design specifies.
+
+            `objectFit: contain` keeps the whole script-figure
+            visible inside the frame — no cropping, exactly as the
+            Figma reference shows.  Display:none on the inactive
+            viewport's wrapper keeps its video decoder asleep so we
+            don't pay a double-decode tax for running mobile +
+            desktop instances side by side. */}
+        <div className="absolute inset-0 mx-auto hidden items-center justify-center sm:flex">
+          <div
+            className="relative w-[42vw] md:w-[38vw] lg:w-[36vw] xl:w-[32vw]"
+            style={{
+              aspectRatio: "39 / 49",
+              mixBlendMode: "screen",
+            }}
+          >
+            <BackgroundVideoFrame
+              src={BG_VIDEO}
+              poster={BG_POSTER}
+              start={REVEAL_RANGE.start}
+              end={REVEAL_RANGE.end}
+              objectFit="contain"
+              className="absolute inset-0 h-full w-full"
+            />
+          </div>
+        </div>
         {/* Vertical vignette — figure stays visible at the top + bottom
             edges (matching the Figma frame where the mascot blooms in
             from above and below) and the middle is darkened so the
-            centred copy reads cleanly on top of the moving particles. */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/15 via-black/55 to-black/75 sm:from-black/55 sm:via-black/25 sm:to-black/70" />
-        {/* Desktop-only side darken so the left-aligned heading reads
-            against the figure at wide widths. */}
-        <div className="absolute inset-0 hidden sm:block sm:bg-gradient-to-r sm:from-black/70 sm:via-black/35 sm:to-black/15" />
+            centred copy reads cleanly on top of the moving particles.
+            Same gradient on mobile and desktop because the desktop
+            layout is now centred too. */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/15 via-black/55 to-black/75" />
         {/* Figma shader overlay — pre-rendered radial darkening behind
-            the body copy so the new high-bitrate mp4 stops fighting the
-            paragraphs.  Mobile-only because the asset is authored at
-            440×879 (iPhone aspect); desktop reads against the existing
-            side-darken gradient already declared above.
-            The radial mask softens the shader's hard rectangular edges
-            so the mascot/bloom keep showing through along the perimeter
-            — without it the dim was clipping the prettier parts of the
-            video frame. */}
+            the body copy so the new high-bitrate mp4 stops fighting
+            the paragraphs.  Mobile-only because the asset is
+            authored at 440×879 (iPhone aspect); desktop reads
+            against the radial vignette declared right after.
+            The radial mask softens the shader's hard rectangular
+            edges so the mascot/bloom keep showing through along the
+            perimeter. */}
         <Image
           src="/media/common/shader.png"
           alt=""
@@ -98,22 +168,100 @@ export default function UrtuuSection() {
               "radial-gradient(ellipse 75% 65% at 50% 50%, black 30%, transparent 100%)",
           }}
         />
+        {/* Desktop centre-darken vignette — soft radial dim behind the
+            centred copy column so the title + body paragraphs read
+            cleanly without losing the mascot's outer silhouette.
+            Hidden on mobile (the shader.png above already handles
+            mobile dimming with a phone-specific aspect). */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 hidden sm:block"
+          style={{
+            background:
+              "radial-gradient(ellipse 55% 55% at 50% 55%, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.25) 55%, rgba(0,0,0,0) 100%)",
+          }}
+        />
+        {/* Floor plate — topographic horizon image
+            (`/media/urtuu/floor.jpg`) overlaid at the bottom.  The
+            source jpg ships with a bright greenish tint; we tone
+            it down lightly so the topography reads clearly as
+            faint terrain (matching the Figma reference) without
+            shouting against the dark composition:
+              - `mix-blend-mode: screen` — same blend the Figma
+                spec calls for on the mascot, so the floor and
+                mascot read as a coherent layer treatment.  Screen
+                drops the truly dark regions of the floor into the
+                section's black base and only lets the brighter
+                topographic lines come through.
+              - `opacity: 0.45` keeps the plate present without
+                making it dominate.
+              - `filter: saturate(0.65) brightness(0.85)` softens
+                the green tint just enough to read as muted
+                terrain rather than a bright photo overlay.
+              - A tall top-edge fade-to-black masks the upper
+                horizon so there is no hard collage line where
+                the plate begins.
+            `.floor-drift` runs a barely-perceptible vertical
+            breathe + tiny scale pulse so the horizon feels alive
+            without distracting from the centred copy. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-[38vh] overflow-hidden sm:h-[42vh]"
+        >
+          <div className="floor-drift absolute inset-0">
+            <Image
+              src="/media/urtuu/floor.jpg"
+              alt=""
+              fill
+              priority={false}
+              sizes="100vw"
+              className="object-cover"
+              style={{
+                opacity: 0.45,
+                mixBlendMode: "screen",
+                filter: "saturate(0.65) brightness(0.85)",
+              }}
+            />
+          </div>
+          {/* Top fade — pull the plate into the section's dark base
+              over the upper ~60 % of the floor band so there is no
+              hard horizon line visible. */}
+          <div className="absolute inset-x-0 top-0 h-[60%] bg-gradient-to-b from-black via-black/75 to-transparent" />
+        </div>
       </div>
 
-      <TopMark />
+      {/* TopMark renders the centred mobile wordmark; on sm+ we hide
+          it and drop a right-corner copy of the same wordmark to
+          match the desktop Figma frame. */}
+      <div className="sm:hidden">
+        <TopMark />
+      </div>
+      <div className="pointer-events-none fixed right-6 top-5 z-40 hidden sm:block md:right-8 md:top-8 lg:right-10 lg:top-10">
+        <Image
+          src={WORDMARK_SRC}
+          alt="Unitel"
+          width={120}
+          height={28}
+          priority
+          className="h-[18px] w-auto md:h-[22px] lg:h-[26px]"
+        />
+      </div>
 
       {/* ---------- Foreground content ----------
-          Mobile: narrow column (`max-w-[320px]`) so the body paragraphs
-          break to the same rhythm as the Figma frame (5–6 short lines
-          per paragraph rather than 3–4 long ones).  Desktop opens up
-          again for the cinematic split-layout. */}
-      <div className="absolute inset-0 mx-auto flex w-full max-w-[1320px] flex-col items-center justify-center px-6 py-8 text-center sm:items-start sm:px-14 sm:py-20 sm:text-left md:px-20 md:py-24 lg:px-28 lg:py-28">
-        <div className="w-full max-w-[320px] sm:max-w-[660px] md:max-w-[820px]">
+          Mobile: narrow column (`max-w-[320px]`) so the body
+          paragraphs break to the same rhythm as the Figma frame.
+          Desktop: centred column matching the Figma desktop frame —
+          everything stacks vertically on the viewport's central axis,
+          framed left + right by the mascot mp4's wings.  This
+          replaces the previous left-aligned split-layout (which the
+          Figma reference does not use). */}
+      <div className="absolute inset-0 mx-auto flex w-full max-w-[1320px] flex-col items-center justify-center px-6 py-8 text-center sm:px-14 sm:py-16 md:px-20 md:py-20 lg:px-28 lg:py-24">
+        <div className="w-full max-w-[320px] sm:max-w-[560px] md:max-w-[680px] lg:max-w-[760px]">
           {/* Eyebrow — Figma: 16px, color #b7b7b7, letter-spacing
               6.4px (= 0.4em).  No italics. */}
           <RevealText
             as="div"
-            className="mb-3 font-sans text-[13px] font-normal uppercase tracking-[0.4em] text-[#b7b7b7] sm:mb-5 sm:text-[15px] md:text-[17px] lg:text-[19px]"
+            className="mb-3 font-sans text-[13px] font-normal uppercase tracking-[0.4em] text-[#b7b7b7] sm:mb-4 sm:text-[14px] md:text-[15px] lg:text-[16px]"
             stagger={60}
             duration={650}
             trigger={entered}
@@ -126,10 +274,12 @@ export default function UrtuuSection() {
               - line-height: 120%
               - background: linear-gradient(215deg, #73A4FF 14.69%, #E1E1E1 83.64%)
               - background-clip: text + transparent fill
-              Plain heading + fade+lift reveal — TypeText's nested
-              spans don't propagate `background-clip: text` cleanly. */}
+              Desktop sizes shrunk relative to the previous split-
+              layout draft (sm:40 / md:54 / lg:64 / xl:72) so the
+              title fits comfortably on a single line inside the
+              centred 760px column the Figma frame uses. */}
           <h2
-            className="mb-5 font-sans text-[26px] font-bold leading-[1.2] tracking-tight sm:mb-8 sm:text-[40px] md:mb-10 md:text-[54px] lg:text-[64px] xl:text-[72px]"
+            className="mb-5 font-sans text-[26px] font-bold leading-[1.2] tracking-tight sm:mb-7 sm:text-[30px] md:mb-8 md:text-[36px] lg:text-[42px] xl:text-[48px]"
             style={{
               backgroundImage:
                 "linear-gradient(215deg, #73A4FF 14.69%, #E1E1E1 83.64%)",
@@ -151,7 +301,7 @@ export default function UrtuuSection() {
           <div className="space-y-5 sm:space-y-5 md:space-y-6">
             <RevealText
               as="p"
-              className="font-sans text-[14px] font-light leading-[1.55] text-white/95 sm:text-[16px] sm:leading-[1.6] md:text-[20px] lg:text-[23px]"
+              className="font-sans text-[14px] font-light leading-[1.55] text-white/95 sm:text-[15px] sm:leading-[1.6] md:text-[16px] lg:text-[17px]"
               stagger={28}
               duration={700}
               delay={1500}
@@ -161,7 +311,7 @@ export default function UrtuuSection() {
             </RevealText>
             <RevealText
               as="p"
-              className="font-sans text-[14px] font-light leading-[1.55] text-white/95 sm:text-[16px] sm:leading-[1.6] md:text-[20px] lg:text-[23px]"
+              className="font-sans text-[14px] font-light leading-[1.55] text-white/95 sm:text-[15px] sm:leading-[1.6] md:text-[16px] lg:text-[17px]"
               stagger={28}
               duration={700}
               delay={1800}

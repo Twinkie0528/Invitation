@@ -118,6 +118,36 @@ html.lenis body {
   }
 }
 
+/* Floor drift — used by UrtuuSection's blended floor.jpg layer.
+   A slow horizontal sway combined with a tiny vertical breathe so
+   the topographic plate reads as a "flowing" / "swaying" horizon
+   (per the user's request) rather than a static photograph.
+   Permanent `scale(1.06)` keeps the image slightly larger than the
+   container so the side-to-side translation never exposes empty
+   gutters at the wrapper edges.  Cadence is intentionally slow
+   (22s) so the motion never reads as scrolling — just gentle
+   atmospheric drift. */
+@keyframes floor-drift {
+  0% {
+    transform: translate3d(-1.5%, 0, 0) scale(1.06);
+  }
+  50% {
+    transform: translate3d(1.5%, -0.5vh, 0) scale(1.06);
+  }
+  100% {
+    transform: translate3d(-1.5%, 0, 0) scale(1.06);
+  }
+}
+.floor-drift {
+  animation: floor-drift 22s ease-in-out infinite;
+  will-change: transform;
+}
+@media (prefers-reduced-motion: reduce) {
+  .floor-drift {
+    animation: none;
+  }
+}
+
 .canvas-root {
   position: fixed;
   inset: 0;

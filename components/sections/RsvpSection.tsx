@@ -130,10 +130,11 @@ export default function RsvpSection() {
           colliding. */}
       <div className="absolute inset-x-0 top-0 flex h-full w-full flex-col items-center justify-start px-6 pt-[14vh] sm:pt-[12vh]">
         {/* ---------- Title ----------
-            Pre-rendered Figma export at /assets/invitation-title.png.
-            The 4.8px blur, Manrope weight, line-height, and exact
-            306×113 box are baked into the pixels so we don't have
-            to fight CSS-blur or web-font swap drift. */}
+            Pre-rendered Figma export at
+            /public/media/rsvp/invitation-title.png.  The 4.8px blur,
+            Manrope weight, line-height, and exact 306×113 box are
+            baked into the pixels so we don't have to fight CSS-blur
+            or web-font swap drift. */}
         <div
           className="w-[306px]"
           style={{

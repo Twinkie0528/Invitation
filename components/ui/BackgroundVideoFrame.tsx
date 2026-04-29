@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { sceneRef, subscribeScene } from "@/hooks/useScrollProgress";
+import { useGestureUnlock } from "@/hooks/useGestureUnlock";
 
 type Props = {
   src: string;
@@ -45,23 +46,35 @@ export default function BackgroundVideoFrame({
   className,
   objectFit = "cover",
 }: Props) {
-  // If the section's mount window already includes progress 0 (i.e. the
-  // section is visible on initial page load — Hero is the obvious case),
-  // start with `mounted` already true so the SSR HTML carries the actual
-  // <video> element instead of the dark placeholder.  Without this the
-  // hero section ships SSR HTML with only the poster div, then relies on
-  // a useEffect → setState → re-render cycle to swap in the video; on
-  // mobile we were seeing that swap silently fail (Mi Browser / data-
-  // saver), leaving the user staring at the #030308 placeholder for the
-  // whole session.
-  const [mounted, setMounted] = useState(() => start - preloadMargin <= 0);
+  // Two independent gates control whether the <video> element exists:
+  //
+  //   1. `inMountWindow` — within scroll-progress preload margin of
+  //      this section's reveal window.  Hero starts within range on
+  //      page load (start - preloadMargin ≤ 0); other sections wait
+  //      until the user scrolls toward them.
+  //
+  //   2. `gestureUnlocked` — the user has performed any input
+  //      (touch/click/scroll/wheel/keydown) during this page session.
+  //      We hold the <video> tag back behind this gate even when the
+  //      section is in range, because mounting a paused video on iOS
+  //      Safari before any user gesture has landed causes the engine
+  //      to paint its tap-to-play overlay (the autoplay-block
+  //      indicator).  Holding back means the first frame the engine
+  //      ever sees is mounted from inside a user-gesture handler, so
+  //      autoplay is granted and no overlay paints.
+  //
+  // The two gates AND together — the video mounts only when both are
+  // true.  The poster (or dark placeholder) is shown until then.
+  const [inMountWindow, setInMountWindow] = useState(() => start - preloadMargin <= 0);
+  const gestureUnlocked = useGestureUnlock();
+  const mounted = inMountWindow && gestureUnlocked;
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const playingRef = useRef(false);
 
   useEffect(() => {
     const apply = (p: number) => {
-      const inMountWindow = p >= start - preloadMargin && p <= end + preloadMargin;
-      if (inMountWindow) setMounted(true);
+      const inWindow = p >= start - preloadMargin && p <= end + preloadMargin;
+      if (inWindow) setInMountWindow(true);
 
       const v = videoRef.current;
       if (!v) return;
@@ -117,86 +130,109 @@ export default function BackgroundVideoFrame({
     };
   }, [mounted]);
 
-  // Static poster (or plain dark stand-in) until the section approaches
-  // view — zero network/decode cost on initial page load.
-  if (!mounted) {
-    if (!poster) {
-      return (
-        <div
-          aria-hidden
-          className={className}
-          style={{ backgroundColor: "#030308" }}
-        />
-      );
-    }
-    return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img
-        src={poster}
-        alt=""
-        aria-hidden
-        className={className}
-        style={{ objectFit, backgroundColor: "#030308" }}
-      />
-    );
-  }
-
+  // Wrapper structure: the poster (or dark placeholder) is always
+  // rendered as a base layer at the bottom of the stack.  The <video>
+  // element sits on top of it once the gates open and starts at
+  // opacity 0 — it only fades in when the engine confirms playback
+  // has begun (`onPlaying`), so if autoplay is blocked the user sees
+  // the static poster forever instead of an iOS tap-to-play overlay.
+  // Critically, the video element does NOT receive a `poster`
+  // attribute: iOS Safari paints its tap-to-play triangle over the
+  // poster image when autoplay is blocked, but with no poster on the
+  // <video> the element stays invisible and the engine has nothing
+  // to draw the overlay on.
   return (
-    <video
-      ref={videoRef}
-      src={src}
-      poster={poster}
-      autoPlay
-      muted
-      playsInline
-      preload="auto"
-      aria-hidden
-      className={className}
-      style={{
-        objectFit,
-        // Dark fallback so any one-frame gap during the loop seek paints
-        // black instead of the browser's default white/transparent.
-        backgroundColor: "#030308",
-        // Pin to a GPU compositor layer so the decoder writes straight
-        // into a texture that the page composites without re-laying out.
-        transform: "translateZ(0)",
-        willChange: "transform",
-      }}
-      onLoadedMetadata={(e) => {
-        // "Force-decode the first frame" trick — on Android browsers
-        // that block muted+inline autoplay (Mi Browser / MIUI under
-        // data-saver), the <video> sits unpainted until something
-        // explicitly drives the decoder.  Seeking to a tiny non-zero
-        // offset triggers a decode → frame paint without needing
-        // play() to succeed, so even if autoplay is denied the first
-        // frame shows instead of pure black.  Then re-issue play() so
-        // animation kicks in once the decoder is warm.
-        const v = e.currentTarget;
-        try {
-          v.currentTime = 0.01;
-        } catch {
-          /* no-op — some streams disallow seeking before canplay */
-        }
-        const result = v.play();
-        if (result && typeof result.catch === "function") result.catch(() => {});
-      }}
-      onTimeUpdate={(e) => {
-        const v = e.currentTarget;
-        // Seek a few frames before the EOS marker to avoid the native
-        // loop boundary glitch. Threshold tuned for ~30fps source — at
-        // the next timeupdate (≤250ms later) we're back near t=0.
-        if (v.duration && v.duration - v.currentTime < 0.18) {
-          v.currentTime = 0;
-        }
-      }}
-      onEnded={(e) => {
-        // Belt-and-suspenders: if the timeupdate seek missed (rare on
-        // very short videos), restart explicitly here.
-        const v = e.currentTarget;
-        v.currentTime = 0;
-        const result = v.play();
-        if (result && typeof result.catch === "function") result.catch(() => {});
-      }}
-    />
+    <div className={className} style={{ overflow: "hidden", backgroundColor: "#030308" }}>
+      {poster ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={poster}
+          alt=""
+          aria-hidden
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit,
+            backgroundColor: "#030308",
+          }}
+        />
+      ) : null}
+      {mounted ? (
+        <video
+          ref={videoRef}
+          src={src}
+          autoPlay
+          muted
+          playsInline
+          preload="auto"
+          aria-hidden
+          // controlsList + disablePictureInPicture + disableRemotePlayback
+          // strip every chrome surface the engines might otherwise add
+          // (download / fullscreen / AirPlay / cast / PiP).  Belt-and-
+          // suspenders against a future browser deciding our muted
+          // autoplay video deserves a control overlay.
+          controlsList="nodownload nofullscreen noremoteplayback noplaybackrate"
+          disablePictureInPicture
+          disableRemotePlayback
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit,
+            backgroundColor: "#030308",
+            transform: "translateZ(0)",
+            willChange: "transform, opacity",
+            opacity: 0,
+            transition: "opacity 320ms ease-out",
+          }}
+          onPlaying={(e) => {
+            // Engine confirmed the decoder is feeding frames — fade
+            // the video in over the poster.  If this never fires
+            // (autoplay blocked despite our gestures), the poster
+            // stays visible and the user sees a clean static frame
+            // instead of a tap-to-play overlay.
+            e.currentTarget.style.opacity = "1";
+          }}
+          onLoadedMetadata={(e) => {
+            // "Force-decode the first frame" trick — seeking to a
+            // tiny non-zero offset triggers a decode → frame paint
+            // without needing play() to succeed.  Then issue play()
+            // so animation kicks in once the decoder is warm.  Both
+            // calls are guarded by the gesture gate above (the
+            // <video> only mounts after a gesture), so the play()
+            // here is generally inside the gesture's relaxed
+            // autoplay window even on iOS Low Power Mode.
+            const v = e.currentTarget;
+            try {
+              v.currentTime = 0.01;
+            } catch {
+              /* no-op — some streams disallow seeking before canplay */
+            }
+            const result = v.play();
+            if (result && typeof result.catch === "function") result.catch(() => {});
+          }}
+          onTimeUpdate={(e) => {
+            const v = e.currentTarget;
+            // Seek a few frames before the EOS marker to avoid the native
+            // loop boundary glitch. Threshold tuned for ~30fps source — at
+            // the next timeupdate (≤250ms later) we're back near t=0.
+            if (v.duration && v.duration - v.currentTime < 0.18) {
+              v.currentTime = 0;
+            }
+          }}
+          onEnded={(e) => {
+            // Belt-and-suspenders: if the timeupdate seek missed (rare on
+            // very short videos), restart explicitly here.
+            const v = e.currentTarget;
+            v.currentTime = 0;
+            const result = v.play();
+            if (result && typeof result.catch === "function") result.catch(() => {});
+          }}
+        />
+      ) : null}
+    </div>
   );
 }
