@@ -82,7 +82,13 @@ export default function HeroSection() {
   // entry card (per design feedback).  Still proportionally bounded
   // so it stays inside the lockup column without dominating.
   const heroScriptDesktopCss = "17.5vw";
-  const heroScriptMobileVw = Math.min(32, +(250 / charCount).toFixed(2));
+  // Mobile: tuned so even 16-char names ("Jargalsaikhan B.") render on
+  // a single line with the same controlled tail-flourish overflow the
+  // Figma reference ("Ryenchindorj.A") shows.  Short names cap at
+  // 22 vw to stay inside the calligraphy ceiling; long names taper
+  // via `280 / charCount`.  Combined with `whitespace-nowrap` on the
+  // name container this prevents the two-line wrap users were seeing.
+  const heroScriptMobileVw = Math.min(22, +(280 / charCount).toFixed(2));
 
   // Continuous typewriter for the centre block: each line lands the
   // moment the previous one settles.  String steps are word-counted by
@@ -182,18 +188,20 @@ export default function HeroSection() {
           `display:none` on the inactive viewport keeps each
           decoder asleep so we don't pay a triple-decode tax for
           mounting all three instances. */}
-      {/* Mobile asset — sized to the Figma spec (644×1288 px, aspect
-          1:2) and pinned to the top of the section, centred
-          horizontally.  On every phone we ship to (320–430 wide)
-          this overflows the viewport on both axes; the section's
-          `overflow-hidden` clips the bleed.  The visible result is a
-          dust-mascot that reads bigger and more present than the
-          previous full-bleed `inset-0 cover` — which scaled the
-          source down to fit and made the figure feel small.  The
-          mobile shader (rendered just below) still sits over the top
-          band so the lockup reads cleanly. */}
+      {/* Mobile asset — Figma `Mobile Version` spec (canvas 351×773):
+          first.mp4 measures 644×1288 with top:-25 / left:-141, so
+          it bleeds the canvas on every side.  We translate the
+          design's pixel offsets into viewport-proportional units
+          (vw/vh) so the mascot keeps the same relative footprint
+          on every phone we ship to:
+            width  = 644 / 351 = 183.5vw
+            height = 1288 / 773 = 166.6vh
+            top    = -25 / 773 = -3.2vh
+            left   = -141 / 351 = -40.2vw
+          The section's `overflow-hidden` clips the bleed; the
+          mobile shader (just below) keeps the lockup readable. */}
       {viewport === "mobile" && (
-        <div className="absolute left-1/2 top-0 h-[1288px] w-[644px] -translate-x-1/2">
+        <div className="absolute left-[-40.2vw] top-[-3.2vh] h-[166.6vh] w-[183.5vw]">
           <BackgroundVideoFrame
             src="/media/hero/first.mp4"
             start={HERO_VIDEO_RANGE.start}
@@ -319,10 +327,10 @@ export default function HeroSection() {
             and the supporting copy steps up in proportion.  The
             global zoom:0.8 rule on this section's flex wrapper trims
             the rendered output back toward the artboard spec. */}
-        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex flex-col items-center px-4 text-center md:mx-auto md:max-w-[900px] md:px-0 lg:max-w-[1200px]">
+        <div className="absolute inset-x-0 top-[45vh] -translate-y-1/2 flex flex-col items-center px-4 text-center md:top-1/2 md:mx-auto md:max-w-[900px] md:px-0 lg:max-w-[1200px]">
           <RevealText
             as="div"
-            className="font-sans text-[16px] font-semibold tracking-[0.18em] text-white sm:text-[2vw] md:tracking-[0.22em]"
+            className="font-sans text-[22px] font-semibold tracking-[0.18em] text-white sm:text-[2vw] md:tracking-[0.22em]"
             stagger={8}
             duration={250}
             delay={d_unitel}
@@ -332,7 +340,7 @@ export default function HeroSection() {
           </RevealText>
           <RevealText
             as="div"
-            className="mt-1 font-sans text-[13px] font-light text-white/85 sm:mt-1 sm:text-[1.5vw]"
+            className="mt-[1.5vh] font-sans text-[16px] font-light text-white/85 sm:mt-1 sm:text-[1.5vw]"
             stagger={8}
             duration={250}
             delay={d_invite}
@@ -349,8 +357,8 @@ export default function HeroSection() {
               source.  Reveal lifts + fades the whole gesture in —
               word-staggering would fragment the calligraphy. */}
           <div
-            className="mt-6 w-full font-script leading-[normal] md:mt-8 lg:mt-10
-              text-[clamp(48px,var(--hero-script-mobile),120px)]
+            className="mt-[5vh] w-full font-script leading-[1] whitespace-nowrap md:mt-8 md:leading-[normal] md:whitespace-normal lg:mt-10
+              text-[clamp(40px,var(--hero-script-mobile),120px)]
               md:text-[var(--hero-script-desktop)]"
             style={{
               ["--hero-script-mobile" as any]: `${heroScriptMobileVw}vw`,
@@ -376,31 +384,31 @@ export default function HeroSection() {
           </div>
 
           {/* "to an exclusive evening" — pre-rendered PNG export from
-              Figma (358 × 31 px).  We render it as an image because
-              the live-CSS version (Manrope Light 300 + filter blur)
-              produced an unreadable result across browsers; the PNG
-              has the blur baked into the pixels so it composites the
-              way the artboard intends regardless of font rendering.
-              Width scales viewport-proportionally: 358 / 1280 =
-              28 vw on desktop → 537 px on a 1920 laptop (1.5× the
-              Figma size).  Mobile shows the uppercase fallback text
-              because the PNG is sized for desktop framing. */}
+              Figma.  Both mobile and desktop now ship the PNG; the
+              prior live-CSS version (Manrope Light 300 + filter blur)
+              produced an unreadable result across browsers, and the
+              mobile fallback text never matched the artboard.  Width
+              follows the Figma spec on each viewport:
+                mobile  : 308 / 351 = 87.7 vw   (Figma `Mobile`)
+                desktop : 358 / 1280 = 28 vw   (Figma `Screen PC`)
+              On mobile the PNG anchors to the design's top:501px
+              (= 64.81 vh on a 773-tall canvas), so the mt is tuned
+              to land near that line below the script flourish. */}
           <div
-            className="mt-4 font-sans font-light text-[11px] uppercase tracking-[0.34em] text-[#B7B7B7] sm:mt-12"
+            className="mt-[1vh] sm:mt-12"
             style={{
               opacity: mounted ? 1 : 0,
               transform: mounted ? "translateY(0)" : "translateY(8px)",
               transition: `opacity 700ms cubic-bezier(0.16, 1, 0.3, 1) ${d_evening}ms, transform 700ms cubic-bezier(0.16, 1, 0.3, 1) ${d_evening}ms`,
             }}
           >
-            <span className="sm:hidden">to an exclusive evening</span>
             <Image
               src="/media/hero/exclusive-evening.png"
               alt="to an exclusive evening"
               width={358}
               height={31}
               priority={false}
-              className="mx-auto hidden h-auto w-[22vw] brightness-125 contrast-115 sm:block"
+              className="mx-auto h-auto w-[87.7vw] brightness-125 contrast-115 sm:w-[22vw]"
             />
           </div>
         </div>

@@ -109,25 +109,32 @@ export default function CeoLetterSection() {
           className="absolute inset-0 h-full w-full brightness-125 contrast-115 sm:opacity-50 sm:[&>video]:!object-contain sm:[&>img]:!object-contain"
         />
       </div>
-      {/* Light dimming behind the body copy only — soft enough that
-          the mascot stays clearly visible through it.  Mobile keeps the
-          existing top/bottom linear gradient because the mobile shader
-          PNG already handles the centre dim.  Desktop swaps in a soft
-          radial dim that darkens behind the centred text block while
-          letting the mascot show through full-strength along the
-          perimeter — same readability/visibility tradeoff the mobile
-          shader.png provides, but rendered as pure CSS so it scales
-          to any viewport (Figma 1280×832 → laptop 1920×1200 etc.). */}
-      <div className="absolute inset-x-0 top-[18%] bottom-[18%] bg-gradient-to-b from-black/15 via-transparent to-black/25 sm:hidden" />
+      {/* Strong radial dim behind the text band — replaces the
+          previous gentle top/bottom linear gradient (which only
+          dimmed the edges, leaving the centre — where the body
+          copy reads — fighting the mascot mp4 at full strength).
+          Now the centre is darkened to ~65 % black, fading out to
+          transparent toward the perimeter so the mascot still shows
+          along the top, bottom, and sides.  Mobile-only — desktop
+          composition relies on the shader.png + section bg-black. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 sm:hidden"
+        style={{
+          background:
+            "radial-gradient(ellipse 80% 55% at 50% 50%, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.4) 55%, rgba(0,0,0,0) 100%)",
+        }}
+      />
 
-      {/* Figma shader overlay — pre-rendered radial darkening behind
-          the letter copy so the queen mascot stops fighting the body
-          text on mobile.  Authored at 440×879 (iPhone aspect); desktop
-          falls back to the existing top/bottom gradient above.
-          The radial mask softens the shader's hard rectangular edges
-          so the mascot keeps showing through along the perimeter
-          — without it the dim was clipping the prettier parts of the
-          queen frame. */}
+      {/* Figma shader overlay — pre-rendered radial darkening with
+          atmospheric particle texture, sits ABOVE the strong dim
+          layer (so the dim does the readability heavy-lifting and
+          shader.png adds the cinematic dust grain).  Mask softens
+          the shader's hard rectangular edges so the mascot keeps
+          showing along the perimeter.  `mix-blend-mode: multiply`
+          on mobile compounds the dim — even where shader.png has
+          mid-grey pixels, multiplying with the dim layer keeps
+          the centre dark enough for body copy to read cleanly. */}
       <Image
         src="/media/common/shader.png"
         alt=""
@@ -138,9 +145,10 @@ export default function CeoLetterSection() {
         className="pointer-events-none object-cover sm:opacity-35 sm:blur-2xl"
         style={{
           maskImage:
-            "radial-gradient(ellipse 65% 55% at 50% 50%, black 0%, transparent 100%)",
+            "radial-gradient(ellipse 65% 55% at 50% 50%, black 30%, transparent 100%)",
           WebkitMaskImage:
-            "radial-gradient(ellipse 65% 55% at 50% 50%, black 0%, transparent 100%)",
+            "radial-gradient(ellipse 65% 55% at 50% 50%, black 30%, transparent 100%)",
+          mixBlendMode: "multiply",
         }}
       />
 
@@ -170,21 +178,31 @@ export default function CeoLetterSection() {
           upper-middle band of the 1280×832 frame (matches the Figma
           desktop reference) with the signature visible underneath. */}
       <div
-        className="absolute inset-x-0 top-[18%] mx-auto flex w-full justify-center px-6 sm:top-[28%] sm:px-14 md:px-20"
+        className="absolute inset-x-0 top-[22%] mx-auto flex w-full justify-center px-6 sm:top-[28%] sm:px-14 md:px-20"
         style={{ fontFamily: "var(--font-manrope), system-ui, sans-serif" }}
       >
-        {/* All five paragraphs share the same typography stack so the
-            letter reads as a single voice (matches the Figma frame).
-            Desktop column widens to 920px (matches Gala body width)
-            so paragraphs 3 / 5 break to 3 lines like the design. */}
-        <div className="w-full max-w-[300px] text-balance text-center sm:max-w-[920px]">
-          {/* "Dear Valued Partner," — centered + bold + 18 px per the
-              Figma header treatment.  text-center on this element
-              overrides the parent block's text-justify only for this
-              line. */}
+        {/* Figma `Mobile Version` text block — Width 321 / Height 521
+            / Top 182 / Left 60 in the source artboard.  The previous
+            `top-[19%]` (computed against a 956-tall canvas) rendered
+            the block too high on real phones per user feedback;
+            bumping to `top-[24%]` lands the heading at the design's
+            optical position with comfortable mascot breathing room
+            above and signature clearance below.
+            Typography (Figma inspect):
+              "Dear Valued Partner,"           — Bold 24 / lh 136 %
+              whitespace span (24 px gap)      — Bold 24 / lh 100 %
+              Body paragraphs 2-5              — Regular 16 / lh 100 %
+            Body line-height bumped to 120 % (`leading-[1.2]`) so the
+            paragraphs don't read as crammed at the new placement —
+            user requested "багахан Linear space".  Desktop tier
+            unchanged (sm: variants). */}
+        <div className="w-full max-w-[321px] text-balance text-center sm:max-w-[920px]">
+          {/* "Dear Valued Partner," — Bold 24 / lh 136 % header.
+              Sentence case on mobile per the latest design, keeps the
+              uppercase desktop treatment. */}
           <RevealText
             as="p"
-            className="text-center text-[18px] font-bold uppercase leading-normal text-white sm:text-[24px] sm:font-bold sm:leading-[1.4]"
+            className="text-center text-[24px] font-bold normal-case leading-[1.36] text-white sm:text-[24px] sm:font-bold sm:uppercase sm:leading-[1.4]"
             stagger={8}
             duration={250}
             delay={d_para1}
@@ -192,13 +210,16 @@ export default function CeoLetterSection() {
           >
             {CEO_PARA_1}
           </RevealText>
-          {/* Body paragraphs — Manrope Light 24 px / line-height 1.4 /
-              white/90, matching Gala typography rule.  Para 2 has a
-              larger top margin to render a clear paragraph break after
-              the "Dear Valued Partner," heading; Paras 3-5 stay tight. */}
+          {/* Body paragraphs 2–5 — Manrope Regular 16 / lh 100 % on
+              mobile per the Figma spec.  The Bold 24 / lh 100 %
+              entry in the inspect panel is the *whitespace* spacer
+              between the header and Para 2 (a literal 24 px tall
+              empty span), so the gap is rendered here as `mt-6`
+              (= 1.5 rem = 24 px).  Subsequent paragraphs keep the
+              same 24 px rhythm.  Desktop tier (sm:) is unchanged. */}
           <RevealText
             as="p"
-            className="mt-4 text-[16px] font-normal leading-normal text-white sm:mt-10 sm:text-[24px] sm:font-light sm:leading-[1.4] sm:text-white/90"
+            className="mt-6 text-[16px] font-normal leading-[1.2] text-white sm:mt-10 sm:text-[24px] sm:font-light sm:leading-[1.4] sm:text-white/90"
             stagger={8}
             duration={250}
             delay={d_para2}
@@ -208,7 +229,7 @@ export default function CeoLetterSection() {
           </RevealText>
           <RevealText
             as="p"
-            className="mt-5 text-[16px] font-normal leading-normal text-white sm:mt-7 sm:text-[24px] sm:font-light sm:leading-[1.4] sm:text-white/90"
+            className="mt-6 text-[16px] font-normal leading-[1.2] text-white sm:mt-7 sm:text-[24px] sm:font-light sm:leading-[1.4] sm:text-white/90"
             stagger={8}
             duration={250}
             delay={d_para3}
@@ -218,7 +239,7 @@ export default function CeoLetterSection() {
           </RevealText>
           <RevealText
             as="p"
-            className="mt-5 text-[16px] font-normal leading-normal text-white sm:mt-7 sm:text-[24px] sm:font-light sm:leading-[1.4] sm:text-white/90"
+            className="mt-6 text-[16px] font-normal leading-[1.2] text-white sm:mt-7 sm:text-[24px] sm:font-light sm:leading-[1.4] sm:text-white/90"
             stagger={8}
             duration={250}
             delay={d_para4}
@@ -228,7 +249,7 @@ export default function CeoLetterSection() {
           </RevealText>
           <RevealText
             as="p"
-            className="mt-5 text-[16px] font-normal leading-normal text-white sm:mt-7 sm:text-[24px] sm:font-light sm:leading-[1.4] sm:text-white/90"
+            className="mt-6 text-[16px] font-normal leading-[1.2] text-white sm:mt-7 sm:text-[24px] sm:font-light sm:leading-[1.4] sm:text-white/90"
             stagger={8}
             duration={250}
             delay={d_para5}
@@ -248,7 +269,7 @@ export default function CeoLetterSection() {
           wider and breaks fewer lines.  Layout mirrors the Figma:
           name + title on the left, green signature mark to the right. */}
       <div
-        className="absolute inset-x-0 top-[89%] mx-auto flex w-full items-center justify-center gap-4 px-6 sm:top-[78%] sm:gap-6 sm:px-14 md:gap-8 md:px-20"
+        className="absolute inset-x-0 top-[81%] mx-auto flex w-full items-center justify-center gap-4 px-6 sm:top-[78%] sm:gap-6 sm:px-14 md:gap-8 md:px-20"
         style={{
           fontFamily: "var(--font-manrope), system-ui, sans-serif",
           opacity: entered ? 1 : 0,
@@ -256,11 +277,14 @@ export default function CeoLetterSection() {
           transition: `opacity 450ms cubic-bezier(0.16, 1, 0.3, 1) ${d_signature}ms, transform 450ms cubic-bezier(0.16, 1, 0.3, 1) ${d_signature}ms`,
         }}
       >
-        {/* Name + title block — Figma export values applied verbatim:
-              "Jamiyan-Sharav D." — Manrope 800 (ExtraBold), 16px,
-                line-height 100%, letter-spacing 0%.
-              "CEO of Unitel Group" — Manrope 400 (Regular), 10px,
-                line-height 100%, letter-spacing 40% (= 0.4em). */}
+        {/* Name + title block — Figma `Mobile Version` (canvas 440×956)
+            spec: 181 × 51 box anchored at top:752 / left:74.  At
+            top-[78%] the box's vertical centre lands on the design
+            line.  Name + title are stacked with a 21 px gap (mt-5)
+            so the inner block heights add up to the design's 51 px
+            (20 + 21 + 10 = 51).  Typography matches the Figma values:
+              "Jamiyansharav D." — Manrope 800 / 20 px / lh 100% / ls 0
+              "CEO of Unitel Group" — Manrope 400 / 10 px / lh 100% / ls 40 % */}
         <div className="text-left">
           <p
             className="text-[20px] font-extrabold text-white sm:text-[28px] md:text-[32px]"
@@ -269,21 +293,22 @@ export default function CeoLetterSection() {
             Jamiyansharav D.
           </p>
           <p
-            className="mt-2 text-[10px] font-normal text-[#b7b7b7] sm:text-[15px] md:text-[16px]"
+            className="mt-1 text-[10px] font-normal text-[#b7b7b7] sm:mt-2 sm:text-[15px] md:text-[16px]"
             style={{ lineHeight: 1, letterSpacing: "0.4em" }}
           >
             CEO of Unitel Group
           </p>
         </div>
-        {/* Signature mark — green hand-drawn SVG.  Sized to match
-            Figma (107×64 mobile) and scaled with breakpoints. */}
+        {/* Signature mark — green hand-drawn SVG.  Mobile bumped from
+            44 → 52 px per user feedback so the flourish reads more
+            prominent next to the name block; desktop sizes unchanged. */}
         <Image
           src={CEO_SIGNATURE_SRC}
           alt="Jamiyansharav D. signature"
           width={107}
           height={64}
           priority={false}
-          className="h-[44px] w-auto sm:h-[64px] md:h-[78px]"
+          className="h-[52px] w-auto sm:h-[64px] md:h-[78px]"
         />
       </div>
     </section>

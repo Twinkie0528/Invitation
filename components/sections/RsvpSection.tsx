@@ -16,10 +16,10 @@ import BackgroundVideoFrame from "@/components/ui/BackgroundVideoFrame";
 // pipeline (no webpack /assets import needed; that path is gitignored
 // on CI).
 const INVITATION_TITLE_SRC = "/media/rsvp/invitation-title.png";
-// Cosmos backdrop — galloping rider silhouette built from drifting
-// stars.  Replaced the static PNG with the new MP4 export so the rider
-// actually moves; cosmos.png stays around as the poster fallback shown
-// while the video is buffering / out of scroll range.
+// Desktop cosmos backdrop — galloping rider silhouette built from
+// drifting stars (mp4 export with cosmos.png poster fallback).
+// Mobile uses the static `full.png` per the new Figma design;
+// desktop keeps the original mp4 for the cinematic motion.
 const COSMOS_SRC = "/media/rsvp/cosmos.mp4";
 const COSMOS_POSTER = "/media/rsvp/cosmos.png";
 
@@ -108,25 +108,51 @@ export default function RsvpSection() {
             `transform` doesn't clobber the centring transform — both
             properties stay live, the image stays centred, and the
             drift still animates. */}
-      {/* Cosmos rider mp4 — fills the bottom 50% of the viewport edge-
-          to-edge so the silhouette reads at the same scale as the
-          Figma frame.  `objectFit="cover"` keeps the rider centred
-          regardless of the source's authored aspect; the soft top fade
-          dissolves the upper edge of the video into the section's
-          black header area for a seamless transition. */}
+      {/* Mobile: particle-depth PNG placed verbatim per the Figma
+          spec — 1237 × 613 box anchored at top:462 / left:-434 on
+          a 440×956 canvas.  No effects layered on top yet (blur,
+          motion, opacity) — those will be added once the user
+          confirms the bare placement matches the design. */}
+      {/* Mobile: `/media/rsvp/full.png` placed verbatim per the Figma
+          spec — 1237 × 613 anchored at top:462 / left:-434 on
+          canvas 440×956:
+            top   : 462 / 956 = 48.3 vh
+            left  : -434 / 440 = -98.6 vw
+            right : -363 / 440 = -82.5 vw
+            bottom: -119 / 956 = -12.5 vh
+          No effects yet — those will layer on after the user verifies
+          the bare placement matches the design. */}
+      {/* `/media/rsvp/full.png` with three async cinematic layers
+          stacked over it (teamLab-inspired):
+            1. `cosmos-drift` — the PNG itself slowly zooms 1.1 →
+               1.15× with a sub-pixel sway over 26 s (advancing-
+               warriors charge).
+            2. `cosmos-shimmer` — a diagonal cyan/silver light
+               strip sweeps across the plate every 14 s, like a
+               projected-light wash passing over the cosmos.
+            3. `cosmos-pulse` — a centred radial glow breathes 35
+               → 65 % opacity / 1 → 1.08 × scale on a 9 s loop,
+               serving as the scene's heartbeat.
+          The three async cadences (26 / 14 / 9 s) never repeat
+          the same composite frame, so the asset reads as a live
+          immersive field rather than a still image. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-0 top-[18%]"
+        className="pointer-events-none absolute inset-0 overflow-hidden"
       >
-        <BackgroundVideoFrame
-          src={COSMOS_SRC}
-          poster={COSMOS_POSTER}
-          start={0.83}
-          end={1.05}
-          objectFit="cover"
-          className="absolute inset-0 h-full w-full opacity-90 sm:opacity-55 sm:brightness-90 sm:contrast-[1.5]"
+        <Image
+          src="/media/rsvp/full.png"
+          alt=""
+          fill
+          aria-hidden
+          priority
+          unoptimized
+          sizes="100vw"
+          quality={100}
+          className="cosmos-drift object-cover object-bottom"
         />
-        <div className="absolute inset-x-0 top-0 h-[25%] bg-gradient-to-b from-black to-transparent" />
+        <div className="cosmos-shimmer absolute inset-0" />
+        <div className="cosmos-pulse absolute inset-0" />
       </div>
 
       {/* ---------- Shader plate behind the text ----------
@@ -290,7 +316,7 @@ export default function RsvpSection() {
             and date) via `sm:order-2`, with the gap to the title
             tightened down from the mobile `mt-7`. */}
         <p
-          className="mt-7 font-sans text-[12px] font-normal leading-[1.4] text-white sm:order-2 sm:mt-3 sm:text-[22px]"
+          className="mt-7 font-sans text-[16px] font-normal leading-[1.4] text-white sm:order-2 sm:mt-3 sm:text-[22px]"
           style={{
             opacity: entered ? 1 : 0,
             transform: entered ? "translateY(0)" : "translateY(6px)",
@@ -307,7 +333,7 @@ export default function RsvpSection() {
         <div className="mt-3 sm:order-4 sm:mt-8">
           <RevealText
             as="p"
-            className="w-[259px] text-center font-sans text-[12px] font-normal leading-[1.4] text-white sm:w-auto sm:max-w-[420px] sm:text-[22px] md:max-w-[540px]"
+            className="w-[259px] text-center font-sans text-[16px] font-normal leading-[1.4] text-white sm:w-auto sm:max-w-[420px] sm:text-[22px] md:max-w-[540px]"
             stagger={8}
             duration={250}
             delay={d_venue}

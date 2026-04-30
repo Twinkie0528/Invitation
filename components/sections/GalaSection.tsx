@@ -91,13 +91,13 @@ export default function GalaSection() {
           bleeding 35 % past the right edge and 38 % past the bottom.
           Rotated −180° per the Figma transform — overflow-hidden on
           the <section> clips the bleed. */}
-      <div className="absolute inset-x-0 bottom-[-10vh] top-[60%] sm:inset-x-auto sm:left-[15.75%] sm:right-[-35%] sm:top-[59%] sm:bottom-[-38%]">
+      <div className="absolute left-[-69.3vw] right-[-75.5vw] top-[64.6vh] bottom-[-12.9vh] sm:inset-x-auto sm:left-[15.75%] sm:right-[-35%] sm:top-[59%] sm:bottom-[-38%]">
         <BackgroundVideoFrame
           src={BG_VIDEO}
           poster={BG_POSTER}
           start={REVEAL_RANGE.start}
           end={REVEAL_RANGE.end}
-          className="absolute inset-0 h-full w-full opacity-95 brightness-110 contrast-110 sm:rotate-180"
+          className="absolute inset-0 h-full w-full rotate-180 opacity-95 brightness-110 contrast-110"
         />
         {/* Soft fade from black into the bloom so the boundary isn't
             a hard line.  Trimmed to 12 % so the bloom reads vividly
@@ -155,8 +155,8 @@ export default function GalaSection() {
           Desktop matches Figma `Screen PC` (node 4:80): centered title
           + 535-px body column sits in the upper-middle band (eyebrow
           ~28 % from top), bloom banner underneath at top:52 %. */}
-      <div className="relative mx-auto flex w-full max-w-[1320px] flex-col items-center px-6 pt-[14vh] pb-[42vh] text-center sm:px-14 sm:pt-[33vh] sm:pb-[28vh] md:px-20 lg:px-28">
-        <div className="w-full max-w-[280px] text-balance sm:max-w-[920px] sm:text-pretty">
+      <div className="relative mx-auto flex w-full max-w-[1320px] flex-col items-center px-6 pt-[21vh] pb-[42vh] text-center sm:px-14 sm:pt-[33vh] sm:pb-[28vh] md:px-20 lg:px-28">
+        <div className="w-full max-w-[347px] text-balance sm:max-w-[920px] sm:text-pretty">
           {/* Eyebrow — Figma: Manrope Regular 16px, #b7b7b7,
               letter-spacing 6.4px (= 0.4em).  No italics. */}
           <RevealText
@@ -182,7 +182,7 @@ export default function GalaSection() {
               relaxes the break with `sm:hidden` so it reads as a wider
               single-line headline. */}
           <h2
-            className="mb-7 text-center font-sans text-[32px] font-bold uppercase leading-[1.15] tracking-tight sm:mb-10 sm:text-[45px] sm:leading-[1.0]"
+            className="mb-7 text-center font-sans text-[22px] font-bold uppercase leading-[1.2] tracking-tight sm:mb-10 sm:text-[45px] sm:leading-[1.0]"
             style={{
               backgroundImage:
                 "linear-gradient(190.14deg, #73A4FF 14.69%, #E1E1E1 83.64%)",
@@ -205,7 +205,7 @@ export default function GalaSection() {
           <div className="space-y-4 sm:space-y-0">
             <RevealText
               as="p"
-              className="font-sans text-[14px] font-light leading-[1.55] text-white/95 sm:mb-6 sm:text-[24px] sm:font-light sm:leading-[1.4] sm:text-white/90"
+              className="font-sans text-[16px] font-light leading-[1] text-white sm:mb-6 sm:text-[24px] sm:font-light sm:leading-[1.4] sm:text-white/90"
               stagger={8}
               duration={250}
               delay={d_para1}
@@ -215,7 +215,7 @@ export default function GalaSection() {
             </RevealText>
             <RevealText
               as="p"
-              className="font-sans text-[14px] font-light leading-[1.55] text-white/95 sm:text-[24px] sm:font-light sm:leading-[1.4] sm:text-white/90"
+              className="font-sans text-[16px] font-light leading-[1] text-white sm:text-[24px] sm:font-light sm:leading-[1.4] sm:text-white/90"
               stagger={8}
               duration={250}
               delay={d_para2}
@@ -225,7 +225,7 @@ export default function GalaSection() {
             </RevealText>
             <RevealText
               as="p"
-              className="font-sans text-[14px] font-light leading-[1.55] text-white/95 sm:text-[24px] sm:font-light sm:leading-[1.4] sm:text-white/90"
+              className="font-sans text-[16px] font-light leading-[1] text-white sm:text-[24px] sm:font-light sm:leading-[1.4] sm:text-white/90"
               stagger={8}
               duration={250}
               delay={d_para3}
@@ -235,7 +235,7 @@ export default function GalaSection() {
             </RevealText>
             <RevealText
               as="p"
-              className="font-sans text-[14px] font-light leading-[1.55] text-white/95 sm:text-[24px] sm:font-light sm:leading-[1.4] sm:text-white/90"
+              className="font-sans text-[16px] font-light leading-[1] text-white sm:text-[24px] sm:font-light sm:leading-[1.4] sm:text-white/90"
               stagger={8}
               duration={250}
               delay={d_para4}

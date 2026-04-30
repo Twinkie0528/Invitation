@@ -227,7 +227,7 @@ export default function UrtuuSection() {
             without distracting from the centred copy. */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-[38vh] overflow-hidden sm:h-[42vh]"
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-[55vh] overflow-hidden sm:h-[42vh]"
         >
           <div className="floor-drift absolute inset-0">
             <Image
@@ -238,16 +238,53 @@ export default function UrtuuSection() {
               sizes="100vw"
               className="object-cover"
               style={{
-                opacity: 0.45,
+                opacity: 0.6,
                 mixBlendMode: "screen",
-                filter: "saturate(0.65) brightness(0.85)",
+                // hue-rotate(70deg) shifts the source's green-tinted
+                // topography toward cyan/blue so the floor matches the
+                // cool palette of the other assets (mascot particles,
+                // gala bloom, cosmos rider — all sit in the
+                // #73A4FF → #E1E1E1 gradient family).  saturate(0.6)
+                // keeps the lines readable as terrain rather than a
+                // bright photo overlay.
+                filter:
+                  "saturate(0.6) brightness(0.95) hue-rotate(70deg)",
               }}
             />
           </div>
-          {/* Top fade — pull the plate into the section's dark base
-              over the upper ~60 % of the floor band so there is no
-              hard horizon line visible. */}
-          <div className="absolute inset-x-0 top-0 h-[60%] bg-gradient-to-b from-black via-black/75 to-transparent" />
+          {/* Colour gradient overlay — paints a subtle blue→silver
+              wash so the floor reads as part of the brand palette
+              (mascot / gala bloom / cosmos rider all sit in the
+              #73A4FF → #E1E1E1 family).  `floor-glow` breathes the
+              opacity 0.55 → 1 → 0.55 every 9 s so the plate feels
+              emissive instead of flat — teamLab-style ambient
+              pulse.  `mix-blend-overlay` keeps the topographic
+              line detail visible underneath. */}
+          <div
+            aria-hidden
+            className="floor-glow pointer-events-none absolute inset-0 mix-blend-overlay"
+            style={{
+              background:
+                "linear-gradient(180deg, transparent 0%, rgba(115, 164, 255, 0.22) 45%, rgba(225, 225, 225, 0.16) 100%)",
+            }}
+          />
+          {/* Shimmer pass — a soft cyan light strip slides diagonally
+              across the floor every 14 s, mimicking the moving light
+              washes teamLab uses on their projected floors.  Sits on
+              its own `mix-blend-mode: screen` layer (declared in the
+              keyframes) so it adds light to the bright topographic
+              lines without darkening the surrounding plate. */}
+          <div
+            aria-hidden
+            className="floor-shimmer pointer-events-none absolute inset-0"
+          />
+          {/* Top fade — pull the plate into the section's dark base.
+              Mobile: shorter fade (h-[40%]) so MORE of the floor's
+              topographic terrain reads as visible band — fixes the
+              "empty black space between body and floor" issue.
+              Desktop: keep the gentler h-[60%] fade so the floor sits
+              as a soft horizon under the centred copy. */}
+          <div className="absolute inset-x-0 top-0 h-[40%] bg-gradient-to-b from-black via-black/75 to-transparent sm:h-[60%]" />
         </div>
       </div>
 
@@ -276,8 +313,8 @@ export default function UrtuuSection() {
           framed left + right by the mascot mp4's wings.  This
           replaces the previous left-aligned split-layout (which the
           Figma reference does not use). */}
-      <div className="absolute inset-0 mx-auto flex w-full max-w-[1320px] flex-col items-center justify-center px-6 py-8 text-center sm:px-14 sm:py-16 md:px-20 md:py-20 lg:px-28 lg:py-24">
-        <div className="w-full max-w-[320px] sm:max-w-[48vw]">
+      <div className="absolute inset-0 mx-auto flex w-full max-w-[1320px] flex-col items-center px-6 pt-[21vh] pb-8 text-center sm:justify-center sm:px-14 sm:py-16 md:px-20 md:py-20 lg:px-28 lg:py-24">
+        <div className="w-full max-w-[347px] sm:max-w-[48vw]">
           {/* Eyebrow — Figma: 16px, color #b7b7b7, letter-spacing
               6.4px (= 0.4em).  No italics. */}
           <RevealText
@@ -291,17 +328,14 @@ export default function UrtuuSection() {
             Introducing
           </RevealText>
 
-          {/* Title — Figma confirmed:
-              - font: Manrope 700, 26px (mobile)
-              - line-height: 120%
-              - background: linear-gradient(215deg, #73A4FF 14.69%, #E1E1E1 83.64%)
-              - background-clip: text + transparent fill
-              Desktop sizes shrunk relative to the previous split-
-              layout draft (sm:40 / md:54 / lg:64 / xl:72) so the
-              title fits comfortably on a single line inside the
-              centred 760px column the Figma frame uses. */}
+          {/* Title — Figma `Mobile Version`: 22 px to match the Hero's
+              "UNITEL GROUP" header weight (the user's typography rule
+              for pages 2/3 keeps the gradient title at the same scale
+              as the Hero lockup so the whole flow reads as one set).
+              Desktop keeps the previous 40 px so it dominates the
+              centred 760-px column the desktop Figma frame uses. */}
           <h2
-            className="mb-5 text-center font-sans text-[32px] font-bold uppercase leading-[1.2] tracking-tight sm:mb-7 sm:text-[40px] md:mb-8"
+            className="mb-5 text-center font-sans text-[22px] font-bold uppercase leading-[1.2] tracking-tight sm:mb-7 sm:text-[40px] md:mb-8"
             style={{
               backgroundImage:
                 "linear-gradient(215deg, #73A4FF 14.69%, #E1E1E1 83.64%)",
@@ -322,7 +356,7 @@ export default function UrtuuSection() {
           <div className="space-y-5 sm:space-y-5 md:space-y-6">
             <RevealText
               as="p"
-              className="font-sans text-[14px] font-light leading-[1.55] text-white/95 sm:text-[22px] sm:leading-[1.6]"
+              className="font-sans text-[16px] font-light leading-[1] text-white sm:text-[22px] sm:leading-[1.6]"
               stagger={8}
               duration={250}
               delay={d_para1}
@@ -332,7 +366,7 @@ export default function UrtuuSection() {
             </RevealText>
             <RevealText
               as="p"
-              className="font-sans text-[14px] font-light leading-[1.55] text-white/95 sm:text-[22px] sm:leading-[1.6]"
+              className="font-sans text-[16px] font-light leading-[1] text-white sm:text-[22px] sm:leading-[1.6]"
               stagger={8}
               duration={250}
               delay={d_para2}

@@ -50,7 +50,7 @@ export default function SectionDots() {
   return (
     <div
       aria-hidden
-      className={`pointer-events-none fixed inset-x-0 bottom-[3vh] z-40 flex justify-center transition-opacity duration-500 ease-out sm:inset-x-auto sm:bottom-auto sm:right-6 sm:top-1/2 sm:-translate-y-1/2 md:right-8 lg:right-10 ${
+      className={`pointer-events-none fixed inset-x-0 bottom-[5vh] z-40 flex justify-center transition-opacity duration-500 ease-out sm:inset-x-auto sm:bottom-auto sm:right-6 sm:top-1/2 sm:-translate-y-1/2 md:right-8 lg:right-10 ${
         hidden ? "opacity-0" : "opacity-100"
       }`}
     >
