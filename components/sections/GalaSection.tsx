@@ -72,7 +72,7 @@ export default function GalaSection() {
           poster={BG_POSTER}
           start={REVEAL_RANGE.start}
           end={REVEAL_RANGE.end}
-          className="absolute inset-0 h-full w-full opacity-95"
+          className="absolute inset-0 h-full w-full opacity-95 brightness-110 contrast-110"
         />
         {/* Soft fade from black into the bloom so the boundary isn't
             a hard line.  Trimmed to 12 % so the bloom reads vividly

@@ -5,47 +5,34 @@ import Image from "next/image";
 import { markIntroDone, markReady } from "@/lib/loadGate";
 import { useLoadGate } from "@/hooks/useLoadGate";
 
-// Gate set — must finish loading before the overlay fades.  Includes
-// every below-the-fold static image (posters, shaders, signatures)
-// plus the hero MP4 itself, so the user never sees a black scene
-// "popping" an asset in once they scroll past hero.  Total weight is
-// ~4 MB which is a 3-5 second wait on a 10 Mbps connection.
+// Gate set — kept INTENTIONALLY tiny.  The overlay is just the FLIP
+// runway from "page loaded" to "hero lockup in position", so the only
+// asset it strictly requires is the lockup SVG itself (the FLIP target).
+// Anything heavier here (posters, shaders, mp4s) used to push the
+// overlay to 8-10 s on real networks — VVIP guests don't wait that
+// long.  The rest of the site's assets are downloaded in parallel via
+// the eager set below, with `<link rel="preload">` hints in
+// app/layout.tsx so the fetches start during HTML parse.
 const GATE_IMAGES = [
   "/media/hero/unitel-20-lockup.svg",
-  "/media/hero/shader.png",
-  "/media/common/shader.png",
-  "/media/common/edge-gradient.png",
-  "/media/common/unitel-wordmark.svg",
-  "/media/urtuu/floor.jpg",
-  "/media/rsvp/cosmos.png",
-  "/media/rsvp/invitation-title.png",
-  "/media/ceo/signature.svg",
 ];
 
-const GATE_VIDEOS = [
-  "/media/hero/first.mp4",
-];
+const GATE_VIDEOS: string[] = [];
 
-// Eager set — kicked off immediately alongside the gate fetches but
-// the overlay does NOT wait for them.  Browser populates its HTTP
-// cache in the background while the user is reading the hero, so by
-// the time scroll reaches the next scene the bytes are local and the
-// existing poster→video fade still composites smoothly even on slower
-// links.  The two large animated WebP posters are intentionally NOT
-// listed here — once the matching MP4 is cached, those posters are
-// only briefly visible during the fade-in handshake and don't justify
-// their 7-14 MB download cost.
-const EAGER_VIDEOS = [
-  "/media/urtuu/urtuu-script.mp4",
-  "/media/common/gala-bloom.mp4",
-  "/media/ceo/mascot.mp4",
-  "/media/rsvp/cosmos.mp4",
-];
+// Eager preloading is now handled entirely by `<link rel="preload">`
+// and `<link rel="prefetch">` hints in app/layout.tsx — the browser
+// honours those during HTML parse, before React hydrates, AND it
+// reuses the prefetched bytes when our <video> elements later mount
+// and issue range requests.  The previous JS-side `fetch()` preload
+// duplicated those downloads (full GET via fetch + range GETs via
+// <video> = the same mp4 transferred 2-3 times, totalling ~200 MB
+// per page load).  Trust the head hints and let the JS path fall
+// through to the gate set only.
 
-// Hard timeout — if the network stalls on any one asset, fall back to
-// "ready" after 30 s so the page is never permanently locked behind
-// the overlay (e.g. a guest on a flaky cellular link).
-const PRELOAD_TIMEOUT_MS = 30_000;
+// Hard timeout — if the network stalls on the lockup SVG itself, fall
+// back to "ready" after 8 s so the page is never permanently locked
+// behind the overlay (e.g. a guest on a flaky cellular link).
+const PRELOAD_TIMEOUT_MS = 8_000;
 
 // Animation cadence — backdrop fades while the logo flies, then the
 // overlay logo fades while the hero's static logo cross-fades in.
@@ -95,10 +82,10 @@ export default function LoadingOverlay() {
       img.src = src;
     });
 
-    // Gate videos — use a hidden <video> element with `preload="auto"`
-    // and resolve on `canplaythrough` (or `loadeddata` as a faster
-    // fallback).  Browsers cache the response so the real <video>
-    // mount inside BackgroundVideoFrame reuses these bytes.
+    // Gate videos — kept around for symmetry; the GATE_VIDEOS array is
+    // empty by design (see the comment at the top of the module) so
+    // this loop is currently a no-op.  Left in place so a future asset
+    // we DO want to gate on can be added with one line.
     const gateVideos: HTMLVideoElement[] = [];
     GATE_VIDEOS.forEach((src) => {
       const v = document.createElement("video");
@@ -117,19 +104,6 @@ export default function LoadingOverlay() {
       v.addEventListener("error", onReady, { once: true });
       v.src = src;
       gateVideos.push(v);
-    });
-
-    // Eager — fire-and-forget fetches that warm the browser cache.
-    // `cache: "force-cache"` ensures the response is treated as
-    // cacheable even if Cache-Control headers are weak.
-    EAGER_VIDEOS.forEach((src) => {
-      try {
-        fetch(src, { credentials: "same-origin", cache: "force-cache" }).catch(
-          () => {},
-        );
-      } catch {
-        /* no-op */
-      }
     });
 
     return () => {

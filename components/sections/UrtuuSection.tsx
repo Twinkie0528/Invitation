@@ -94,7 +94,7 @@ export default function UrtuuSection() {
               start={REVEAL_RANGE.start}
               end={REVEAL_RANGE.end}
               objectFit="contain"
-              className="absolute inset-0 h-full w-full"
+              className="absolute inset-0 h-full w-full brightness-110 contrast-110"
             />
           </div>
         </div>
@@ -135,7 +135,7 @@ export default function UrtuuSection() {
               start={REVEAL_RANGE.start}
               end={REVEAL_RANGE.end}
               objectFit="contain"
-              className="absolute inset-0 h-full w-full"
+              className="absolute inset-0 h-full w-full brightness-110 contrast-110"
             />
           </div>
         </div>

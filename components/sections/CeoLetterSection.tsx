@@ -81,7 +81,7 @@ export default function CeoLetterSection() {
           start={REVEAL_RANGE.start}
           end={REVEAL_RANGE.end}
           objectFit="cover"
-          className="absolute inset-0 h-full w-full sm:opacity-25 sm:[&>video]:!object-contain sm:[&>img]:!object-contain"
+          className="absolute inset-0 h-full w-full brightness-110 contrast-110 sm:opacity-25 sm:[&>video]:!object-contain sm:[&>img]:!object-contain"
         />
       </div>
       {/* Light dimming behind the body copy only — soft enough that

@@ -17,6 +17,11 @@ tsconfig.tsbuildinfo
 # Generated invitation link export — regenerate with `npm run guests`.
 guests-links.csv
 
+# Originals backup created by `npm run compress-videos`.  Kept locally
+# in case we ever need to re-compress at a different CRF, but never
+# pushed to git (would double the repo's media weight).
+public/media/_originals/
+
 # Raw working assets (large source videos / images). Processed copies
 # live in public/media and are the tracked ones.
 assets/

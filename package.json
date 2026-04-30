@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "build:anim": "node scripts/build-anim.mjs",
     "build:anim:bloom": "node scripts/build-anim.mjs bloom",
-    "guests": "node scripts/generate-guests.mjs"
+    "guests": "node scripts/generate-guests.mjs",
+    "compress-videos": "node scripts/compress-videos.mjs"
   },
   "dependencies": {
     "@react-three/drei": "9.114.3",
@@ -30,6 +31,7 @@
     "threejs-components": "^0.0.30"
   },
   "devDependencies": {
+    "@ffmpeg-installer/ffmpeg": "^1.1.0",
     "@types/howler": "2.2.12",
     "@types/node": "20.16.11",
     "@types/react": "18.3.11",

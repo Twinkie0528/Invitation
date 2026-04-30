@@ -66,10 +66,31 @@ export default function RootLayout({
       className={`${fraunces.variable} ${manrope.variable} ${ingkar.variable}`}
     >
       <head>
-        {/* Above-the-fold lockup gates the loading-overlay handoff —
-            preload kicks off its fetch before React hydrates so the
-            FLIP transition can land on a cached image. */}
+        {/* Critical hero — gate the FLIP handoff on the SVG lockup
+            and pre-warm the hero MP4 so its first frame is decoded
+            by the time the LoadingOverlay finishes flying.  The mp4
+            preload uses `as="video"` (Chromium / Edge / modern Safari)
+            with `type` so older browsers that don't recognise the
+            hint just ignore it. */}
         <link rel="preload" as="image" href="/media/hero/unitel-20-lockup.svg" />
+        <link rel="preload" as="video" href="/media/hero/first.mp4" type="video/mp4" />
+
+        {/* Below-the-fold scenes — `prefetch` (not `preload`) tells
+            the browser these are needed soon but at lower priority,
+            so they only consume bandwidth once the critical hero
+            assets above are in flight.  By the time the user
+            scrolls past the hero, every section's mp4 / poster /
+            shader is already cached and enters via `loadeddata`. */}
+        <link rel="prefetch" as="video" href="/media/urtuu/urtuu-script.mp4" type="video/mp4" />
+        <link rel="prefetch" as="video" href="/media/common/gala-bloom.mp4" type="video/mp4" />
+        <link rel="prefetch" as="video" href="/media/ceo/mascot.mp4" type="video/mp4" />
+        <link rel="prefetch" as="video" href="/media/rsvp/cosmos.mp4" type="video/mp4" />
+        <link rel="prefetch" as="image" href="/media/urtuu/floor.jpg" />
+        <link rel="prefetch" as="image" href="/media/common/shader.png" />
+        <link rel="prefetch" as="image" href="/media/hero/shader.png" />
+        <link rel="prefetch" as="image" href="/media/rsvp/cosmos.png" />
+        <link rel="prefetch" as="image" href="/media/rsvp/invitation-title.png" />
+        <link rel="prefetch" as="image" href="/media/ceo/signature.svg" />
       </head>
       <body>
         <LumaAlphaFilter />

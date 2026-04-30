@@ -41,7 +41,7 @@ export default function BackgroundVideoFrame({
   poster,
   start,
   end,
-  preloadMargin = 0.06,
+  preloadMargin = 0.18,
   className,
   objectFit = "cover",
 }: Props) {
@@ -202,6 +202,19 @@ export default function BackgroundVideoFrame({
             // (autoplay blocked despite our gestures), the poster
             // stays visible and the user sees a clean static frame
             // instead of a tap-to-play overlay.
+            e.currentTarget.style.opacity = "1";
+          }}
+          onLoadedData={(e) => {
+            // First frame is decoded — show it now instead of waiting
+            // for play() to round-trip.  Two hero pillars sharing the
+            // same source MP4 hit `loadeddata` from the same cached
+            // bytes within a few ms of each other, so they fade in as
+            // a synchronised pair instead of one-then-the-other.  The
+            // tap-to-play triangle concern that justified gating on
+            // `onPlaying` only applies to videos with a `poster`
+            // attribute set — we render posters as a separate <img>
+            // sibling, so the iOS engine has nothing to draw the
+            // overlay on even with the video element visible.
             e.currentTarget.style.opacity = "1";
           }}
           onLoadedMetadata={(e) => {

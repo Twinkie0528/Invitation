@@ -138,19 +138,24 @@ export default function HeroSection() {
           `display:none` on the inactive viewport keeps each
           decoder asleep so we don't pay a triple-decode tax for
           mounting all three instances. */}
-      {/* Mobile asset — full-bleed cover from top to bottom.  The
-          mobile shader (rendered just below) sits over the top
-          band so the lockup reads cleanly even when the asset is
-          flush with the viewport top edge; no need to push the
-          asset down anymore. */}
+      {/* Mobile asset — sized to the Figma spec (644×1288 px, aspect
+          1:2) and pinned to the top of the section, centred
+          horizontally.  On every phone we ship to (320–430 wide)
+          this overflows the viewport on both axes; the section's
+          `overflow-hidden` clips the bleed.  The visible result is a
+          dust-mascot that reads bigger and more present than the
+          previous full-bleed `inset-0 cover` — which scaled the
+          source down to fit and made the figure feel small.  The
+          mobile shader (rendered just below) still sits over the top
+          band so the lockup reads cleanly. */}
       {viewport === "mobile" && (
-        <div className="absolute inset-0">
+        <div className="absolute left-1/2 top-0 h-[1288px] w-[644px] -translate-x-1/2">
           <BackgroundVideoFrame
             src="/media/hero/first.mp4"
             start={HERO_VIDEO_RANGE.start}
             end={HERO_VIDEO_RANGE.end}
             objectFit="cover"
-            className="absolute inset-0 h-full w-full"
+            className="absolute inset-0 h-full w-full brightness-110 contrast-110"
           />
         </div>
       )}
@@ -164,7 +169,7 @@ export default function HeroSection() {
               start={HERO_VIDEO_RANGE.start}
               end={HERO_VIDEO_RANGE.end}
               objectFit="cover"
-              className="absolute inset-0 h-full w-full"
+              className="absolute inset-0 h-full w-full brightness-110 contrast-110"
             />
           </div>
 
@@ -184,7 +189,7 @@ export default function HeroSection() {
               start={HERO_VIDEO_RANGE.start}
               end={HERO_VIDEO_RANGE.end}
               objectFit="cover"
-              className="absolute inset-0 h-full w-full"
+              className="absolute inset-0 h-full w-full brightness-110 contrast-110"
             />
           </div>
         </>
