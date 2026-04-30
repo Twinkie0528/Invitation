@@ -77,9 +77,21 @@ export default function BackgroundVideoFrame({
 
       const shouldPlay = p >= start && p <= end;
       if (shouldPlay && !playingRef.current) {
-        const result = v.play();
-        if (result && typeof result.catch === "function") result.catch(() => {});
+        // Set the in-flight flag BEFORE calling play() so a fast scroll
+        // tick can't kick off a second concurrent play().  If the
+        // promise rejects (autoplay throttle, decoder slot exhaustion,
+        // tab in background) clear the flag so the next scroll tick or
+        // user gesture can try again — otherwise the element stays
+        // permanently "supposed to be playing" but never actually
+        // started, which manifests as a black frame because the
+        // `onPlaying` fade-in never fires.
         playingRef.current = true;
+        const result = v.play();
+        if (result && typeof result.catch === "function") {
+          result.catch(() => {
+            playingRef.current = false;
+          });
+        }
       } else if (!shouldPlay && playingRef.current) {
         v.pause();
         playingRef.current = false;

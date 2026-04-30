@@ -5,10 +5,47 @@ import Image from "next/image";
 import { markIntroDone, markReady } from "@/lib/loadGate";
 import { useLoadGate } from "@/hooks/useLoadGate";
 
-// Critical hero assets that must finish loading before the overlay fades.
-const HERO_IMAGES = [
+// Gate set — must finish loading before the overlay fades.  Includes
+// every below-the-fold static image (posters, shaders, signatures)
+// plus the hero MP4 itself, so the user never sees a black scene
+// "popping" an asset in once they scroll past hero.  Total weight is
+// ~4 MB which is a 3-5 second wait on a 10 Mbps connection.
+const GATE_IMAGES = [
   "/media/hero/unitel-20-lockup.svg",
+  "/media/hero/shader.png",
+  "/media/common/shader.png",
+  "/media/common/edge-gradient.png",
+  "/media/common/unitel-wordmark.svg",
+  "/media/urtuu/floor.jpg",
+  "/media/rsvp/cosmos.png",
+  "/media/rsvp/invitation-title.png",
+  "/media/ceo/signature.svg",
 ];
+
+const GATE_VIDEOS = [
+  "/media/hero/first.mp4",
+];
+
+// Eager set — kicked off immediately alongside the gate fetches but
+// the overlay does NOT wait for them.  Browser populates its HTTP
+// cache in the background while the user is reading the hero, so by
+// the time scroll reaches the next scene the bytes are local and the
+// existing poster→video fade still composites smoothly even on slower
+// links.  The two large animated WebP posters are intentionally NOT
+// listed here — once the matching MP4 is cached, those posters are
+// only briefly visible during the fade-in handshake and don't justify
+// their 7-14 MB download cost.
+const EAGER_VIDEOS = [
+  "/media/urtuu/urtuu-script.mp4",
+  "/media/common/gala-bloom.mp4",
+  "/media/ceo/mascot.mp4",
+  "/media/rsvp/cosmos.mp4",
+];
+
+// Hard timeout — if the network stalls on any one asset, fall back to
+// "ready" after 30 s so the page is never permanently locked behind
+// the overlay (e.g. a guest on a flaky cellular link).
+const PRELOAD_TIMEOUT_MS = 30_000;
 
 // Animation cadence — backdrop fades while the logo flies, then the
 // overlay logo fades while the hero's static logo cross-fades in.
@@ -26,19 +63,84 @@ export default function LoadingOverlay() {
   const logoWrapperRef = useRef<HTMLDivElement | null>(null);
   const flightStartedRef = useRef(false);
 
-  // Preload critical hero images in parallel; report readiness when settled.
+  // Preload the gate set in parallel; report readiness when settled.
+  // Eager assets fire alongside but don't gate — they just warm the
+  // browser cache so later scenes have their bytes ready.
   useEffect(() => {
-    let pending = HERO_IMAGES.length;
+    let pending = GATE_IMAGES.length + GATE_VIDEOS.length;
+    let resolved = false;
     const settle = () => {
+      if (resolved) return;
       pending -= 1;
-      if (pending === 0) markReady("hero-images");
+      if (pending <= 0) {
+        resolved = true;
+        markReady("hero-images");
+      }
     };
-    HERO_IMAGES.forEach((src) => {
+
+    // Hard timeout — never leave the user staring at the overlay if
+    // one asset's request hangs.
+    const timeoutId = window.setTimeout(() => {
+      if (!resolved) {
+        resolved = true;
+        markReady("hero-images");
+      }
+    }, PRELOAD_TIMEOUT_MS);
+
+    // Gate images — settle on load OR error.
+    GATE_IMAGES.forEach((src) => {
       const img = new window.Image();
       img.onload = settle;
       img.onerror = settle;
       img.src = src;
     });
+
+    // Gate videos — use a hidden <video> element with `preload="auto"`
+    // and resolve on `canplaythrough` (or `loadeddata` as a faster
+    // fallback).  Browsers cache the response so the real <video>
+    // mount inside BackgroundVideoFrame reuses these bytes.
+    const gateVideos: HTMLVideoElement[] = [];
+    GATE_VIDEOS.forEach((src) => {
+      const v = document.createElement("video");
+      v.preload = "auto";
+      v.muted = true;
+      v.playsInline = true;
+      const cleanup = () => {
+        v.removeEventListener("canplaythrough", onReady);
+        v.removeEventListener("loadeddata", onReady);
+        v.removeEventListener("error", onReady);
+        settle();
+      };
+      const onReady = () => cleanup();
+      v.addEventListener("canplaythrough", onReady, { once: true });
+      v.addEventListener("loadeddata", onReady, { once: true });
+      v.addEventListener("error", onReady, { once: true });
+      v.src = src;
+      gateVideos.push(v);
+    });
+
+    // Eager — fire-and-forget fetches that warm the browser cache.
+    // `cache: "force-cache"` ensures the response is treated as
+    // cacheable even if Cache-Control headers are weak.
+    EAGER_VIDEOS.forEach((src) => {
+      try {
+        fetch(src, { credentials: "same-origin", cache: "force-cache" }).catch(
+          () => {},
+        );
+      } catch {
+        /* no-op */
+      }
+    });
+
+    return () => {
+      window.clearTimeout(timeoutId);
+      // Tear down hidden gate videos so we don't keep their decoders
+      // alive after handoff.
+      for (const v of gateVideos) {
+        v.removeAttribute("src");
+        v.load();
+      }
+    };
   }, []);
 
   // When `ready` flips, kick off the FLIP transition: measure the hero

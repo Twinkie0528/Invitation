@@ -69,21 +69,22 @@ export default function UrtuuSection() {
             framed by the surrounding black, matching the desktop
             Figma frame where the mascot is much smaller relative to
             the viewport than on phone. */}
-        {/* Mobile: smaller mascot anchored at the top of the
-            viewport (NOT full-bleed) so the layout reads in three
-            stacked bands — mascot at the top, copy block in the
-            middle, floor plate at the bottom — exactly the Figma
-            mobile reference.  Aspect ratio held at the same 39/49
-            spec the desktop uses so the figure proportions stay
-            consistent across viewports.  `mix-blend-mode: screen`
-            and `objectFit: contain` match the Figma-prescribed
-            treatment (whole figure visible, dark regions dissolve
-            into the black base). */}
-        <div className="absolute inset-x-0 top-[6vh] mx-auto flex justify-center sm:hidden">
+        {/* Mobile: mascot anchored near the top of the section so the
+            layout reads in three stacked bands — mascot at the top,
+            copy block in the middle, floor plate at the bottom.  Spec
+            taken from the Figma mobile frame (440×956): box is
+            321×403 (aspect 47/59), positioned 21px from the section's
+            top edge with 59/60 horizontal margins (so the asset is
+            essentially centred at ~73 % of the viewport width and
+            capped at 321px on wider phones / tablets).  `mix-blend-
+            mode: screen` and `objectFit: contain` match the Figma-
+            prescribed treatment — whole figure visible, dark regions
+            dissolve into the black base. */}
+        <div className="absolute inset-x-0 top-[21px] mx-auto flex justify-center sm:hidden">
           <div
-            className="relative h-[36vh] w-auto"
+            className="relative w-[73vw] max-w-[321px]"
             style={{
-              aspectRatio: "39 / 49",
+              aspectRatio: "47 / 59",
               mixBlendMode: "screen",
             }}
           >

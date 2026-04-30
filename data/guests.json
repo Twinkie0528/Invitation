@@ -1,17 +1,354 @@
 [
   {
-    "slug": "78def7",
-    "name": "Baatarsukh Batbold",
-    "date": "6.18"
+    "slug": "02e9ad",
+    "name": "R.Ganbold"
   },
   {
-    "slug": "d0513d",
-    "name": "Bataa Dorj",
-    "date": "6.19"
+    "slug": "9233fc",
+    "name": "G.Myagmarjav"
   },
   {
-    "slug": "29d480",
-    "name": "Jamiyan-Sharav D.",
-    "date": "6.26"
+    "slug": "9b48de",
+    "name": "D.Enkhbat"
+  },
+  {
+    "slug": "e7e16a",
+    "name": "S.Tsengel"
+  },
+  {
+    "slug": "5cc287",
+    "name": "B.Ariunaa"
+  },
+  {
+    "slug": "2b9e80",
+    "name": "Attilla Vitai"
+  },
+  {
+    "slug": "1b44b6",
+    "name": "B.Delgersaikhan"
+  },
+  {
+    "slug": "e71aa6",
+    "name": "L.Enkh-Amgalan"
+  },
+  {
+    "slug": "ac6efe",
+    "name": "A.Gankhuyag"
+  },
+  {
+    "slug": "e29536",
+    "name": "Ts.Amaraa"
+  },
+  {
+    "slug": "08ecee",
+    "name": "B.Biliguun"
+  },
+  {
+    "slug": "af0a3a",
+    "name": "HaYuong Park"
+  },
+  {
+    "slug": "3a2a29",
+    "name": "G.Enkhtuvshin"
+  },
+  {
+    "slug": "8b5927",
+    "name": "D.Enkhtuvshin"
+  },
+  {
+    "slug": "78651e",
+    "name": "N.Enkhbold"
+  },
+  {
+    "slug": "d6f3d3",
+    "name": "J.Odjargal"
+  },
+  {
+    "slug": "c894fd",
+    "name": "J.Od"
+  },
+  {
+    "slug": "69e03d",
+    "name": "D.Enkhtsetseg"
+  },
+  {
+    "slug": "559a29",
+    "name": "L.Gantumur"
+  },
+  {
+    "slug": "3954ea",
+    "name": "G.Bold"
+  },
+  {
+    "slug": "5db460",
+    "name": "Ch.Davaakhuu"
+  },
+  {
+    "slug": "14fa1b",
+    "name": "N.Nyamdavaa"
+  },
+  {
+    "slug": "8e45e6",
+    "name": "B.Davaa-Ochir"
+  },
+  {
+    "slug": "3838ad",
+    "name": "J.Urantsetseg"
+  },
+  {
+    "slug": "b7f65b",
+    "name": "L.Myagmarjav"
+  },
+  {
+    "slug": "263c67",
+    "name": "Ts.Khandaa"
+  },
+  {
+    "slug": "7fb2a6",
+    "name": "D.Bolormaa"
+  },
+  {
+    "slug": "ade2be",
+    "name": "B.Ochirbat"
+  },
+  {
+    "slug": "0d1659",
+    "name": "Ts.Altantsetseg"
+  },
+  {
+    "slug": "33791e",
+    "name": "B.Solongo"
+  },
+  {
+    "slug": "b0ac7e",
+    "name": "Ts.Purevdorj"
+  },
+  {
+    "slug": "d80669",
+    "name": "B.Temuulen"
+  },
+  {
+    "slug": "86be76",
+    "name": "Batjargal"
+  },
+  {
+    "slug": "8345af",
+    "name": "L.Magsarjav"
+  },
+  {
+    "slug": "c60805",
+    "name": "G.Battsengel"
+  },
+  {
+    "slug": "bc3023",
+    "name": "D.Odgerel"
+  },
+  {
+    "slug": "2c96d2",
+    "name": "Ya.Nyamtogtokh"
+  },
+  {
+    "slug": "28c3be",
+    "name": "O.Anand"
+  },
+  {
+    "slug": "567859",
+    "name": "D.Jamyansharav"
+  },
+  {
+    "slug": "486879",
+    "name": "B.Enkhtuvshin"
+  },
+  {
+    "slug": "701ed7",
+    "name": "G.Batkhuu"
+  },
+  {
+    "slug": "ec8f46",
+    "name": "S.Oyunsuren"
+  },
+  {
+    "slug": "be50e1",
+    "name": "O.Tulga"
+  },
+  {
+    "slug": "0b107c",
+    "name": "G.Bars"
+  },
+  {
+    "slug": "242aef",
+    "name": "A.Enkhchimeg"
+  },
+  {
+    "slug": "d00faf",
+    "name": "L.Pagamsuren"
+  },
+  {
+    "slug": "d47f6c",
+    "name": "B.Juldyz"
+  },
+  {
+    "slug": "5b48bc",
+    "name": "Ts.Urtnasan"
+  },
+  {
+    "slug": "fb4747",
+    "name": "E.Baasan"
+  },
+  {
+    "slug": "b87c41",
+    "name": "E.Mandakh-Erdene"
+  },
+  {
+    "slug": "ab4664",
+    "name": "G.Bat-Erdene"
+  },
+  {
+    "slug": "74512f",
+    "name": "D.Ariunbaatar"
+  },
+  {
+    "slug": "c996e0",
+    "name": "G.Dolgoon"
+  },
+  {
+    "slug": "d914c4",
+    "name": "E.Munkhbat"
+  },
+  {
+    "slug": "988e1c",
+    "name": "Ch.Enkhmend"
+  },
+  {
+    "slug": "1dfb92",
+    "name": "Su.Batbold"
+  },
+  {
+    "slug": "b58d27",
+    "name": "B.Battushig"
+  },
+  {
+    "slug": "a5fd69",
+    "name": "P. Batsaikhan"
+  },
+  {
+    "slug": "ac78c0",
+    "name": "R. Munkhtuya"
+  },
+  {
+    "slug": "7181b4",
+    "name": "O.Orkhon"
+  },
+  {
+    "slug": "6090a9",
+    "name": "A.Odonbaatar"
+  },
+  {
+    "slug": "ea6148",
+    "name": "G. Tsevegjav"
+  },
+  {
+    "slug": "20dade",
+    "name": "V.Enkhbaatar"
+  },
+  {
+    "slug": "561e39",
+    "name": "Ts.Sanjjav"
+  },
+  {
+    "slug": "a27440",
+    "name": "D.Ganbaatar"
+  },
+  {
+    "slug": "f51926",
+    "name": "Kh.Anand"
+  },
+  {
+    "slug": "12b934",
+    "name": "M.Yesunmunkh"
+  },
+  {
+    "slug": "da0692",
+    "name": "B.Khaliunaa"
+  },
+  {
+    "slug": "c7b60d",
+    "name": "G.Chinzorig"
+  },
+  {
+    "slug": "55f3d4",
+    "name": "B.Bolormaa"
+  },
+  {
+    "slug": "7e349f",
+    "name": "A.Chinbishrelt"
+  },
+  {
+    "slug": "88efe7",
+    "name": "Ts.Tuvshinbayar"
+  },
+  {
+    "slug": "841aee",
+    "name": "Sh.Bayarsaikhan"
+  },
+  {
+    "slug": "919ec1",
+    "name": "Ya.Navaan"
+  },
+  {
+    "slug": "849925",
+    "name": "O.Damjin"
+  },
+  {
+    "slug": "44dd06",
+    "name": "O.Narankhuu"
+  },
+  {
+    "slug": "8d92cf",
+    "name": "Sh.Ulambayar"
+  },
+  {
+    "slug": "986b45",
+    "name": "Ch.Darkhanbaatar"
+  },
+  {
+    "slug": "c15d75",
+    "name": "B.Khishigjargal"
+  },
+  {
+    "slug": "00b23f",
+    "name": "T.Gantumur"
+  },
+  {
+    "slug": "24dfef",
+    "name": "B.Jargalsaikhan"
+  },
+  {
+    "slug": "c5b804",
+    "name": "N.Tselmuun"
+  },
+  {
+    "slug": "03bbad",
+    "name": "B.Battuul"
+  },
+  {
+    "slug": "a58be0",
+    "name": "B.Chuluunkhuu"
+  },
+  {
+    "slug": "753963",
+    "name": "J.Ganbayar"
+  },
+  {
+    "slug": "c30280",
+    "name": "Ch.Chinbat"
+  },
+  {
+    "slug": "d2b72f",
+    "name": "G.Javkhlan"
+  },
+  {
+    "slug": "b3a0a2",
+    "name": "Kh.Batbold"
   }
 ]

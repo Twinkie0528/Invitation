@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useSectionReveal } from "@/hooks/useSectionReveal";
 import { useSceneEntered } from "@/hooks/useScrollProgress";
@@ -47,24 +48,61 @@ export default function HeroSection() {
   const { introDone } = useLoadGate();
   const guestName = useGuestName() ?? "Esteemed Guest";
 
-  // Adaptive script sizing — only kicks in on desktop (md+).  Mobile
-  // keeps the original Figma spec `clamp(64px, 28vw, 120px)` because
-  // long names like "Esteemed Guest" (14 chars) wrap to two lines on
-  // a narrow phone column at that scale, which is the intended Figma
-  // behaviour.  Desktop has no second line — the script is centred
-  // between the asset2.mp4 pillars on a single row — so we cap the
-  // font size by character count to keep long names from overflowing
-  // and getting clipped by the section's overflow-hidden.
-  // Heuristic: Ingkar Janji renders at ~0.45em average character
-  // width; for "width ≤ 0.85 × viewport" the per-character cap is
-  // (160 / charCount)vw.  Math.max(…, 6) holds short names at the
-  // 130px ceiling instead of letting the formula scale them up
-  // beyond the design spec on huge desktops.  CSS var lets us keep
-  // the actual font-size in the className (so Tailwind's md: media
-  // query handles the breakpoint switch); only the per-character
-  // ceiling needs to be passed in via inline style.
+  // Hero script sizing — Figma spec is 180 px on desktop and 120 px on
+  // mobile, but those are the *ceilings* not the actual rendered size:
+  // Ingkar Janji's loose calligraphy averages ~0.35 em per glyph, so a
+  // 16-char name like "Ch.Darkhanbaatar" at 180 px would span ~1000 px
+  // and overflow the 640 px centre column.  We pick the largest size
+  // that still fits both edges of the box and cap the Figma ideal
+  // there.
+  //
+  //   desktop budget: 530 px (centre column max-w-[560px] minus 30 px
+  //     breathing on each side, also fits the 640 px lg-column with
+  //     extra room).  Result for our guest list:
+  //       6-char "G.Bold"          → 180 px  (Figma ideal)
+  //       9-char "R.Ganbold"       → 168 px
+  //      14-char "Esteemed Guest"  → 108 px
+  //      16-char "Ch.Darkhanbaatar"→  95 px
+  //
+  //   mobile budget: 92 vw (8 vw of horizontal padding combined),
+  //     which on a 375 px iPhone is 345 px.  Result:
+  //       6 chars  → 32 vw   (= 120 px on 375px = Figma ideal)
+  //      14 chars  → 17.86 vw (= 67 px)
+  //      16 chars  → 15.63 vw (= 59 px)
+  //
+  // Math.max(…, 6) holds very short names ("J.Od" = 4 chars) at the
+  // 180/120-px ceiling instead of letting the formula scale them up
+  // beyond the Figma spec.
   const charCount = Math.max(guestName.length, 6);
-  const scriptCapVw = `${(160 / charCount).toFixed(2)}vw`;
+  const heroScriptDesktopPx = Math.min(
+    180,
+    Math.round(530 / (charCount * 0.35)),
+  );
+  const heroScriptMobileVw = Math.min(32, +(250 / charCount).toFixed(2));
+
+  // Viewport-aware mount: only mount the video instances that are
+  // actually visible on the current viewport.  Previously the JSX
+  // shipped THREE BackgroundVideoFrame instances of `first.mp4`
+  // (mobile full-bleed + two desktop pillars) and relied on Tailwind's
+  // `md:hidden` / `hidden md:block` to hide the inactive set via
+  // CSS — but `display:none` does NOT prevent the inner <video>
+  // element from being mounted, fetching the source, or holding a
+  // decoder slot.  In production this manifested as the left desktop
+  // pillar intermittently rendering as black: three concurrent decoders
+  // racing against the browser's autoplay throttle, with one losing
+  // the race and never firing `onPlaying` (so its fade-in stayed at
+  // opacity 0).  Mounting only the active set eliminates the race.
+  // Initial value is `null` — render no video on the SSR/pre-hydrate
+  // pass so we don't briefly mount the wrong viewport's instance and
+  // trigger a hydration mismatch / mount/unmount churn.
+  const [viewport, setViewport] = useState<"mobile" | "desktop" | null>(null);
+  useEffect(() => {
+    const mql = window.matchMedia("(min-width: 768px)");
+    const apply = () => setViewport(mql.matches ? "desktop" : "mobile");
+    apply();
+    mql.addEventListener("change", apply);
+    return () => mql.removeEventListener("change", apply);
+  }, []);
 
   return (
     <section
@@ -105,45 +143,52 @@ export default function HeroSection() {
           band so the lockup reads cleanly even when the asset is
           flush with the viewport top edge; no need to push the
           asset down anymore. */}
-      <div className="absolute inset-0 md:hidden">
-        <BackgroundVideoFrame
-          src="/media/hero/first.mp4"
-          start={HERO_VIDEO_RANGE.start}
-          end={HERO_VIDEO_RANGE.end}
-          objectFit="cover"
-          className="absolute inset-0 h-full w-full"
-        />
-      </div>
+      {viewport === "mobile" && (
+        <div className="absolute inset-0">
+          <BackgroundVideoFrame
+            src="/media/hero/first.mp4"
+            start={HERO_VIDEO_RANGE.start}
+            end={HERO_VIDEO_RANGE.end}
+            objectFit="cover"
+            className="absolute inset-0 h-full w-full"
+          />
+        </div>
+      )}
 
-      {/* Desktop left pillar — natural orientation. */}
-      <div className="absolute inset-y-0 left-[-10vw] hidden h-full w-[40vw] md:block lg:left-[-10vw] lg:w-[40vw]">
-        <BackgroundVideoFrame
-          src="/media/hero/first.mp4"
-          start={HERO_VIDEO_RANGE.start}
-          end={HERO_VIDEO_RANGE.end}
-          objectFit="cover"
-          className="absolute inset-0 h-full w-full"
-        />
-      </div>
+      {viewport === "desktop" && (
+        <>
+          {/* Desktop left pillar — natural orientation. */}
+          <div className="absolute inset-y-0 left-[-10vw] h-full w-[40vw] lg:left-[-10vw] lg:w-[40vw]">
+            <BackgroundVideoFrame
+              src="/media/hero/first.mp4"
+              start={HERO_VIDEO_RANGE.start}
+              end={HERO_VIDEO_RANGE.end}
+              objectFit="cover"
+              className="absolute inset-0 h-full w-full"
+            />
+          </div>
 
-      {/* Desktop right pillar — same source, mirrored on X via the
-          wrapper so the two columns read as a symmetrical pair.  The
-          mirror lives on the wrapper (not on the <video> directly)
-          because BackgroundVideoFrame already applies its own
-          translateZ(0) inline transform for the GPU pin; layering
-          the flip on the parent keeps both transforms intact. */}
-      <div
-        className="absolute inset-y-0 right-[-10vw] hidden h-full w-[40vw] md:block lg:right-[-10vw] lg:w-[40vw]"
-        style={{ transform: "scaleX(-1)" }}
-      >
-        <BackgroundVideoFrame
-          src="/media/hero/first.mp4"
-          start={HERO_VIDEO_RANGE.start}
-          end={HERO_VIDEO_RANGE.end}
-          objectFit="cover"
-          className="absolute inset-0 h-full w-full"
-        />
-      </div>
+          {/* Desktop right pillar — same source, mirrored on X via the
+              wrapper so the two columns read as a symmetrical pair.
+              The mirror lives on the wrapper (not on the <video>
+              directly) because BackgroundVideoFrame already applies
+              its own translateZ(0) inline transform for the GPU pin;
+              layering the flip on the parent keeps both transforms
+              intact. */}
+          <div
+            className="absolute inset-y-0 right-[-10vw] h-full w-[40vw] lg:right-[-10vw] lg:w-[40vw]"
+            style={{ transform: "scaleX(-1)" }}
+          >
+            <BackgroundVideoFrame
+              src="/media/hero/first.mp4"
+              start={HERO_VIDEO_RANGE.start}
+              end={HERO_VIDEO_RANGE.end}
+              objectFit="cover"
+              className="absolute inset-0 h-full w-full"
+            />
+          </div>
+        </>
+      )}
 
       {/* Lockup shader — MOBILE ONLY (md:hidden).  Soft radial
           darkening plate (440×316 source, authored by the user)
@@ -232,20 +277,22 @@ export default function HeroSection() {
               source.  Reveal lifts + fades the whole gesture in —
               word-staggering would fragment the calligraphy. */}
           <div
-            className="mt-4 w-full font-script text-[clamp(64px,28vw,120px)] leading-[1] tracking-tight md:mt-4 md:text-[clamp(40px,var(--script-cap),130px)] lg:mt-5"
+            className="mt-4 w-full font-script leading-[normal] md:mt-4 lg:mt-5
+              text-[clamp(48px,var(--hero-script-mobile),120px)]
+              md:text-[var(--hero-script-desktop)]"
             style={{
-              ["--script-cap" as any]: scriptCapVw,
+              ["--hero-script-mobile" as any]: `${heroScriptMobileVw}vw`,
+              ["--hero-script-desktop" as any]: `${heroScriptDesktopPx}px`,
               opacity: entered ? 1 : 0,
               transform: entered ? "translateY(0)" : "translateY(14px)",
               transition:
                 "opacity 900ms cubic-bezier(0.16, 1, 0.3, 1) 320ms, transform 900ms cubic-bezier(0.16, 1, 0.3, 1) 320ms",
               backgroundImage:
-                "linear-gradient(180deg, #e6ecff 0%, #94a8d8 60%, #6a7fb8 100%)",
+                "linear-gradient(215deg, #73A4FF 14.69%, #E1E1E1 83.64%)",
               WebkitBackgroundClip: "text",
               backgroundClip: "text",
               WebkitTextFillColor: "transparent",
               color: "transparent",
-              filter: "drop-shadow(0 0 22px rgba(150, 175, 230, 0.25))",
             }}
           >
             {guestName}

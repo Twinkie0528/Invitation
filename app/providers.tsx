@@ -12,8 +12,8 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       // Custom easing — not a Lenis default. Long tail, slow landing.
       easing: (t: number) => 1 - Math.pow(1 - t, 3.2),
       smoothWheel: true,
-      wheelMultiplier: 1,
-      touchMultiplier: 1.1,
+      wheelMultiplier: 0.85,
+      touchMultiplier: 1.0,
     });
 
     const detach = attachLenis(lenis);

@@ -5,15 +5,98 @@
 #   Нэр
 #   Нэр | Огноо
 #
-# Огноог `|` тэмдгийн ард бичнэ. Юу бичсэн нь хуудас дээр яг тэр чигээр гарна
-# (жишээ нь "2026.05.15", "May 15, 2026", "5-р сарын 15", аль ч хэлбэр болно).
-#
+# Огноог `|` тэмдгийн ард бичнэ (жишээ нь "6.18", "6.19", "6.26").
 # Огноог нэмж эсвэл хасч өөрчлөхөд slug өөрчлөгдөхгүй — нэрийн өмнөх хэсэг
 # хэвээр байвал хуучин link тогтвортой үлдэнэ.
 #
 # Засаад дараах командыг ажиллуулна:
 #   npm run guests
 
-Baatarsukh Batbold | 6.18
-Bataa Dorj | 6.19
-Jamiyan-Sharav D. | 6.26
+R.Ganbold
+G.Myagmarjav
+D.Enkhbat
+S.Tsengel
+B.Ariunaa
+Attilla Vitai
+B.Delgersaikhan
+L.Enkh-Amgalan
+A.Gankhuyag
+Ts.Amaraa
+B.Biliguun
+HaYuong Park
+G.Enkhtuvshin
+D.Enkhtuvshin
+N.Enkhbold
+J.Odjargal
+J.Od
+D.Enkhtsetseg
+L.Gantumur
+G.Bold
+Ch.Davaakhuu
+N.Nyamdavaa
+B.Davaa-Ochir
+J.Urantsetseg
+L.Myagmarjav
+Ts.Khandaa
+D.Bolormaa
+B.Ochirbat
+Ts.Altantsetseg
+B.Solongo
+Ts.Purevdorj
+B.Temuulen
+Batjargal
+L.Magsarjav
+G.Battsengel
+D.Odgerel
+Ya.Nyamtogtokh
+O.Anand
+D.Jamyansharav
+B.Enkhtuvshin
+G.Batkhuu
+S.Oyunsuren
+O.Tulga
+G.Bars
+A.Enkhchimeg
+L.Pagamsuren
+B.Juldyz
+Ts.Urtnasan
+E.Baasan
+E.Mandakh-Erdene
+G.Bat-Erdene
+D.Ariunbaatar
+G.Dolgoon
+E.Munkhbat
+Ch.Enkhmend
+Su.Batbold
+B.Battushig
+P. Batsaikhan
+R. Munkhtuya
+O.Orkhon
+A.Odonbaatar
+G. Tsevegjav
+V.Enkhbaatar
+Ts.Sanjjav
+D.Ganbaatar
+Kh.Anand
+M.Yesunmunkh
+B.Khaliunaa
+G.Chinzorig
+B.Bolormaa
+A.Chinbishrelt
+Ts.Tuvshinbayar
+Sh.Bayarsaikhan
+Ya.Navaan
+O.Damjin
+O.Narankhuu
+Sh.Ulambayar
+Ch.Darkhanbaatar
+B.Khishigjargal
+T.Gantumur
+B.Jargalsaikhan
+N.Tselmuun
+B.Battuul
+B.Chuluunkhuu
+J.Ganbayar
+Ch.Chinbat
+G.Javkhlan
+Kh.Batbold
