@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useSectionReveal } from "@/hooks/useSectionReveal";
 import { useSceneEntered } from "@/hooks/useScrollProgress";
+import { useSequentialDelays } from "@/hooks/useSequentialDelays";
 import BackgroundVideoFrame from "@/components/ui/BackgroundVideoFrame";
 import TopMark from "@/components/ui/TopMark";
 import { RevealText } from "@/components/ui/RevealText";
@@ -47,9 +48,23 @@ const REVEAL_RANGE = {
 //   - Title — Manrope 700, 26px (mobile), gradient 215° from the
 //     Figma Inspect panel (#73A4FF 14.69% → #E1E1E1 83.64%).
 //   - Two body paragraphs of immersive copy.
+// Body paragraph copy hoisted so `useSequentialDelays` can sum word
+// counts without re-tokenising every render.
+const BODY_PARA_1 = "Past and present converge within Urtuu, where time itself comes alive before you. Visuals, sound, and space come together as one, drawing you into the past as if you were truly there. Ancient rock carvings awaken into motion, horses neigh beyond the walls, the first telephone rings through the room, and the story of an unbroken connection unfolds beside you.";
+const BODY_PARA_2 = "Unitel Group proudly presents Mongolia’s largest immersive experience in celebration of its 20th anniversary. We are honored to invite you to experience it.";
+
 export default function UrtuuSection() {
   const ref = useSectionReveal<HTMLElement>(REVEAL_RANGE);
   const entered = useSceneEntered(0.18);
+  // Chain every reveal in this section so the eyebrow → title → body
+  // copy plays as one continuous typewriter.  String steps are
+  // word-counted; the title is a single inline opacity/transform
+  // transition so it appears here as the literal 800 ms of its
+  // animation.
+  const [d_eyebrow, d_title, d_para1, d_para2] = useSequentialDelays(
+    ["Introducing", 500, BODY_PARA_1, BODY_PARA_2],
+    { stagger: 8, duration: 250, pause: 60 },
+  );
 
   return (
     <section
@@ -121,23 +136,28 @@ export default function UrtuuSection() {
             viewport's wrapper keeps its video decoder asleep so we
             don't pay a double-decode tax for running mobile +
             desktop instances side by side. */}
-        <div className="absolute inset-0 mx-auto hidden items-center justify-center sm:flex">
-          <div
-            className="relative w-[42vw] md:w-[38vw] lg:w-[36vw] xl:w-[32vw]"
-            style={{
-              aspectRatio: "39 / 49",
-              mixBlendMode: "screen",
-            }}
-          >
-            <BackgroundVideoFrame
-              src={BG_VIDEO}
-              poster={BG_POSTER}
-              start={REVEAL_RANGE.start}
-              end={REVEAL_RANGE.end}
-              objectFit="contain"
-              className="absolute inset-0 h-full w-full brightness-110 contrast-110"
-            />
-          </div>
+        {/* Figma spec (1280×832 frame, scales 1:1 on viewport via vw/vh):
+              width  : 472 / 1280 = 37vw
+              height : 593 / 832  → derived from aspect-ratio 472/593
+              top    : 103 / 832  = 12.4vh
+              left   : 403 / 1280 = 31.5vw
+            On a 1920×1200 laptop these expand to ~708×890 / top 149 /
+            left 605 — exactly the 1.5× scale the artboard implies. */}
+        <div className="absolute hidden sm:block" style={{
+          top: "12.4vh",
+          left: "31.5vw",
+          width: "37vw",
+          aspectRatio: "472 / 593",
+          mixBlendMode: "screen",
+        }}>
+          <BackgroundVideoFrame
+            src={BG_VIDEO}
+            poster={BG_POSTER}
+            start={REVEAL_RANGE.start}
+            end={REVEAL_RANGE.end}
+            objectFit="contain"
+            className="absolute inset-0 h-full w-full brightness-110 contrast-110"
+          />
         </div>
         {/* Vertical vignette — figure stays visible at the top + bottom
             edges (matching the Figma frame where the mascot blooms in
@@ -241,10 +261,10 @@ export default function UrtuuSection() {
         <Image
           src={WORDMARK_SRC}
           alt="Unitel"
-          width={120}
-          height={28}
+          width={74}
+          height={17}
           priority
-          className="h-[18px] w-auto md:h-[22px] lg:h-[26px]"
+          className="h-[17px] w-[74px]"
         />
       </div>
 
@@ -257,14 +277,15 @@ export default function UrtuuSection() {
           replaces the previous left-aligned split-layout (which the
           Figma reference does not use). */}
       <div className="absolute inset-0 mx-auto flex w-full max-w-[1320px] flex-col items-center justify-center px-6 py-8 text-center sm:px-14 sm:py-16 md:px-20 md:py-20 lg:px-28 lg:py-24">
-        <div className="w-full max-w-[320px] sm:max-w-[560px] md:max-w-[680px] lg:max-w-[760px]">
+        <div className="w-full max-w-[320px] sm:max-w-[48vw]">
           {/* Eyebrow — Figma: 16px, color #b7b7b7, letter-spacing
               6.4px (= 0.4em).  No italics. */}
           <RevealText
             as="div"
-            className="mb-3 font-sans text-[13px] font-normal uppercase tracking-[0.4em] text-[#b7b7b7] sm:mb-4 sm:text-[14px] md:text-[15px] lg:text-[16px]"
-            stagger={60}
-            duration={650}
+            className="mb-3 text-center font-sans text-[13px] font-normal uppercase tracking-[0.4em] text-[#b7b7b7] sm:mb-4 sm:text-[20px] md:text-[21px] lg:text-[22px]"
+            stagger={8}
+            duration={250}
+            delay={d_eyebrow}
             trigger={entered}
           >
             Introducing
@@ -280,7 +301,7 @@ export default function UrtuuSection() {
               title fits comfortably on a single line inside the
               centred 760px column the Figma frame uses. */}
           <h2
-            className="mb-5 font-sans text-[26px] font-bold leading-[1.2] tracking-tight sm:mb-7 sm:text-[30px] md:mb-8 md:text-[36px] lg:text-[42px] xl:text-[48px]"
+            className="mb-5 text-center font-sans text-[32px] font-bold uppercase leading-[1.2] tracking-tight sm:mb-7 sm:text-[40px] md:mb-8"
             style={{
               backgroundImage:
                 "linear-gradient(215deg, #73A4FF 14.69%, #E1E1E1 83.64%)",
@@ -291,8 +312,7 @@ export default function UrtuuSection() {
               filter: "drop-shadow(0 0 18px rgba(115, 164, 255, 0.18))",
               opacity: entered ? 1 : 0,
               transform: entered ? "translateY(0)" : "translateY(10px)",
-              transition:
-                "opacity 800ms cubic-bezier(0.16, 1, 0.3, 1) 350ms, transform 800ms cubic-bezier(0.16, 1, 0.3, 1) 350ms",
+              transition: `opacity 500ms cubic-bezier(0.16, 1, 0.3, 1) ${d_title}ms, transform 500ms cubic-bezier(0.16, 1, 0.3, 1) ${d_title}ms`,
             }}
           >
             {"“The Urtuu” immersive Experience"}
@@ -302,23 +322,23 @@ export default function UrtuuSection() {
           <div className="space-y-5 sm:space-y-5 md:space-y-6">
             <RevealText
               as="p"
-              className="font-sans text-[14px] font-light leading-[1.55] text-white/95 sm:text-[15px] sm:leading-[1.6] md:text-[16px] lg:text-[17px]"
-              stagger={28}
-              duration={700}
-              delay={1500}
+              className="font-sans text-[14px] font-light leading-[1.55] text-white/95 sm:text-[22px] sm:leading-[1.6]"
+              stagger={8}
+              duration={250}
+              delay={d_para1}
               trigger={entered}
             >
-              {"Past and present converge within Urtuu, where time itself comes alive before you. Visuals, sound, and space come together as one, drawing you into the past as if you were truly there. Ancient rock carvings awaken into motion, horses neigh beyond the walls, the first telephone rings through the room, and the story of an unbroken connection unfolds beside you."}
+              {BODY_PARA_1}
             </RevealText>
             <RevealText
               as="p"
-              className="font-sans text-[14px] font-light leading-[1.55] text-white/95 sm:text-[15px] sm:leading-[1.6] md:text-[16px] lg:text-[17px]"
-              stagger={28}
-              duration={700}
-              delay={1800}
+              className="font-sans text-[14px] font-light leading-[1.55] text-white/95 sm:text-[22px] sm:leading-[1.6]"
+              stagger={8}
+              duration={250}
+              delay={d_para2}
               trigger={entered}
             >
-              {"Unitel Group proudly presents Mongolia’s largest immersive experience in celebration of its 20th anniversary. We are honored to invite you to experience it."}
+              {BODY_PARA_2}
             </RevealText>
           </div>
         </div>

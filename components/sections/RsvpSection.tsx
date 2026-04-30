@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useSectionReveal } from "@/hooks/useSectionReveal";
 import { useSceneEntered } from "@/hooks/useScrollProgress";
 import { useGuest } from "@/lib/guestContext";
+import { useSequentialDelays } from "@/hooks/useSequentialDelays";
 import TopMark from "@/components/ui/TopMark";
 import { RevealText } from "@/components/ui/RevealText";
 import BackgroundVideoFrame from "@/components/ui/BackgroundVideoFrame";
@@ -75,6 +76,15 @@ export default function RsvpSection() {
   const entered = useSceneEntered(0.87);
   const guest = useGuest();
   const parsed = parseGuestDate(guest?.date);
+  // Continuous typewriter for the closing scene: title → date block
+  // (mobile stack / desktop inline row, both share the same delay) →
+  // dress code → venue.  Each step's literal animation duration is
+  // listed so the next one fires the moment the previous one settles.
+  const VENUE_TEXT = "Temporary Exhibition Hall, Outdoor of the State Academic Drama Theatre.";
+  const [d_title, d_date, d_dress, d_venue] = useSequentialDelays(
+    [500, 500, 400, VENUE_TEXT],
+    { stagger: 8, duration: 250, pause: 60, initialDelay: 100 },
+  );
   // Fallback to the headline date from the Figma so the un-personalised
   // root URL still reads as a proper invitation.
   const month = parsed?.month ?? "June";
@@ -106,7 +116,7 @@ export default function RsvpSection() {
           black header area for a seamless transition. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-0 top-[50%]"
+        className="pointer-events-none absolute inset-x-0 bottom-0 top-[18%]"
       >
         <BackgroundVideoFrame
           src={COSMOS_SRC}
@@ -114,10 +124,35 @@ export default function RsvpSection() {
           start={0.83}
           end={1.05}
           objectFit="cover"
-          className="absolute inset-0 h-full w-full opacity-90 sm:opacity-30"
+          className="absolute inset-0 h-full w-full opacity-90 sm:opacity-55 sm:brightness-90 sm:contrast-[1.5]"
         />
         <div className="absolute inset-x-0 top-0 h-[25%] bg-gradient-to-b from-black to-transparent" />
       </div>
+
+      {/* ---------- Shader plate behind the text ----------
+          Same `common/shader.png` the Urtuu / CEO sections use.  The
+          cosmos rider mp4 was reading right through the title + dress
+          code + date row, so we drop the shader in between the video
+          (z-auto) and the foreground content (z-10) and mask it with
+          a radial gradient centred on the text band so the dim only
+          covers the copy area while leaving the rider's outer edges
+          clear.  Visible on every breakpoint because the readability
+          issue affected mobile and desktop alike. */}
+      <Image
+        src="/media/common/shader.png"
+        alt=""
+        fill
+        aria-hidden
+        priority={false}
+        sizes="100vw"
+        className="pointer-events-none object-cover"
+        style={{
+          maskImage:
+            "radial-gradient(ellipse 70% 50% at 50% 35%, black 20%, transparent 100%)",
+          WebkitMaskImage:
+            "radial-gradient(ellipse 70% 50% at 50% 35%, black 20%, transparent 100%)",
+        }}
+      />
 
       {/* TopMark renders the centred mobile wordmark; on sm+ we hide
           it and drop a right-corner copy at 74×17 to match the
@@ -151,12 +186,11 @@ export default function RsvpSection() {
             baked into the pixels so we don't have to fight CSS-blur
             or web-font swap drift. */}
         <div
-          className="w-[306px] sm:w-[420px]"
+          className="w-[306px] sm:w-[600px]"
           style={{
             opacity: entered ? 1 : 0,
             transform: entered ? "translateY(0)" : "translateY(8px)",
-            transition:
-              "opacity 800ms cubic-bezier(0.16, 1, 0.3, 1) 300ms, transform 800ms cubic-bezier(0.16, 1, 0.3, 1) 300ms",
+            transition: `opacity 500ms cubic-bezier(0.16, 1, 0.3, 1) ${d_title}ms, transform 500ms cubic-bezier(0.16, 1, 0.3, 1) ${d_title}ms`,
           }}
         >
           <Image
@@ -179,8 +213,7 @@ export default function RsvpSection() {
           style={{
             opacity: entered ? 1 : 0,
             transform: entered ? "translateY(0)" : "translateY(8px)",
-            transition:
-              "opacity 800ms cubic-bezier(0.16, 1, 0.3, 1) 900ms, transform 800ms cubic-bezier(0.16, 1, 0.3, 1) 900ms",
+            transition: `opacity 500ms cubic-bezier(0.16, 1, 0.3, 1) ${d_date}ms, transform 500ms cubic-bezier(0.16, 1, 0.3, 1) ${d_date}ms`,
           }}
         >
           {/* 18:00 — gradient blue→silver. */}
@@ -222,16 +255,15 @@ export default function RsvpSection() {
             stack above).  `sm:order-3` places this AFTER the dress
             code on desktop without changing DOM order. */}
         <h2
-          className="hidden font-sans font-bold leading-none tracking-tight sm:order-3 sm:mt-8 sm:flex sm:items-baseline sm:justify-center sm:gap-3"
+          className="hidden font-sans font-bold leading-none tracking-tight sm:order-3 sm:mt-24 sm:flex sm:items-baseline sm:justify-center sm:gap-3"
           style={{
             opacity: entered ? 1 : 0,
             transform: entered ? "translateY(0)" : "translateY(8px)",
-            transition:
-              "opacity 800ms cubic-bezier(0.16, 1, 0.3, 1) 900ms, transform 800ms cubic-bezier(0.16, 1, 0.3, 1) 900ms",
+            transition: `opacity 500ms cubic-bezier(0.16, 1, 0.3, 1) ${d_date}ms, transform 500ms cubic-bezier(0.16, 1, 0.3, 1) ${d_date}ms`,
           }}
         >
           <span
-            className="text-[48px] md:text-[58px] lg:text-[64px]"
+            className="text-[50px] md:text-[60px] lg:text-[66px]"
             style={{
               backgroundImage:
                 "linear-gradient(190deg, #73A4FF 14.69%, #E1E1E1 83.64%)",
@@ -243,10 +275,10 @@ export default function RsvpSection() {
           >
             {EVENT_TIME}
           </span>
-          <span className="text-[42px] text-white md:text-[52px] lg:text-[56px]">
+          <span className="text-[44px] text-white md:text-[54px] lg:text-[58px]">
             {month} {day},
           </span>
-          <span className="text-[42px] text-white md:text-[52px] lg:text-[56px]">
+          <span className="text-[44px] text-white md:text-[54px] lg:text-[58px]">
             {EVENT_YEAR}
           </span>
         </h2>
@@ -258,12 +290,11 @@ export default function RsvpSection() {
             and date) via `sm:order-2`, with the gap to the title
             tightened down from the mobile `mt-7`. */}
         <p
-          className="mt-7 font-sans text-[12px] font-normal leading-[1.4] text-white sm:order-2 sm:mt-5 sm:text-[14px] md:text-[16px]"
+          className="mt-7 font-sans text-[12px] font-normal leading-[1.4] text-white sm:order-2 sm:mt-3 sm:text-[22px]"
           style={{
             opacity: entered ? 1 : 0,
             transform: entered ? "translateY(0)" : "translateY(6px)",
-            transition:
-              "opacity 600ms cubic-bezier(0.16, 1, 0.3, 1) 1700ms, transform 600ms cubic-bezier(0.16, 1, 0.3, 1) 1700ms",
+            transition: `opacity 400ms cubic-bezier(0.16, 1, 0.3, 1) ${d_dress}ms, transform 400ms cubic-bezier(0.16, 1, 0.3, 1) ${d_dress}ms`,
           }}
         >
           <span className="font-bold">Dress code:</span> Cocktail attire
@@ -273,16 +304,16 @@ export default function RsvpSection() {
             Mobile Figma spec: 259×50 box, three lines.  At 12 px font-
             size with 1.4 line-height the text wraps to exactly three
             rows.  Desktop pinned to the last position via `sm:order-4`. */}
-        <div className="mt-3 sm:order-4 sm:mt-5">
+        <div className="mt-3 sm:order-4 sm:mt-8">
           <RevealText
             as="p"
-            className="w-[259px] text-center font-sans text-[12px] font-normal leading-[1.4] text-white sm:w-auto sm:max-w-[420px] sm:text-[14px] md:max-w-[540px] md:text-[16px]"
-            stagger={22}
-            duration={650}
-            delay={1950}
+            className="w-[259px] text-center font-sans text-[12px] font-normal leading-[1.4] text-white sm:w-auto sm:max-w-[420px] sm:text-[22px] md:max-w-[540px]"
+            stagger={8}
+            duration={250}
+            delay={d_venue}
             trigger={entered}
           >
-            {"Temporary Exhibition Hall, Outdoor of the State Academic Drama Theatre."}
+            {VENUE_TEXT}
           </RevealText>
         </div>
       </div>

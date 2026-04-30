@@ -93,9 +93,21 @@ const guests = entries.map(({ name, date }) => {
 
 writeFileSync(GUESTS_FILE, JSON.stringify(guests, null, 2) + "\n", "utf8");
 
+// Display formatter — kept in sync with `formatGuestName` in
+// lib/guestContext.tsx so the CSV the boss receives reads the same
+// way the hero script renders ("Ganbold R." rather than "R.Ganbold").
+// Duplicated rather than imported because this script is plain Node /
+// .mjs and lib/ is TypeScript / Next.
+function formatGuestName(raw) {
+  const match = /^([A-Za-zÀ-ÿ]{1,3})\.\s*(.+)$/.exec(raw);
+  if (match) return `${match[2]} ${match[1]}.`;
+  return raw;
+}
+
 const csvRows = ["Name,Date,Link"];
 for (const g of guests) {
-  const safeName = `"${g.name.replace(/"/g, '""')}"`;
+  const displayName = formatGuestName(g.name);
+  const safeName = `"${displayName.replace(/"/g, '""')}"`;
   const safeDate = g.date ? `"${g.date.replace(/"/g, '""')}"` : "";
   csvRows.push(`${safeName},${safeDate},${BASE_URL}/i/${g.slug}`);
 }

@@ -15,6 +15,12 @@ import { SCENES } from "@/lib/scenes";
 // the dots never intercept TubesCursor input.
 const PAGES = SCENES.filter((s) => s.id !== "cold");
 
+// Pages where the pagination should stay hidden.  The hero (and the
+// `cold` pre-roll that fades into it) is the entry card — showing the
+// dots there would compete with the invitation reveal, so we suppress
+// them until the user starts scrolling into the actual story pages.
+const HIDDEN_ON: ReadonlySet<string> = new Set(["cold", "hero"]);
+
 function activeIndex(progress: number): number {
   for (let i = 0; i < PAGES.length; i++) {
     if (progress >= PAGES[i].start && progress < PAGES[i].end) return i;
@@ -26,19 +32,27 @@ export default function SectionDots() {
   const [active, setActive] = useState(() =>
     activeIndex(sceneRef.current.progress),
   );
+  const [hidden, setHidden] = useState(() =>
+    HIDDEN_ON.has(sceneRef.current.active),
+  );
 
   useEffect(() => {
     setActive(activeIndex(sceneRef.current.progress));
-    return subscribeScene(({ progress }) => {
+    setHidden(HIDDEN_ON.has(sceneRef.current.active));
+    return subscribeScene(({ progress, active: scene }) => {
       const next = activeIndex(progress);
       setActive((prev) => (prev === next ? prev : next));
+      const nextHidden = HIDDEN_ON.has(scene);
+      setHidden((prev) => (prev === nextHidden ? prev : nextHidden));
     });
   }, []);
 
   return (
     <div
       aria-hidden
-      className="pointer-events-none fixed inset-x-0 bottom-[3vh] z-40 flex justify-center sm:inset-x-auto sm:bottom-auto sm:right-6 sm:top-1/2 sm:-translate-y-1/2 md:right-8 lg:right-10"
+      className={`pointer-events-none fixed inset-x-0 bottom-[3vh] z-40 flex justify-center transition-opacity duration-500 ease-out sm:inset-x-auto sm:bottom-auto sm:right-6 sm:top-1/2 sm:-translate-y-1/2 md:right-8 lg:right-10 ${
+        hidden ? "opacity-0" : "opacity-100"
+      }`}
     >
       <div className="flex items-center gap-3 sm:flex-col sm:gap-3">
         {PAGES.map((page, i) => {

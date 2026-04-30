@@ -3,9 +3,17 @@
 import Image from "next/image";
 import { useSectionReveal } from "@/hooks/useSectionReveal";
 import { useSceneEntered } from "@/hooks/useScrollProgress";
+import { useSequentialDelays } from "@/hooks/useSequentialDelays";
 import BackgroundVideoFrame from "@/components/ui/BackgroundVideoFrame";
 import TopMark from "@/components/ui/TopMark";
 import { RevealText } from "@/components/ui/RevealText";
+
+const CEO_PARA_1 = "Dear Valued Partner,";
+const CEO_PARA_2 = "I am proud to acknowledge the role you have played in shaping this journey.";
+const CEO_PARA_3 = "Over the past two decades, Unitel Group has played a meaningful role in advancing Mongolia’s telecommunications landscape introducing technological innovations and helping shape the evolution of connectivity across the nation.";
+const CEO_PARA_4 = "This 20 year milestone is not only a celebration of our journey, but an opportunity to share that progress with those who have been part of it.";
+const CEO_PARA_5 = "To mark this occasion, we are curating immersive experience dedicated to our customers and partners one that reflects the transformation of the industry, the milestones we have achieved together, and the future we continue to build.";
+
 // Cinematic background — Jamiyan-Sharav mascot animation, mounted
 // only once the user is within scroll range.  Served from /public/media
 // so the file ships through Next.js's static asset pipeline (no
@@ -45,6 +53,23 @@ const REVEAL_RANGE = {
 export default function CeoLetterSection() {
   const ref = useSectionReveal<HTMLElement>(REVEAL_RANGE);
   const entered = useSceneEntered(0.66);
+  // Continuous typewriter for the letter — the five paragraphs reveal
+  // one after the other instead of overlapping.  We append a 0-duration
+  // sentinel step at the end so we can read back the timestamp at which
+  // the chain settles; that timestamp drives the signature row's
+  // inline transition (so the name + signature mark land exactly when
+  // the body text finishes).
+  const [
+    d_para1,
+    d_para2,
+    d_para3,
+    d_para4,
+    d_para5,
+    d_signature,
+  ] = useSequentialDelays(
+    [CEO_PARA_1, CEO_PARA_2, CEO_PARA_3, CEO_PARA_4, CEO_PARA_5, 0],
+    { stagger: 8, duration: 250, pause: 60, initialDelay: 100 },
+  );
 
   return (
     <section
@@ -75,20 +100,25 @@ export default function CeoLetterSection() {
           via Tailwind's `!`-important arbitrary variants on sm+
           only — the BackgroundVideoFrame component doesn't expose
           a responsive prop for it. */}
-      <div className="absolute inset-x-0 top-[10vh] bottom-[10vh] sm:top-[15vh] sm:bottom-[10vh]">
+      <div className="absolute inset-x-0 top-[7vh] bottom-[20vh] sm:inset-x-[-8.7%] sm:top-[8.7%] sm:bottom-[1.6%]">
         <BackgroundVideoFrame
           src={BG_VIDEO}
           start={REVEAL_RANGE.start}
           end={REVEAL_RANGE.end}
           objectFit="cover"
-          className="absolute inset-0 h-full w-full brightness-110 contrast-110 sm:opacity-25 sm:[&>video]:!object-contain sm:[&>img]:!object-contain"
+          className="absolute inset-0 h-full w-full brightness-125 contrast-115 sm:opacity-50 sm:[&>video]:!object-contain sm:[&>img]:!object-contain"
         />
       </div>
       {/* Light dimming behind the body copy only — soft enough that
-          the mascot stays clearly visible through it.  Previous
-          combined gradient dimmed the figure to ~80% which made the
-          mp4 read as washed out. */}
-      <div className="absolute inset-x-0 top-[18%] bottom-[18%] bg-gradient-to-b from-black/15 via-transparent to-black/25" />
+          the mascot stays clearly visible through it.  Mobile keeps the
+          existing top/bottom linear gradient because the mobile shader
+          PNG already handles the centre dim.  Desktop swaps in a soft
+          radial dim that darkens behind the centred text block while
+          letting the mascot show through full-strength along the
+          perimeter — same readability/visibility tradeoff the mobile
+          shader.png provides, but rendered as pure CSS so it scales
+          to any viewport (Figma 1280×832 → laptop 1920×1200 etc.). */}
+      <div className="absolute inset-x-0 top-[18%] bottom-[18%] bg-gradient-to-b from-black/15 via-transparent to-black/25 sm:hidden" />
 
       {/* Figma shader overlay — pre-rendered radial darkening behind
           the letter copy so the queen mascot stops fighting the body
@@ -105,12 +135,12 @@ export default function CeoLetterSection() {
         aria-hidden
         priority={false}
         sizes="100vw"
-        className="pointer-events-none object-cover sm:hidden"
+        className="pointer-events-none object-cover sm:opacity-35 sm:blur-2xl"
         style={{
           maskImage:
-            "radial-gradient(ellipse 75% 65% at 50% 50%, black 30%, transparent 100%)",
+            "radial-gradient(ellipse 65% 55% at 50% 50%, black 0%, transparent 100%)",
           WebkitMaskImage:
-            "radial-gradient(ellipse 75% 65% at 50% 50%, black 30%, transparent 100%)",
+            "radial-gradient(ellipse 65% 55% at 50% 50%, black 0%, transparent 100%)",
         }}
       />
 
@@ -140,63 +170,71 @@ export default function CeoLetterSection() {
           upper-middle band of the 1280×832 frame (matches the Figma
           desktop reference) with the signature visible underneath. */}
       <div
-        className="absolute inset-x-0 top-[22%] mx-auto flex w-full justify-center px-6 sm:top-[31%] sm:px-14 md:px-20"
+        className="absolute inset-x-0 top-[18%] mx-auto flex w-full justify-center px-6 sm:top-[28%] sm:px-14 md:px-20"
         style={{ fontFamily: "var(--font-manrope), system-ui, sans-serif" }}
       >
         {/* All five paragraphs share the same typography stack so the
             letter reads as a single voice (matches the Figma frame).
-            Desktop column widens to 600px so the long sentences in
-            paragraphs 2 / 3 / 5 can break naturally at 14px. */}
-        <div className="w-full max-w-[360px] text-center sm:max-w-[600px]">
+            Desktop column widens to 920px (matches Gala body width)
+            so paragraphs 3 / 5 break to 3 lines like the design. */}
+        <div className="w-full max-w-[300px] text-balance text-center sm:max-w-[920px]">
+          {/* "Dear Valued Partner," — centered + bold + 18 px per the
+              Figma header treatment.  text-center on this element
+              overrides the parent block's text-justify only for this
+              line. */}
           <RevealText
             as="p"
-            className="text-[15px] font-normal leading-[1.5] text-white sm:text-[14px] sm:leading-[1.6]"
-            stagger={26}
-            duration={650}
-            delay={300}
+            className="text-center text-[18px] font-bold uppercase leading-normal text-white sm:text-[24px] sm:font-bold sm:leading-[1.4]"
+            stagger={8}
+            duration={250}
+            delay={d_para1}
             trigger={entered}
           >
-            {"Dear Valued Partner,"}
+            {CEO_PARA_1}
+          </RevealText>
+          {/* Body paragraphs — Manrope Light 24 px / line-height 1.4 /
+              white/90, matching Gala typography rule.  Para 2 has a
+              larger top margin to render a clear paragraph break after
+              the "Dear Valued Partner," heading; Paras 3-5 stay tight. */}
+          <RevealText
+            as="p"
+            className="mt-4 text-[16px] font-normal leading-normal text-white sm:mt-10 sm:text-[24px] sm:font-light sm:leading-[1.4] sm:text-white/90"
+            stagger={8}
+            duration={250}
+            delay={d_para2}
+            trigger={entered}
+          >
+            {CEO_PARA_2}
           </RevealText>
           <RevealText
             as="p"
-            className="text-[15px] font-normal leading-[1.5] text-white sm:text-[14px] sm:leading-[1.6]"
-            stagger={26}
-            duration={650}
-            delay={500}
+            className="mt-5 text-[16px] font-normal leading-normal text-white sm:mt-7 sm:text-[24px] sm:font-light sm:leading-[1.4] sm:text-white/90"
+            stagger={8}
+            duration={250}
+            delay={d_para3}
             trigger={entered}
           >
-            {"I am proud to acknowledge the role you have played in shaping this journey."}
+            {CEO_PARA_3}
           </RevealText>
           <RevealText
             as="p"
-            className="mt-5 text-[15px] font-normal leading-[1.5] text-white sm:mt-3 sm:text-[14px] sm:leading-[1.6]"
-            stagger={24}
-            duration={700}
-            delay={1000}
+            className="mt-5 text-[16px] font-normal leading-normal text-white sm:mt-7 sm:text-[24px] sm:font-light sm:leading-[1.4] sm:text-white/90"
+            stagger={8}
+            duration={250}
+            delay={d_para4}
             trigger={entered}
           >
-            {"Over the past two decades, Unitel Group has played a meaningful role in advancing Mongolia’s telecommunications landscape introducing technological innovations and helping shape the evolution of connectivity across the nation."}
+            {CEO_PARA_4}
           </RevealText>
           <RevealText
             as="p"
-            className="mt-5 text-[15px] font-normal leading-[1.5] text-white sm:mt-3 sm:text-[14px] sm:leading-[1.6]"
-            stagger={24}
-            duration={700}
-            delay={1400}
+            className="mt-5 text-[16px] font-normal leading-normal text-white sm:mt-7 sm:text-[24px] sm:font-light sm:leading-[1.4] sm:text-white/90"
+            stagger={8}
+            duration={250}
+            delay={d_para5}
             trigger={entered}
           >
-            {"This 20 year milestone is not only a celebration of our journey, but an opportunity to share that progress with those who have been part of it."}
-          </RevealText>
-          <RevealText
-            as="p"
-            className="mt-5 text-[15px] font-normal leading-[1.5] text-white sm:mt-3 sm:text-[14px] sm:leading-[1.6]"
-            stagger={24}
-            duration={700}
-            delay={1800}
-            trigger={entered}
-          >
-            {"To mark this occasion, we are curating immersive experience dedicated to our customers and partners one that reflects the transformation of the industry, the milestones we have achieved together, and the future we continue to build."}
+            {CEO_PARA_5}
           </RevealText>
         </div>
       </div>
@@ -210,13 +248,12 @@ export default function CeoLetterSection() {
           wider and breaks fewer lines.  Layout mirrors the Figma:
           name + title on the left, green signature mark to the right. */}
       <div
-        className="absolute inset-x-0 top-[83%] mx-auto flex w-full items-center justify-center gap-4 px-6 sm:top-[76%] sm:gap-6 sm:px-14 md:gap-8 md:px-20"
+        className="absolute inset-x-0 top-[89%] mx-auto flex w-full items-center justify-center gap-4 px-6 sm:top-[78%] sm:gap-6 sm:px-14 md:gap-8 md:px-20"
         style={{
           fontFamily: "var(--font-manrope), system-ui, sans-serif",
           opacity: entered ? 1 : 0,
           transform: entered ? "translateY(0)" : "translateY(8px)",
-          transition:
-            "opacity 700ms cubic-bezier(0.16, 1, 0.3, 1) 2300ms, transform 700ms cubic-bezier(0.16, 1, 0.3, 1) 2300ms",
+          transition: `opacity 450ms cubic-bezier(0.16, 1, 0.3, 1) ${d_signature}ms, transform 450ms cubic-bezier(0.16, 1, 0.3, 1) ${d_signature}ms`,
         }}
       >
         {/* Name + title block — Figma export values applied verbatim:
@@ -226,13 +263,13 @@ export default function CeoLetterSection() {
                 line-height 100%, letter-spacing 40% (= 0.4em). */}
         <div className="text-left">
           <p
-            className="text-[16px] font-extrabold text-white"
+            className="text-[20px] font-extrabold text-white sm:text-[28px] md:text-[32px]"
             style={{ lineHeight: 1, letterSpacing: 0 }}
           >
-            Jamiyan-Sharav D.
+            Jamiyansharav D.
           </p>
           <p
-            className="mt-1.5 text-[10px] font-normal text-[#b7b7b7]"
+            className="mt-2 text-[10px] font-normal text-[#b7b7b7] sm:text-[15px] md:text-[16px]"
             style={{ lineHeight: 1, letterSpacing: "0.4em" }}
           >
             CEO of Unitel Group
@@ -242,11 +279,11 @@ export default function CeoLetterSection() {
             Figma (107×64 mobile) and scaled with breakpoints. */}
         <Image
           src={CEO_SIGNATURE_SRC}
-          alt="Jamiyan-Sharav D. signature"
+          alt="Jamiyansharav D. signature"
           width={107}
           height={64}
           priority={false}
-          className="h-[44px] w-auto sm:h-[54px] md:h-[64px]"
+          className="h-[44px] w-auto sm:h-[64px] md:h-[78px]"
         />
       </div>
     </section>

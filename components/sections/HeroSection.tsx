@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useSectionReveal } from "@/hooks/useSectionReveal";
 import { useSceneEntered } from "@/hooks/useScrollProgress";
+import { useSequentialDelays } from "@/hooks/useSequentialDelays";
 import { useLoadGate } from "@/hooks/useLoadGate";
-import { useGuestName } from "@/lib/guestContext";
+import { formatGuestName, useGuestName } from "@/lib/guestContext";
 import { RevealText } from "@/components/ui/RevealText";
 import BackgroundVideoFrame from "@/components/ui/BackgroundVideoFrame";
 
@@ -46,7 +47,8 @@ export default function HeroSection() {
   // transition — the static logo cross-fades in at the exact position
   // the overlay logo flew to.
   const { introDone } = useLoadGate();
-  const guestName = useGuestName() ?? "Esteemed Guest";
+  const rawGuestName = useGuestName();
+  const guestName = rawGuestName ? formatGuestName(rawGuestName) : "Esteemed Guest";
 
   // Hero script sizing — Figma spec is 180 px on desktop and 120 px on
   // mobile, but those are the *ceilings* not the actual rendered size:
@@ -74,11 +76,39 @@ export default function HeroSection() {
   // 180/120-px ceiling instead of letting the formula scale them up
   // beyond the Figma spec.
   const charCount = Math.max(guestName.length, 6);
-  const heroScriptDesktopPx = Math.min(
-    180,
-    Math.round(530 / (charCount * 0.35)),
-  );
+  // Desktop: 17.5 vw lands the calligraphy at ~224 px on a 1280-wide
+  // artboard and ~328 px on a 1875-laptop — slightly bigger than the
+  // previous 15.6 vw so the script reads with more presence on the
+  // entry card (per design feedback).  Still proportionally bounded
+  // so it stays inside the lockup column without dominating.
+  const heroScriptDesktopCss = "17.5vw";
   const heroScriptMobileVw = Math.min(32, +(250 / charCount).toFixed(2));
+
+  // Continuous typewriter for the centre block: each line lands the
+  // moment the previous one settles.  String steps are word-counted by
+  // useSequentialDelays; the script flourish + scroll cue are inline
+  // opacity/transform transitions, so they appear here as their literal
+  // animation durations (900 ms / 600 ms).
+  // Reveal order: UNITEL GROUP → is pleased to invite → "to an
+  // exclusive evening" PNG → scroll cue → NAME (calligraphy zoom-in
+  // arrives LAST, after every other element on screen, so the guest's
+  // name is the climactic moment of the hero composition).
+  const [
+    d_unitel,
+    d_invite,
+    d_evening,
+    d_scroll,
+    d_name,
+  ] = useSequentialDelays(
+    [
+      "UNITEL GROUP",
+      "is pleased to invite",
+      700, // "to an exclusive evening" PNG inline 700 ms fade
+      350, // scroll cue inline 350 ms fade
+      500, // calligraphy name — last in chain, plays after scroll cue
+    ],
+    { stagger: 8, duration: 250, pause: 60 },
+  );
 
   // Viewport-aware mount: only mount the video instances that are
   // actually visible on the current viewport.  Previously the JSX
@@ -102,6 +132,20 @@ export default function HeroSection() {
     apply();
     mql.addEventListener("change", apply);
     return () => mql.removeEventListener("change", apply);
+  }, []);
+
+  // Local "mounted" gate — `entered` from useSceneEntered is true on
+  // the very first render (the hero IS the scene at progress 0), so an
+  // inline CSS transition keyed off `entered` has no false→true edge
+  // to animate against and the calligraphy zoom-in stayed invisible.
+  // We start `mounted` at false, flip it on the next paint, and key
+  // the guest-name + scroll-cue transitions off mounted instead.  The
+  // RevealText components above are unaffected because they manage
+  // their own internal visibility state.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    const t = window.setTimeout(() => setMounted(true), 30);
+    return () => window.clearTimeout(t);
   }, []);
 
   return (
@@ -162,8 +206,29 @@ export default function HeroSection() {
 
       {viewport === "desktop" && (
         <>
-          {/* Desktop left pillar — natural orientation. */}
-          <div className="absolute inset-y-0 left-[-10vw] h-full w-[40vw] lg:left-[-10vw] lg:w-[40vw]">
+          {/* Desktop pillars sized to the Figma `Screen PC` spec
+              (1280×832 frame, asset 517×1034 = 1:2 aspect):
+                width  : 517 / 1280 = 40vw
+                height : 1034 / 832 = 124vh (asset is taller than the
+                         viewport — overflow-hidden on the section
+                         clips the excess top + bottom)
+                top    : -72 / 832  = -8.65vh
+                left  (right pillar) : 960 / 1280 = 75vw
+                left  (left pillar)  : (-1280 + 960) mirrored = -15.4vw
+                rotation (right)     : -180°  (Figma blend layer is
+                         rotated, so the visible figure mirrors AND
+                         flips top↔bottom relative to the left pillar).
+
+              The two pillars therefore frame the centre copy as a
+              symmetrical pair: left pillar in natural orientation,
+              right pillar rotated 180°.  Brightness/contrast are
+              tuned higher than before so the dust mascot reads
+              clearly against the black plate (the previous values
+              were too dim per user feedback). */}
+          <div
+            className="absolute h-[124vh] w-[36vw]"
+            style={{ top: "-8.65vh", left: "-10vw" }}
+          >
             <BackgroundVideoFrame
               src="/media/hero/first.mp4"
               start={HERO_VIDEO_RANGE.start}
@@ -173,16 +238,9 @@ export default function HeroSection() {
             />
           </div>
 
-          {/* Desktop right pillar — same source, mirrored on X via the
-              wrapper so the two columns read as a symmetrical pair.
-              The mirror lives on the wrapper (not on the <video>
-              directly) because BackgroundVideoFrame already applies
-              its own translateZ(0) inline transform for the GPU pin;
-              layering the flip on the parent keeps both transforms
-              intact. */}
           <div
-            className="absolute inset-y-0 right-[-10vw] h-full w-[40vw] lg:right-[-10vw] lg:w-[40vw]"
-            style={{ transform: "scaleX(-1)" }}
+            className="absolute h-[124vh] w-[36vw]"
+            style={{ top: "-8.65vh", left: "74vw", transform: "scaleX(-1)" }}
           >
             <BackgroundVideoFrame
               src="/media/hero/first.mp4"
@@ -236,7 +294,15 @@ export default function HeroSection() {
             width={520}
             height={58}
             priority
-            className="h-9 w-auto sm:h-10 md:h-9 lg:h-11"
+            // Figma spec (1280×832 frame): 384.968 × 48.215 px.  We
+            // express that as 30vw width with auto-derived height so
+            // the lockup scales linearly with viewport — on the Figma
+            // artboard (1280) it lands at 384 px (1:1), and on a
+            // 1920×1200 laptop it lands at 576 px (the 1.5× scale the
+            // user asked for).  Mobile keeps the original height-
+            // anchored sizing because the lockup needs a hard cap on
+            // narrow phones (30vw on a 360-wide phone is too tiny).
+            className="h-9 w-auto sm:h-auto sm:w-[30vw]"
             style={{
               opacity: introDone ? 1 : 0,
               transition: "opacity 220ms ease-out",
@@ -253,22 +319,23 @@ export default function HeroSection() {
             and the supporting copy steps up in proportion.  The
             global zoom:0.8 rule on this section's flex wrapper trims
             the rendered output back toward the artboard spec. */}
-        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex flex-col items-center px-4 text-center md:mx-auto md:max-w-[560px] md:px-0 lg:max-w-[640px]">
+        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex flex-col items-center px-4 text-center md:mx-auto md:max-w-[900px] md:px-0 lg:max-w-[1200px]">
           <RevealText
             as="div"
-            className="font-sans text-[19px] font-semibold tracking-[0.18em] text-white md:text-lg md:tracking-[0.22em] lg:text-xl"
-            stagger={36}
-            duration={700}
+            className="font-sans text-[16px] font-semibold tracking-[0.18em] text-white sm:text-[2vw] md:tracking-[0.22em]"
+            stagger={8}
+            duration={250}
+            delay={d_unitel}
             trigger={entered}
           >
             UNITEL GROUP
           </RevealText>
           <RevealText
             as="div"
-            className="mt-2 font-sans text-[15px] font-light text-white/85 md:mt-1.5 md:text-sm lg:text-base"
-            stagger={32}
-            duration={700}
-            delay={140}
+            className="mt-1 font-sans text-[13px] font-light text-white/85 sm:mt-1 sm:text-[1.5vw]"
+            stagger={8}
+            duration={250}
+            delay={d_invite}
             trigger={entered}
           >
             is pleased to invite
@@ -282,16 +349,21 @@ export default function HeroSection() {
               source.  Reveal lifts + fades the whole gesture in —
               word-staggering would fragment the calligraphy. */}
           <div
-            className="mt-4 w-full font-script leading-[normal] md:mt-4 lg:mt-5
+            className="mt-6 w-full font-script leading-[normal] md:mt-8 lg:mt-10
               text-[clamp(48px,var(--hero-script-mobile),120px)]
               md:text-[var(--hero-script-desktop)]"
             style={{
               ["--hero-script-mobile" as any]: `${heroScriptMobileVw}vw`,
-              ["--hero-script-desktop" as any]: `${heroScriptDesktopPx}px`,
-              opacity: entered ? 1 : 0,
-              transform: entered ? "translateY(0)" : "translateY(14px)",
-              transition:
-                "opacity 900ms cubic-bezier(0.16, 1, 0.3, 1) 320ms, transform 900ms cubic-bezier(0.16, 1, 0.3, 1) 320ms",
+              ["--hero-script-desktop" as any]: heroScriptDesktopCss,
+              opacity: mounted ? 1 : 0,
+              transform: mounted ? "scale(1)" : "scale(0.3)",
+              // Start at scale(0.3) so the calligraphy "grows from
+              // nothing" — almost a dot then expands to full size.
+              // Ease-out-back adds a tiny overshoot at the end so it
+              // settles with a bit of bounce instead of just landing,
+              // which feels more cinematic for the marquee reveal.
+              transition: `opacity 800ms cubic-bezier(0.16, 1, 0.3, 1) ${d_name}ms, transform 1100ms cubic-bezier(0.34, 1.56, 0.64, 1) ${d_name}ms`,
+              transformOrigin: "center center",
               backgroundImage:
                 "linear-gradient(215deg, #73A4FF 14.69%, #E1E1E1 83.64%)",
               WebkitBackgroundClip: "text",
@@ -303,16 +375,34 @@ export default function HeroSection() {
             {guestName}
           </div>
 
-          <RevealText
-            as="div"
-            className="mt-3 font-sans text-[11px] uppercase tracking-[0.34em] text-[#a8bce0] md:mt-3 md:text-[11px] md:tracking-[0.5em] lg:text-[13px]"
-            stagger={26}
-            duration={700}
-            delay={780}
-            trigger={entered}
+          {/* "to an exclusive evening" — pre-rendered PNG export from
+              Figma (358 × 31 px).  We render it as an image because
+              the live-CSS version (Manrope Light 300 + filter blur)
+              produced an unreadable result across browsers; the PNG
+              has the blur baked into the pixels so it composites the
+              way the artboard intends regardless of font rendering.
+              Width scales viewport-proportionally: 358 / 1280 =
+              28 vw on desktop → 537 px on a 1920 laptop (1.5× the
+              Figma size).  Mobile shows the uppercase fallback text
+              because the PNG is sized for desktop framing. */}
+          <div
+            className="mt-4 font-sans font-light text-[11px] uppercase tracking-[0.34em] text-[#B7B7B7] sm:mt-12"
+            style={{
+              opacity: mounted ? 1 : 0,
+              transform: mounted ? "translateY(0)" : "translateY(8px)",
+              transition: `opacity 700ms cubic-bezier(0.16, 1, 0.3, 1) ${d_evening}ms, transform 700ms cubic-bezier(0.16, 1, 0.3, 1) ${d_evening}ms`,
+            }}
           >
-            to an exclusive evening
-          </RevealText>
+            <span className="sm:hidden">to an exclusive evening</span>
+            <Image
+              src="/media/hero/exclusive-evening.png"
+              alt="to an exclusive evening"
+              width={358}
+              height={31}
+              priority={false}
+              className="mx-auto hidden h-auto w-[22vw] brightness-125 contrast-115 sm:block"
+            />
+          </div>
         </div>
 
         {/* BOTTOM — scroll cue, anchored near the bottom edge.  Desktop
@@ -322,11 +412,11 @@ export default function HeroSection() {
         <div
           className="absolute inset-x-0 bottom-[6vh] flex flex-col items-center gap-2 text-white/60 md:bottom-[10vh] md:gap-1.5"
           style={{
-            opacity: entered ? 1 : 0,
-            transition: "opacity 600ms ease-out 1100ms",
+            opacity: mounted ? 1 : 0,
+            transition: `opacity 350ms ease-out ${d_scroll}ms`,
           }}
         >
-          <span className="font-sans text-[13px] md:text-sm lg:text-base">
+          <span className="font-sans text-[13px] md:text-base lg:text-lg">
             Explore the experience below
           </span>
           <ChevronDown />

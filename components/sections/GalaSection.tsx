@@ -3,9 +3,15 @@
 import Image from "next/image";
 import { useSectionReveal } from "@/hooks/useSectionReveal";
 import { useSceneEntered } from "@/hooks/useScrollProgress";
+import { useSequentialDelays } from "@/hooks/useSequentialDelays";
 import BackgroundVideoFrame from "@/components/ui/BackgroundVideoFrame";
 import TopMark from "@/components/ui/TopMark";
 import { RevealText } from "@/components/ui/RevealText";
+
+const GALA_PARA_1 = "Created exclusively for you, this immersive gala dinner is designed as an evening beyond the ordinary where storytelling is not simply observed, but experienced.";
+const GALA_PARA_2 = "Throughout the night, you will move through three distinct thematic settings, each offering its own atmosphere for dining and discovery.";
+const GALA_PARA_3 = "Live performances unfold seamlessly around you, blending space, sound, and visuals into a continuous sensory experience. A night where you don’t just attend—you step in, explore, and become part of the moment.";
+const GALA_PARA_4 = "A night designed exclusively for invited guests.";
 
 // Cinematic background — Gala bloom particles, mounted only once
 // the user is within scroll range.  Served from /public/media so the
@@ -43,6 +49,26 @@ const REVEAL_RANGE = {
 export default function GalaSection() {
   const ref = useSectionReveal<HTMLElement>(REVEAL_RANGE);
   const entered = useSceneEntered(0.44);
+  // Continuous typewriter: eyebrow → headline (inline 800 ms) → 4
+  // paragraphs.  Each step starts the moment the previous one settles.
+  const [
+    d_eyebrow,
+    d_title,
+    d_para1,
+    d_para2,
+    d_para3,
+    d_para4,
+  ] = useSequentialDelays(
+    [
+      "An Exclusive",
+      500,
+      GALA_PARA_1,
+      GALA_PARA_2,
+      GALA_PARA_3,
+      GALA_PARA_4,
+    ],
+    { stagger: 8, duration: 250, pause: 60 },
+  );
 
   return (
     <section
@@ -60,19 +86,18 @@ export default function GalaSection() {
           Net effect on mobile: bigger blossom, anchored toward the
           bottom — matches the user's Figma request.
 
-          Desktop matches Figma `Screen PC` (node 4:80) precisely:
-          particle gif anchored at left:177/1280≈14 %, top:429/832≈52 %,
-          bleeding 19 % past the right edge and 21 % past the bottom so
-          the bloom reads as a wide horizontal banner sitting beneath
-          the centered headline + body — overflow-hidden on the
-          <section> clips the bleed. */}
-      <div className="absolute inset-x-0 bottom-[-10vh] top-[60%] sm:inset-x-auto sm:left-[14%] sm:right-[-19%] sm:top-[52%] sm:bottom-[-21%]">
+          Desktop matches Figma `Screen PC` precisely (canvas 1124×727):
+          asset 1341×574 anchored at left:177 (15.75 %), top:429 (59 %),
+          bleeding 35 % past the right edge and 38 % past the bottom.
+          Rotated −180° per the Figma transform — overflow-hidden on
+          the <section> clips the bleed. */}
+      <div className="absolute inset-x-0 bottom-[-10vh] top-[60%] sm:inset-x-auto sm:left-[15.75%] sm:right-[-35%] sm:top-[59%] sm:bottom-[-38%]">
         <BackgroundVideoFrame
           src={BG_VIDEO}
           poster={BG_POSTER}
           start={REVEAL_RANGE.start}
           end={REVEAL_RANGE.end}
-          className="absolute inset-0 h-full w-full opacity-95 brightness-110 contrast-110"
+          className="absolute inset-0 h-full w-full opacity-95 brightness-110 contrast-110 sm:rotate-180"
         />
         {/* Soft fade from black into the bloom so the boundary isn't
             a hard line.  Trimmed to 12 % so the bloom reads vividly
@@ -130,15 +155,16 @@ export default function GalaSection() {
           Desktop matches Figma `Screen PC` (node 4:80): centered title
           + 535-px body column sits in the upper-middle band (eyebrow
           ~28 % from top), bloom banner underneath at top:52 %. */}
-      <div className="relative mx-auto flex w-full max-w-[1320px] flex-col items-center px-6 pt-[14vh] pb-[42vh] text-center sm:px-14 sm:pt-[24vh] sm:pb-[36vh] md:px-20 lg:px-28">
-        <div className="w-full max-w-[280px] sm:max-w-[535px]">
+      <div className="relative mx-auto flex w-full max-w-[1320px] flex-col items-center px-6 pt-[14vh] pb-[42vh] text-center sm:px-14 sm:pt-[33vh] sm:pb-[28vh] md:px-20 lg:px-28">
+        <div className="w-full max-w-[280px] text-balance sm:max-w-[920px] sm:text-pretty">
           {/* Eyebrow — Figma: Manrope Regular 16px, #b7b7b7,
               letter-spacing 6.4px (= 0.4em).  No italics. */}
           <RevealText
             as="div"
-            className="mb-3 font-sans text-[13px] font-normal tracking-[0.4em] text-[#b7b7b7] sm:mb-3 sm:text-[16px]"
-            stagger={60}
-            duration={650}
+            className="mb-3 text-center font-sans text-[13px] font-normal tracking-[0.4em] text-[#b7b7b7] sm:mb-4 sm:text-[27px]"
+            stagger={8}
+            duration={250}
+            delay={d_eyebrow}
             trigger={entered}
           >
             An Exclusive
@@ -156,7 +182,7 @@ export default function GalaSection() {
               relaxes the break with `sm:hidden` so it reads as a wider
               single-line headline. */}
           <h2
-            className="mb-7 font-sans text-[28px] font-bold leading-[1.15] tracking-tight sm:mb-6 sm:text-[30px] sm:leading-normal"
+            className="mb-7 text-center font-sans text-[32px] font-bold uppercase leading-[1.15] tracking-tight sm:mb-10 sm:text-[45px] sm:leading-[1.0]"
             style={{
               backgroundImage:
                 "linear-gradient(190.14deg, #73A4FF 14.69%, #E1E1E1 83.64%)",
@@ -167,8 +193,7 @@ export default function GalaSection() {
               filter: "drop-shadow(0 0 18px rgba(115, 164, 255, 0.18))",
               opacity: entered ? 1 : 0,
               transform: entered ? "translateY(0)" : "translateY(10px)",
-              transition:
-                "opacity 800ms cubic-bezier(0.16, 1, 0.3, 1) 350ms, transform 800ms cubic-bezier(0.16, 1, 0.3, 1) 350ms",
+              transition: `opacity 500ms cubic-bezier(0.16, 1, 0.3, 1) ${d_title}ms, transform 500ms cubic-bezier(0.16, 1, 0.3, 1) ${d_title}ms`,
             }}
           >
             IMMERSIVE GALA<br className="sm:hidden" /> DINNER
@@ -177,46 +202,46 @@ export default function GalaSection() {
           {/* Body — four short paragraphs of gala copy.  Mobile sits
               tight (space-y-2) so the whole block fits above the
               bloom; desktop opens up the rhythm. */}
-          <div className="space-y-4 sm:space-y-2">
+          <div className="space-y-4 sm:space-y-0">
             <RevealText
               as="p"
-              className="font-sans text-[14px] font-light leading-[1.55] text-white/95 sm:text-[16px] sm:font-normal sm:leading-normal sm:text-white"
-              stagger={28}
-              duration={700}
-              delay={1500}
+              className="font-sans text-[14px] font-light leading-[1.55] text-white/95 sm:mb-6 sm:text-[24px] sm:font-light sm:leading-[1.4] sm:text-white/90"
+              stagger={8}
+              duration={250}
+              delay={d_para1}
               trigger={entered}
             >
-              {"Created exclusively for you, this immersive gala dinner is designed as an evening beyond the ordinary where storytelling is not simply observed, but experienced."}
+              {GALA_PARA_1}
             </RevealText>
             <RevealText
               as="p"
-              className="font-sans text-[14px] font-light leading-[1.55] text-white/95 sm:text-[16px] sm:font-normal sm:leading-normal sm:text-white"
-              stagger={28}
-              duration={700}
-              delay={1750}
+              className="font-sans text-[14px] font-light leading-[1.55] text-white/95 sm:text-[24px] sm:font-light sm:leading-[1.4] sm:text-white/90"
+              stagger={8}
+              duration={250}
+              delay={d_para2}
               trigger={entered}
             >
-              {"Throughout the night, you will move through three distinct thematic settings, each offering its own atmosphere for dining and discovery."}
+              {GALA_PARA_2}
             </RevealText>
             <RevealText
               as="p"
-              className="font-sans text-[14px] font-light leading-[1.55] text-white/95 sm:text-[16px] sm:font-normal sm:leading-normal sm:text-white"
-              stagger={28}
-              duration={700}
-              delay={2000}
+              className="font-sans text-[14px] font-light leading-[1.55] text-white/95 sm:text-[24px] sm:font-light sm:leading-[1.4] sm:text-white/90"
+              stagger={8}
+              duration={250}
+              delay={d_para3}
               trigger={entered}
             >
-              {"Live performances unfold seamlessly around you, blending space, sound, and visuals into a continuous sensory experience. A night where you don’t just attend—you step in, explore, and become part of the moment."}
+              {GALA_PARA_3}
             </RevealText>
             <RevealText
               as="p"
-              className="font-sans text-[14px] font-light leading-[1.55] text-white/95 sm:text-[16px] sm:font-normal sm:leading-normal sm:text-white"
-              stagger={40}
-              duration={700}
-              delay={2250}
+              className="font-sans text-[14px] font-light leading-[1.55] text-white/95 sm:text-[24px] sm:font-light sm:leading-[1.4] sm:text-white/90"
+              stagger={8}
+              duration={250}
+              delay={d_para4}
               trigger={entered}
             >
-              {"A night designed exclusively for invited guests."}
+              {GALA_PARA_4}
             </RevealText>
           </div>
         </div>
