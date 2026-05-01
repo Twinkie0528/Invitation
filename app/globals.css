@@ -159,6 +159,38 @@ html.lenis body {
   will-change: transform, opacity;
 }
 
+/* Mobile-only drift — the cosmos plate is sized + positioned
+   per the Figma artboard (`top:462px / left:-434px / 1237×613`
+   on a 440×956 canvas) so we can't apply the desktop's scale
+   1.1 + 5 % Y translate without dragging the image off its
+   spec position.  Instead we layer a very small ±0.4 % drift +
+   tiny opacity breath on top of the absolute placement so the
+   plate still feels alive (slow current-of-stars motion)
+   without disturbing the design's intended composition. */
+@keyframes cosmos-drift-mobile {
+  0%, 100% {
+    transform: translate3d(0%, 0%, 0);
+    opacity: 0.92;
+  }
+  33% {
+    transform: translate3d(0.4%, -0.2%, 0);
+    opacity: 1;
+  }
+  66% {
+    transform: translate3d(-0.3%, 0.3%, 0);
+    opacity: 0.96;
+  }
+}
+.cosmos-drift-mobile {
+  animation: cosmos-drift-mobile 22s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cosmos-drift-mobile {
+    animation: none;
+  }
+}
+
 @keyframes cosmos-shimmer {
   0% {
     background-position: -150% 50%;

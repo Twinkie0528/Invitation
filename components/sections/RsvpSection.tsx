@@ -119,48 +119,59 @@ export default function RsvpSection() {
       // (Galaxy / ParticleField) canvas from bleeding through.
       className="pointer-events-none fixed inset-0 z-20 overflow-hidden bg-black"
     >
-      {/* ---------- Background — cosmos rider PNG anchored at the
-            bottom edge.  Two-layer wrapper:
-              outer layer pins the image full-bleed at the bottom and
-              centres it in the horizontal axis,
-              inner layer carries `bloom-drift` (the slow translate+scale
-              loop the gala bloom uses).
-            Splitting the duties means `bloom-drift`'s keyframe
-            `transform` doesn't clobber the centring transform — both
-            properties stay live, the image stays centred, and the
-            drift still animates. */}
-      {/* Mobile: particle-depth PNG placed verbatim per the Figma
-          spec — 1237 × 613 box anchored at top:462 / left:-434 on
-          a 440×956 canvas.  No effects layered on top yet (blur,
-          motion, opacity) — those will be added once the user
-          confirms the bare placement matches the design. */}
-      {/* Mobile: `/media/rsvp/full.png` placed verbatim per the Figma
-          spec — 1237 × 613 anchored at top:462 / left:-434 on
-          canvas 440×956:
-            top   : 462 / 956 = 48.3 vh
-            left  : -434 / 440 = -98.6 vw
-            right : -363 / 440 = -82.5 vw
-            bottom: -119 / 956 = -12.5 vh
-          No effects yet — those will layer on after the user verifies
-          the bare placement matches the design. */}
-      {/* `/media/rsvp/full.png` with three async cinematic layers
-          stacked over it (teamLab-inspired):
-            1. `cosmos-drift` — the PNG itself slowly zooms 1.1 →
-               1.15× with a sub-pixel sway over 26 s (advancing-
-               warriors charge).
-            2. `cosmos-shimmer` — a diagonal cyan/silver light
-               strip sweeps across the plate every 14 s, like a
-               projected-light wash passing over the cosmos.
-            3. `cosmos-pulse` — a centred radial glow breathes 35
-               → 65 % opacity / 1 → 1.08 × scale on a 9 s loop,
-               serving as the scene's heartbeat.
-          The three async cadences (26 / 14 / 9 s) never repeat
-          the same composite frame, so the asset reads as a live
-          immersive field rather than a still image. */}
+      {/* ---------- Background — cosmos rider PNG.
+          Mobile and desktop use different layout strategies:
+
+            Mobile (md:hidden) — Figma `Mobile` artboard 440 × 956
+            spec verbatim: image is 1237 × 613 px, anchored at
+            top:462 / left:-434 within the canvas.  Converted to
+            viewport-relative units so it scales with phone size:
+              width  : 1237 / 440 = 281.13 vw
+              left   : -434 / 440 = -98.64 vw
+              top    : 462 / 956  = 48.33 vh
+              height : auto via aspect-ratio 1237/613 (preserves
+                       the source image proportions; the section
+                       carries `overflow-hidden` so any overhang
+                       past the bottom edge is clipped).
+            The `cosmos-drift-mobile` class layers a tiny ±0.4 %
+            translate + opacity breath on top so the plate still
+            feels alive without disturbing the Figma placement.
+
+            Desktop (hidden md:block) — full-bleed `object-cover
+            object-bottom` with the original `cosmos-drift`
+            (scale 1.1 + 5 % Y baseline) so the rider reads
+            cinematic across the wider canvas. */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 overflow-hidden"
       >
+        {/* Mobile wrapper carries the Figma-spec absolute dimensions
+            (1237×613 at top:462 / left:-434 within a 440×956 canvas,
+            translated to viewport-relative units).  Image inside uses
+            `fill` so Next/Image fills the wrapper exactly — keeps us
+            free from any intrinsic-size conflicts that prevented the
+            previous direct-width approach from rendering. */}
+        <div
+          className="cosmos-drift-mobile pointer-events-none absolute md:hidden"
+          style={{
+            width: "281.13vw",
+            aspectRatio: "1237 / 613",
+            top: "48.33vh",
+            left: "-98.64vw",
+          }}
+        >
+          <Image
+            src="/media/rsvp/full.png"
+            alt=""
+            fill
+            aria-hidden
+            priority
+            unoptimized
+            sizes="281vw"
+            quality={100}
+            className="object-cover"
+          />
+        </div>
         <Image
           src="/media/rsvp/full.png"
           alt=""
@@ -170,7 +181,7 @@ export default function RsvpSection() {
           unoptimized
           sizes="100vw"
           quality={100}
-          className="cosmos-drift object-cover object-bottom"
+          className="cosmos-drift hidden object-cover object-bottom md:block"
         />
         <div className="cosmos-shimmer absolute inset-0" />
         <div className="cosmos-pulse absolute inset-0" />
