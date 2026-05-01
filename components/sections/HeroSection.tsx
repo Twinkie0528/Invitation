@@ -128,17 +128,13 @@ export default function HeroSection() {
   // racing against the browser's autoplay throttle, with one losing
   // the race and never firing `onPlaying` (so its fade-in stayed at
   // opacity 0).  Mounting only the active set eliminates the race.
-  // Initial value is computed synchronously on the client so the very
-  // first render already mounts the correct video instance — saves the
-  // ~16-30 ms gap that the previous `null → useEffect → setState`
-  // sequence introduced before the mp4 element appeared in the DOM.
-  // SSR still returns `null` (server has no `window`), but the hero
-  // section is already client-only-rendered (`"use client"`), so the
-  // hydration cost is paid once at boot anyway.
-  const [viewport, setViewport] = useState<"mobile" | "desktop" | null>(() => {
-    if (typeof window === "undefined") return null;
-    return window.matchMedia("(min-width: 768px)").matches ? "desktop" : "mobile";
-  });
+  // Initial value is `null` — render no video on the SSR/pre-hydrate
+  // pass so server HTML and client HTML match (synchronous client
+  // detection caused a hydration mismatch where the server emitted no
+  // video divs but the client emitted them on the first render).
+  // The viewport flips to "mobile" / "desktop" inside the effect below
+  // and the mp4 mounts on the next paint.
+  const [viewport, setViewport] = useState<"mobile" | "desktop" | null>(null);
   useEffect(() => {
     const mql = window.matchMedia("(min-width: 768px)");
     const apply = () => setViewport(mql.matches ? "desktop" : "mobile");
@@ -160,6 +156,18 @@ export default function HeroSection() {
     const t = window.setTimeout(() => setMounted(true), 30);
     return () => window.clearTimeout(t);
   }, []);
+
+  // Desktop pillar synchronisation — both <BackgroundVideoFrame>
+  // instances paint the same first.mp4 source, but each one's
+  // decoder boots independently, so previously the user saw the
+  // left pillar appear, then the right pillar 200-500 ms later.
+  // We count `onFirstFrame` callbacks from each pillar and only flip
+  // `pillarsReady` true once BOTH have fired — `forceVisible={pillarsReady}`
+  // then drives the opacity transition on the two videos in lockstep.
+  const [pillarReadyCount, setPillarReadyCount] = useState(0);
+  const pillarsReady = pillarReadyCount >= 2;
+  const onPillarFirstFrame = () =>
+    setPillarReadyCount((c) => Math.min(c + 1, 2));
 
   return (
     <section
@@ -246,6 +254,8 @@ export default function HeroSection() {
               start={HERO_VIDEO_RANGE.start}
               end={HERO_VIDEO_RANGE.end}
               objectFit="cover"
+              forceVisible={pillarsReady}
+              onFirstFrame={onPillarFirstFrame}
               className="absolute inset-0 h-full w-full brightness-110 contrast-110"
             />
           </div>
@@ -258,6 +268,8 @@ export default function HeroSection() {
               src="/media/hero/first.mp4"
               start={HERO_VIDEO_RANGE.start}
               end={HERO_VIDEO_RANGE.end}
+              forceVisible={pillarsReady}
+              onFirstFrame={onPillarFirstFrame}
               objectFit="cover"
               className="absolute inset-0 h-full w-full brightness-110 contrast-110"
             />

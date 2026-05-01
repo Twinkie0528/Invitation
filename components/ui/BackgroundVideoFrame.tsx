@@ -23,6 +23,17 @@ type Props = {
   // video frame is visible — use it when the asset is a mascot/figure
   // that needs to be seen in full, against a black section base.
   objectFit?: "cover" | "contain";
+  // OPTIONAL synchronisation hooks — used by HeroSection to fade two
+  // mirrored desktop pillars in TOGETHER instead of independently.
+  // When `forceVisible` is provided, the parent decides when the
+  // <video> fades in (via opacity 0 → 1) — the per-element
+  // `onPlaying` / `onLoadedData` triggers stop driving opacity
+  // and only fire `onFirstFrame` so the parent can count readiness.
+  // When `forceVisible` is `undefined` (default), the component keeps
+  // its original auto-fade behaviour — every other section relies on
+  // it.
+  forceVisible?: boolean;
+  onFirstFrame?: () => void;
 };
 
 // Cinematic background video, mounted lazily and paused while out of the
@@ -44,7 +55,10 @@ export default function BackgroundVideoFrame({
   preloadMargin = 0.18,
   className,
   objectFit = "cover",
+  forceVisible,
+  onFirstFrame,
 }: Props) {
+  const isControlled = forceVisible !== undefined;
   // Mount window — within scroll-progress preload margin of this
   // section's reveal window.  Hero starts within range on page load
   // (start - preloadMargin ≤ 0); other sections wait until the user
@@ -193,16 +207,21 @@ export default function BackgroundVideoFrame({
             backgroundColor: "#030308",
             transform: "translateZ(0)",
             willChange: "transform, opacity",
-            opacity: 0,
+            // Controlled mode: parent's `forceVisible` drives opacity
+            // on every render, overriding any imperative inline-style
+            // changes from the per-element event handlers below.
+            // Auto mode: starts at 0 and the event handlers below
+            // imperatively flip it to 1 once the first frame paints.
+            opacity: isControlled ? (forceVisible ? 1 : 0) : 0,
             transition: "opacity 320ms ease-out",
           }}
           onPlaying={(e) => {
-            // Engine confirmed the decoder is feeding frames — fade
-            // the video in over the poster.  If this never fires
-            // (autoplay blocked despite our gestures), the poster
-            // stays visible and the user sees a clean static frame
-            // instead of a tap-to-play overlay.
-            e.currentTarget.style.opacity = "1";
+            // Engine confirmed the decoder is feeding frames.  In
+            // auto mode we fade the video in over the poster; in
+            // controlled mode we just notify the parent so it can
+            // count readiness across multiple sibling videos.
+            if (!isControlled) e.currentTarget.style.opacity = "1";
+            onFirstFrame?.();
           }}
           onLoadedData={(e) => {
             // First frame is decoded — show it now instead of waiting
@@ -215,7 +234,8 @@ export default function BackgroundVideoFrame({
             // attribute set — we render posters as a separate <img>
             // sibling, so the iOS engine has nothing to draw the
             // overlay on even with the video element visible.
-            e.currentTarget.style.opacity = "1";
+            if (!isControlled) e.currentTarget.style.opacity = "1";
+            onFirstFrame?.();
           }}
           onLoadedMetadata={(e) => {
             // "Force-decode the first frame" trick — seeking to a
