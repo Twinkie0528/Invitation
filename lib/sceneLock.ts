@@ -144,7 +144,9 @@ export function isCueVisible(scene: SceneId): boolean {
 export function subscribeLock(listener: (s: LockState) => void) {
   lockListeners.add(listener);
   listener(lockState);
-  return () => lockListeners.delete(listener);
+  return () => {
+    lockListeners.delete(listener);
+  };
 }
 
 export function subscribeCue(
@@ -152,7 +154,9 @@ export function subscribeCue(
 ) {
   cueListeners.add(listener);
   listener(cuedScenes);
-  return () => cueListeners.delete(listener);
+  return () => {
+    cueListeners.delete(listener);
+  };
 }
 
 export function getLockState(): LockState {
