@@ -78,10 +78,9 @@ export default function CeoLetterSection() {
     _holdBeforeSignature,
     d_signature,
   ] = useSequentialDelays(
-    // 1500 ms hold — signature lands 1.5 s after the closing
-    // paragraph settles, so the letter has a moment to "rest"
-    // before the closing flourish writes in.
-    [CEO_PARA_2, CEO_PARA_3, CEO_PARA_4, CEO_PARA_5, 1500, 0],
+    // 1000 ms hold — signature lands 1 s after the closing
+    // paragraph settles (1.5 s read too long per user feedback).
+    [CEO_PARA_2, CEO_PARA_3, CEO_PARA_4, CEO_PARA_5, 1000, 0],
     {
       stagger: 8,
       duration: 220,

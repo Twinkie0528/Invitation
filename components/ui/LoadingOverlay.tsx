@@ -225,15 +225,15 @@ export default function LoadingOverlay() {
           width={520}
           height={58}
           priority
-          // Splash logo uses the EXACT same sizing rules as the
-          // hero static lockup (`h-8` on mobile, `sm:w-[30vw]` on
-          // desktop) so the FLIP transition only translates — no
-          // scaling at all.  The cross-fade at the hand-off keeps
-          // the same pixel dimensions on both ends, eliminating
-          // the "snap to bigger size" the user was seeing on
-          // desktop where the splash was h-8 but the hero lockup
-          // jumped to ~64 px (30vw on a 1920-wide laptop).
-          className="h-8 w-auto sm:h-auto sm:w-[30vw]"
+          // Splash logo deliberately STARTS smaller than the hero
+          // lockup so the FLIP transition reads as a gentle
+          // inflation up to "settled" size — what the user keeps
+          // calling the "хийлж байгаа мэт" / inflating effect.
+          // Mobile: h-6 (24 px) → hero's h-8 (32 px) = scale 1.33.
+          // Desktop: 22 vw → hero's 30 vw = scale 1.36.
+          // The targetRect is measured per-viewport so the scale
+          // automatically adapts at every size.
+          className="h-6 w-auto sm:h-auto sm:w-[22vw]"
         />
       </div>
     </div>
