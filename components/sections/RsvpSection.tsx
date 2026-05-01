@@ -81,10 +81,22 @@ export default function RsvpSection() {
   // dress code → venue.  Each step's literal animation duration is
   // listed so the next one fires the moment the previous one settles.
   const VENUE_TEXT = "Temporary Exhibition Hall, Outdoor of the State Academic Drama Theatre.";
-  const [d_title, d_date, d_dress, d_venue] = useSequentialDelays(
-    [500, 500, 400, VENUE_TEXT],
-    { stagger: 8, duration: 250, pause: 60, initialDelay: 100 },
+  // Reveal cadence — title PNG (2 s convergence) → date (2 s
+  // convergence) → 1 s sentinel hold → dress code → venue.
+  // Both title and date follow the HEADER rule; body items
+  // (dress + venue) write continuously with only 60 ms between
+  // them, like a hand-penned closing line.
+  const [
+    d_title,
+    d_date,
+    _afterDateHold,
+    d_dress,
+    d_venue,
+  ] = useSequentialDelays(
+    [1600, 1600, 800, "Dress code: Cocktail attire", VENUE_TEXT],
+    { stagger: 8, duration: 220, pause: 0, initialDelay: 100 },
   );
+  void _afterDateHold;
   // Fallback to the headline date from the Figma so the un-personalised
   // root URL still reads as a proper invitation.
   const month = parsed?.month ?? "June";
@@ -215,8 +227,12 @@ export default function RsvpSection() {
           className="w-[306px] sm:w-[600px]"
           style={{
             opacity: entered ? 1 : 0,
-            transform: entered ? "translateY(0)" : "translateY(8px)",
-            transition: `opacity 500ms cubic-bezier(0.16, 1, 0.3, 1) ${d_title}ms, transform 500ms cubic-bezier(0.16, 1, 0.3, 1) ${d_title}ms`,
+            // Header rule — blur 12 px → 0 + scale 0.94 → 1 over 2 s
+            // on a smooth no-overshoot curve, matching the Urtuu /
+            // Gala / CEO title treatment.
+            transform: entered ? "scale(1)" : "scale(0.94)",
+            filter: entered ? "blur(0px)" : "blur(12px)",
+            transition: `opacity 1440ms cubic-bezier(0.22, 1, 0.36, 1) ${d_title}ms, transform 1600ms cubic-bezier(0.22, 1, 0.36, 1) ${d_title}ms, filter 1600ms cubic-bezier(0.22, 1, 0.36, 1) ${d_title}ms`,
           }}
         >
           <Image
@@ -238,8 +254,9 @@ export default function RsvpSection() {
           className="mt-7 flex flex-col items-center sm:hidden"
           style={{
             opacity: entered ? 1 : 0,
-            transform: entered ? "translateY(0)" : "translateY(8px)",
-            transition: `opacity 500ms cubic-bezier(0.16, 1, 0.3, 1) ${d_date}ms, transform 500ms cubic-bezier(0.16, 1, 0.3, 1) ${d_date}ms`,
+            transform: entered ? "scale(1)" : "scale(0.94)",
+            filter: entered ? "blur(0px)" : "blur(12px)",
+            transition: `opacity 1440ms cubic-bezier(0.22, 1, 0.36, 1) ${d_date}ms, transform 1600ms cubic-bezier(0.22, 1, 0.36, 1) ${d_date}ms, filter 1600ms cubic-bezier(0.22, 1, 0.36, 1) ${d_date}ms`,
           }}
         >
           {/* 18:00 — gradient blue→silver. */}
@@ -285,8 +302,9 @@ export default function RsvpSection() {
           className="hidden font-sans font-bold leading-none tracking-tight sm:order-2 sm:mt-8 sm:flex sm:items-baseline sm:justify-center sm:gap-3"
           style={{
             opacity: entered ? 1 : 0,
-            transform: entered ? "translateY(0)" : "translateY(8px)",
-            transition: `opacity 500ms cubic-bezier(0.16, 1, 0.3, 1) ${d_date}ms, transform 500ms cubic-bezier(0.16, 1, 0.3, 1) ${d_date}ms`,
+            transform: entered ? "scale(1)" : "scale(0.94)",
+            filter: entered ? "blur(0px)" : "blur(12px)",
+            transition: `opacity 1440ms cubic-bezier(0.22, 1, 0.36, 1) ${d_date}ms, transform 1600ms cubic-bezier(0.22, 1, 0.36, 1) ${d_date}ms, filter 1600ms cubic-bezier(0.22, 1, 0.36, 1) ${d_date}ms`,
           }}
         >
           <span
@@ -320,7 +338,7 @@ export default function RsvpSection() {
           style={{
             opacity: entered ? 1 : 0,
             transform: entered ? "translateY(0)" : "translateY(6px)",
-            transition: `opacity 400ms cubic-bezier(0.16, 1, 0.3, 1) ${d_dress}ms, transform 400ms cubic-bezier(0.16, 1, 0.3, 1) ${d_dress}ms`,
+            transition: `opacity 960ms cubic-bezier(0.22, 1, 0.36, 1) ${d_dress}ms, transform 960ms cubic-bezier(0.22, 1, 0.36, 1) ${d_dress}ms`,
           }}
         >
           <span className="font-bold">Dress code:</span> Cocktail attire
@@ -335,7 +353,7 @@ export default function RsvpSection() {
             as="p"
             className="w-[259px] text-center font-sans text-[16px] font-normal leading-[1.4] text-white sm:w-auto sm:max-w-[420px] sm:text-[22px] md:max-w-[540px]"
             stagger={8}
-            duration={250}
+            duration={220}
             delay={d_venue}
             trigger={entered}
           >

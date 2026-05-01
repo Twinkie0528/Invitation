@@ -61,10 +61,23 @@ export default function UrtuuSection() {
   // word-counted; the title is a single inline opacity/transform
   // transition so it appears here as the literal 800 ms of its
   // animation.
-  const [d_eyebrow, d_title, d_para1, d_para2] = useSequentialDelays(
-    ["Introducing", 500, BODY_PARA_1, BODY_PARA_2],
-    { stagger: 8, duration: 250, pause: 60 },
+  // Reveal cadence — eyebrow → title (2 s convergence) → 1 s
+  // sentinel hold → body paragraphs (continuous, only 0.3 s
+  // breath between them).  The sentinel `1000` is a number step
+  // that contributes a 1 s wait without rendering anything; the
+  // small `pause: 60` between every step turns the body lines
+  // into a near-continuous typewriter rather than separate beats.
+  const [
+    d_eyebrow,
+    d_title,
+    _afterTitleHold,
+    d_para1,
+    d_para2,
+  ] = useSequentialDelays(
+    ["Introducing", 1600, 320, BODY_PARA_1, BODY_PARA_2],
+    { stagger: 8, duration: 220, pause: 0 },
   );
+  void _afterTitleHold;
 
   return (
     <section
@@ -323,7 +336,7 @@ export default function UrtuuSection() {
             as="div"
             className="mb-3 text-center font-sans text-[13px] font-normal uppercase tracking-[0.4em] text-[#b7b7b7] sm:mb-4 sm:text-[20px] md:text-[21px] lg:text-[22px]"
             stagger={8}
-            duration={250}
+            duration={220}
             delay={d_eyebrow}
             trigger={entered}
           >
@@ -345,10 +358,19 @@ export default function UrtuuSection() {
               backgroundClip: "text",
               WebkitTextFillColor: "transparent",
               color: "transparent",
-              filter: "drop-shadow(0 0 18px rgba(115, 164, 255, 0.18))",
+              // Particle-converge feel — the title starts blurred at
+              // 12 px and slightly under-scaled, then resolves into
+              // focus over 2 s on a smooth, no-overshoot curve.  Reads
+              // as cosmic dust gathering into the headline rather than
+              // a marquee zoom-in, per user feedback.  `drop-shadow`
+              // glow is eased in alongside so the focus moment lands
+              // with a subtle bloom.
+              filter: entered
+                ? "blur(0px) drop-shadow(0 0 18px rgba(115, 164, 255, 0.18))"
+                : "blur(12px) drop-shadow(0 0 0 rgba(115, 164, 255, 0))",
               opacity: entered ? 1 : 0,
-              transform: entered ? "translateY(0)" : "translateY(10px)",
-              transition: `opacity 500ms cubic-bezier(0.16, 1, 0.3, 1) ${d_title}ms, transform 500ms cubic-bezier(0.16, 1, 0.3, 1) ${d_title}ms`,
+              transform: entered ? "scale(1)" : "scale(0.94)",
+              transition: `opacity 1440ms cubic-bezier(0.22, 1, 0.36, 1) ${d_title}ms, transform 1600ms cubic-bezier(0.22, 1, 0.36, 1) ${d_title}ms, filter 1600ms cubic-bezier(0.22, 1, 0.36, 1) ${d_title}ms`,
             }}
           >
             {"“The Urtuu” immersive Experience"}

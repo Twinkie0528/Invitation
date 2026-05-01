@@ -34,12 +34,16 @@ const GATE_VIDEOS: string[] = [];
 // behind the overlay (e.g. a guest on a flaky cellular link).
 const PRELOAD_TIMEOUT_MS = 8_000;
 
-// Animation cadence — backdrop fades while the logo flies, then the
-// overlay logo fades while the hero's static logo cross-fades in.
-const BACKDROP_FADE_MS = 450;
-const FLIP_DURATION_MS = 850;
-const FLIP_DELAY_MS = 80;
-const HANDOFF_FADE_MS = 220;
+// Animation cadence — slower, softer transition per user feedback
+// (the previous 80 ms hold + 850 ms flight read as the logo "flying
+// off too fast").  We now hold the logo on the splash for ~700 ms,
+// then glide it over 1.6 s with a gentler ease, and let the
+// hand-off cross-fade run a longer 500 ms so the overlay logo
+// melts into the hero lockup instead of snapping out.
+const BACKDROP_FADE_MS = 700;
+const FLIP_DURATION_MS = 1600;
+const FLIP_DELAY_MS = 700;
+const HANDOFF_FADE_MS = 500;
 
 export default function LoadingOverlay() {
   const { ready } = useLoadGate();
@@ -209,7 +213,7 @@ export default function LoadingOverlay() {
           left: "50%",
           transform: "translate(-50%, -50%) scale(1)",
           transformOrigin: "center center",
-          transition: `transform ${FLIP_DURATION_MS}ms cubic-bezier(0.65, 0, 0.35, 1) ${FLIP_DELAY_MS}ms, opacity ${HANDOFF_FADE_MS}ms ease-out`,
+          transition: `transform ${FLIP_DURATION_MS}ms cubic-bezier(0.22, 1, 0.36, 1) ${FLIP_DELAY_MS}ms, opacity ${HANDOFF_FADE_MS}ms ease-out`,
           opacity: logoFaded ? 0 : 1,
           willChange: "transform, opacity",
         }}

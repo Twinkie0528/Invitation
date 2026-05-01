@@ -59,16 +59,22 @@ export default function CeoLetterSection() {
   // the chain settles; that timestamp drives the signature row's
   // inline transition (so the name + signature mark land exactly when
   // the body text finishes).
-  const [
-    d_para1,
-    d_para2,
-    d_para3,
-    d_para4,
-    d_para5,
-    d_signature,
-  ] = useSequentialDelays(
-    [CEO_PARA_1, CEO_PARA_2, CEO_PARA_3, CEO_PARA_4, CEO_PARA_5, 0],
-    { stagger: 8, duration: 250, pause: 60, initialDelay: 100 },
+  // "Dear Valued Partner," is treated as a HEADER (blur particle
+  // convergence over ~2 s).  Hardcode its delay; body paragraphs
+  // run through useSequentialDelays starting 1 s after the title
+  // resolves, with only 60 ms between each paragraph so the four
+  // lines write themselves continuously like a hand-penned letter.
+  const TITLE_DURATION = 1600;
+  const PAUSE_AFTER_TITLE = 800;
+  const d_para1 = 100;
+  const [d_para2, d_para3, d_para4, d_para5, d_signature] = useSequentialDelays(
+    [CEO_PARA_2, CEO_PARA_3, CEO_PARA_4, CEO_PARA_5, 0],
+    {
+      stagger: 8,
+      duration: 220,
+      pause: 0,
+      initialDelay: 100 + TITLE_DURATION + PAUSE_AFTER_TITLE,
+    },
   );
 
   return (
@@ -197,19 +203,23 @@ export default function CeoLetterSection() {
             user requested "багахан Linear space".  Desktop tier
             unchanged (sm: variants). */}
         <div className="w-full max-w-[321px] text-balance text-center sm:max-w-[920px]">
-          {/* "Dear Valued Partner," — Bold 24 / lh 136 % header.
-              Sentence case on mobile per the latest design, keeps the
-              uppercase desktop treatment. */}
-          <RevealText
-            as="p"
+          {/* "Dear Valued Partner," — HEADER treatment matching the
+              Urtuu / Gala title rule: blur 12 px → 0 + scale 0.94 → 1
+              over 2 s on a smooth no-overshoot curve, so the headline
+              gathers into focus like cosmic dust assembling.  No
+              per-letter typewriter — the whole line resolves as one
+              elegant unit. */}
+          <p
             className="text-center text-[24px] font-bold normal-case leading-[1.36] text-white sm:text-[24px] sm:font-bold sm:uppercase sm:leading-[1.4]"
-            stagger={8}
-            duration={250}
-            delay={d_para1}
-            trigger={entered}
+            style={{
+              opacity: entered ? 1 : 0,
+              transform: entered ? "scale(1)" : "scale(0.94)",
+              filter: entered ? "blur(0px)" : "blur(12px)",
+              transition: `opacity 1440ms cubic-bezier(0.22, 1, 0.36, 1) ${d_para1}ms, transform 1600ms cubic-bezier(0.22, 1, 0.36, 1) ${d_para1}ms, filter 1600ms cubic-bezier(0.22, 1, 0.36, 1) ${d_para1}ms`,
+            }}
           >
             {CEO_PARA_1}
-          </RevealText>
+          </p>
           {/* Body paragraphs 2–5 — Manrope Regular 16 / lh 100 % on
               mobile per the Figma spec.  The Bold 24 / lh 100 %
               entry in the inspect panel is the *whitespace* spacer
@@ -221,7 +231,7 @@ export default function CeoLetterSection() {
             as="p"
             className="mt-6 text-[16px] font-normal leading-[1.2] text-white sm:mt-10 sm:text-[24px] sm:font-light sm:leading-[1.4] sm:text-white/90"
             stagger={8}
-            duration={250}
+            duration={220}
             delay={d_para2}
             trigger={entered}
           >
@@ -231,7 +241,7 @@ export default function CeoLetterSection() {
             as="p"
             className="mt-6 text-[16px] font-normal leading-[1.2] text-white sm:mt-7 sm:text-[24px] sm:font-light sm:leading-[1.4] sm:text-white/90"
             stagger={8}
-            duration={250}
+            duration={220}
             delay={d_para3}
             trigger={entered}
           >
@@ -241,7 +251,7 @@ export default function CeoLetterSection() {
             as="p"
             className="mt-6 text-[16px] font-normal leading-[1.2] text-white sm:mt-7 sm:text-[24px] sm:font-light sm:leading-[1.4] sm:text-white/90"
             stagger={8}
-            duration={250}
+            duration={220}
             delay={d_para4}
             trigger={entered}
           >
@@ -251,7 +261,7 @@ export default function CeoLetterSection() {
             as="p"
             className="mt-6 text-[16px] font-normal leading-[1.2] text-white sm:mt-7 sm:text-[24px] sm:font-light sm:leading-[1.4] sm:text-white/90"
             stagger={8}
-            duration={250}
+            duration={220}
             delay={d_para5}
             trigger={entered}
           >
@@ -273,8 +283,16 @@ export default function CeoLetterSection() {
         style={{
           fontFamily: "var(--font-manrope), system-ui, sans-serif",
           opacity: entered ? 1 : 0,
-          transform: entered ? "translateY(0)" : "translateY(8px)",
-          transition: `opacity 450ms cubic-bezier(0.16, 1, 0.3, 1) ${d_signature}ms, transform 450ms cubic-bezier(0.16, 1, 0.3, 1) ${d_signature}ms`,
+          // Signature row reveals as a single GROUPED unit — name +
+          // title + signature SVG cross-fade in together over a
+          // long, soft 2.4 s glide.  Bouncy easing dropped per user
+          // feedback ("elegant" reads better without the spring);
+          // both opacity AND transform now use the smooth no-overshoot
+          // cubic-bezier(0.22, 1, 0.36, 1) curve.  Larger initial
+          // translateY (24 px) + scale 0.94 amplifies the soft
+          // settle into focus.
+          transform: entered ? "translateY(0) scale(1)" : "translateY(24px) scale(0.94)",
+          transition: `opacity 2400ms cubic-bezier(0.22, 1, 0.36, 1) ${d_signature}ms, transform 2400ms cubic-bezier(0.22, 1, 0.36, 1) ${d_signature}ms`,
         }}
       >
         {/* Name + title block — Figma `Mobile Version` (canvas 440×956)

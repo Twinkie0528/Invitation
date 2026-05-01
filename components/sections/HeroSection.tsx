@@ -99,21 +99,31 @@ export default function HeroSection() {
   // exclusive evening" PNG → scroll cue → NAME (calligraphy zoom-in
   // arrives LAST, after every other element on screen, so the guest's
   // name is the climactic moment of the hero composition).
+  // Reveal order — UNITEL GROUP → is pleased to invite → NAME
+  // (calligraphy as one elegant unit, blur 14 px → 0 + scale 0.94 →
+  // 1 over 2 s) → "to an exclusive evening" → scroll cue.  Per-letter
+  // signature reveal was tried and rolled back per user feedback
+  // (broke the calligraphy's connected strokes); the name now
+  // resolves as a single unit again, with the chain still ordered
+  // so personalisation lands before the supporting copy.
   const [
     d_unitel,
     d_invite,
+    d_name,
     d_evening,
     d_scroll,
-    d_name,
   ] = useSequentialDelays(
     [
       "UNITEL GROUP",
       "is pleased to invite",
-      700, // "to an exclusive evening" PNG inline 700 ms fade
-      350, // scroll cue inline 350 ms fade
-      500, // calligraphy name — last in chain, plays after scroll cue
+      1500, // calligraphy name — chain step shorter than its
+            // 2.4 s visual transition so evening fires while the
+            // name is still completing (graceful overlap, not a
+            // 4 s cold wait).
+      240, // "to an exclusive evening" PNG (short fade)
+      120, // scroll cue (short fade)
     ],
-    { stagger: 8, duration: 250, pause: 60 },
+    { stagger: 20, duration: 500, pause: 50 },
   );
 
   // Viewport-aware mount: only mount the video instances that are
@@ -347,8 +357,8 @@ export default function HeroSection() {
           <RevealText
             as="div"
             className="font-sans text-[22px] font-semibold tracking-[0.18em] text-white sm:text-[2vw] md:tracking-[0.22em]"
-            stagger={8}
-            duration={250}
+            stagger={20}
+            duration={500}
             delay={d_unitel}
             trigger={entered}
           >
@@ -357,21 +367,23 @@ export default function HeroSection() {
           <RevealText
             as="div"
             className="mt-[1.5vh] font-sans text-[16px] font-light text-white/85 sm:mt-1 sm:text-[1.5vw]"
-            stagger={8}
-            duration={250}
+            stagger={20}
+            duration={500}
             delay={d_invite}
             trigger={entered}
           >
             is pleased to invite
           </RevealText>
 
-          {/* Guest name — Ingkar Janji handwriting.  Font-size is
-              computed by `scriptFontSize` above (name-length-adaptive
-              so the calligraphy never overflows the viewport).
-              Rendered as a vertical gradient so the script reads with
-              the same soft top-bright / bottom-cool cadence as the
-              source.  Reveal lifts + fades the whole gesture in —
-              word-staggering would fragment the calligraphy. */}
+          {/* Guest name — Ingkar Janji handwriting, revealed
+              LETTER-BY-LETTER like a hand-signed signature.  Each
+              glyph fades + lifts on its own staggered timeline; the
+              vertical gradient is held on the parent <div> so the
+              soft blue → silver wash flows continuously across the
+              script (children inherit `background-clip: text` and
+              keep the gradient unbroken).  Whitespace is rendered
+              as a non-breaking space so multi-word names don't
+              wrap mid-stroke. */}
           <div
             className="mt-[5vh] w-full font-script leading-[1] whitespace-nowrap md:mt-8 md:leading-[normal] md:whitespace-normal lg:mt-10
               text-[clamp(40px,var(--hero-script-mobile),120px)]
@@ -380,13 +392,9 @@ export default function HeroSection() {
               ["--hero-script-mobile" as any]: `${heroScriptMobileVw}vw`,
               ["--hero-script-desktop" as any]: heroScriptDesktopCss,
               opacity: mounted ? 1 : 0,
-              transform: mounted ? "scale(1)" : "scale(0.3)",
-              // Start at scale(0.3) so the calligraphy "grows from
-              // nothing" — almost a dot then expands to full size.
-              // Ease-out-back adds a tiny overshoot at the end so it
-              // settles with a bit of bounce instead of just landing,
-              // which feels more cinematic for the marquee reveal.
-              transition: `opacity 800ms cubic-bezier(0.16, 1, 0.3, 1) ${d_name}ms, transform 1100ms cubic-bezier(0.34, 1.56, 0.64, 1) ${d_name}ms`,
+              transform: mounted ? "scale(1)" : "scale(0.94)",
+              filter: mounted ? "blur(0px)" : "blur(14px)",
+              transition: `opacity 2200ms cubic-bezier(0.22, 1, 0.36, 1) ${d_name}ms, transform 2400ms cubic-bezier(0.22, 1, 0.36, 1) ${d_name}ms, filter 2400ms cubic-bezier(0.22, 1, 0.36, 1) ${d_name}ms`,
               transformOrigin: "center center",
               backgroundImage:
                 "linear-gradient(215deg, #73A4FF 14.69%, #E1E1E1 83.64%)",
@@ -415,7 +423,7 @@ export default function HeroSection() {
             style={{
               opacity: mounted ? 1 : 0,
               transform: mounted ? "translateY(0)" : "translateY(8px)",
-              transition: `opacity 700ms cubic-bezier(0.16, 1, 0.3, 1) ${d_evening}ms, transform 700ms cubic-bezier(0.16, 1, 0.3, 1) ${d_evening}ms`,
+              transition: `opacity 320ms cubic-bezier(0.16, 1, 0.3, 1) ${d_evening}ms, transform 320ms cubic-bezier(0.16, 1, 0.3, 1) ${d_evening}ms`,
             }}
           >
             {/* Mobile: live 16 px text per the new spec (uppercase
@@ -444,7 +452,7 @@ export default function HeroSection() {
           className="absolute inset-x-0 bottom-[6vh] flex flex-col items-center gap-2 text-white/60 md:bottom-[10vh] md:gap-1.5"
           style={{
             opacity: mounted ? 1 : 0,
-            transition: `opacity 350ms ease-out ${d_scroll}ms`,
+            transition: `opacity 280ms ease-out ${d_scroll}ms`,
           }}
         >
           <span className="font-sans text-[13px] md:text-base lg:text-lg">

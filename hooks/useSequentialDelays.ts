@@ -11,9 +11,9 @@ type Step = string | number;
 //           opacity/transform block instead of word-by-word).
 
 type Options = {
-  /** ms between consecutive words inside a string step (matches RevealText's `stagger`). */
+  /** ms between consecutive glyphs inside a string step (matches RevealText's `stagger`). */
   stagger?: number;
-  /** ms a single word's transition takes (matches RevealText's `duration`). */
+  /** ms a single glyph's transition takes (matches RevealText's `duration`). */
   duration?: number;
   /** ms of breathing room added between the END of one step and the START of the next. */
   pause?: number;
@@ -25,10 +25,13 @@ type Options = {
 // another instead of in parallel — the next step's first frame lands the
 // moment the previous step's last frame settles (plus `pause`).
 //
-// Math for a string step of W words:
-//   step duration = max(W − 1, 0) × stagger + duration
-// (the last word starts at (W − 1) × stagger after the step's own delay
-// and animates for `duration`).
+// Math for a string step of G printable glyphs (whitespace excluded):
+//   step duration = max(G − 1, 0) × stagger + duration
+// (the last glyph starts at (G − 1) × stagger after the step's own
+// delay and animates for `duration`).  This now matches RevealText's
+// glyph-by-glyph staggering — previously we counted whole words, which
+// fired the next step ~5-8 × too early once RevealText switched to
+// per-glyph timing.
 //
 // Math for a number step:
 //   step duration = the number itself (caller-supplied, in ms).
@@ -39,8 +42,8 @@ export function useSequentialDelays(
   steps: Step[],
   opts: Options = {},
 ): number[] {
-  const stagger = opts.stagger ?? 32;
-  const duration = opts.duration ?? 700;
+  const stagger = opts.stagger ?? 34;
+  const duration = opts.duration ?? 440;
   const pause = opts.pause ?? 200;
   const initialDelay = opts.initialDelay ?? 0;
 
@@ -56,8 +59,8 @@ export function useSequentialDelays(
       if (typeof step === "number") {
         stepDuration = step;
       } else {
-        const wordCount = step.trim().split(/\s+/).filter(Boolean).length;
-        stepDuration = Math.max(wordCount - 1, 0) * stagger + duration;
+        const glyphCount = Array.from(step).filter((c) => c.trim().length > 0).length;
+        stepDuration = Math.max(glyphCount - 1, 0) * stagger + duration;
       }
       cumulative += stepDuration + pause;
       return start;

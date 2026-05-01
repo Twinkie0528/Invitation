@@ -51,9 +51,13 @@ export default function GalaSection() {
   const entered = useSceneEntered(0.44);
   // Continuous typewriter: eyebrow → headline (inline 800 ms) → 4
   // paragraphs.  Each step starts the moment the previous one settles.
+  // Reveal cadence — eyebrow → title (2 s convergence) → 1 s
+  // sentinel hold → body paragraphs (continuous, only 60 ms breath
+  // between them so the four lines read as one flowing letter).
   const [
     d_eyebrow,
     d_title,
+    _afterTitleHold,
     d_para1,
     d_para2,
     d_para3,
@@ -61,14 +65,16 @@ export default function GalaSection() {
   ] = useSequentialDelays(
     [
       "An Exclusive",
-      500,
+      1600,
+      320,
       GALA_PARA_1,
       GALA_PARA_2,
       GALA_PARA_3,
       GALA_PARA_4,
     ],
-    { stagger: 8, duration: 250, pause: 60 },
+    { stagger: 8, duration: 220, pause: 0 },
   );
+  void _afterTitleHold;
 
   return (
     <section
@@ -163,7 +169,7 @@ export default function GalaSection() {
             as="div"
             className="mb-3 text-center font-sans text-[13px] font-normal tracking-[0.4em] text-[#b7b7b7] sm:mb-4 sm:text-[27px]"
             stagger={8}
-            duration={250}
+            duration={220}
             delay={d_eyebrow}
             trigger={entered}
           >
@@ -190,10 +196,16 @@ export default function GalaSection() {
               backgroundClip: "text",
               WebkitTextFillColor: "transparent",
               color: "transparent",
-              filter: "drop-shadow(0 0 18px rgba(115, 164, 255, 0.18))",
+              // Particle-converge feel — blurred at 12 px and slightly
+              // under-scaled at first, then resolves into focus over
+              // 2 s with a smooth no-overshoot curve.  Reads as
+              // cosmic dust assembling into the headline.
+              filter: entered
+                ? "blur(0px) drop-shadow(0 0 18px rgba(115, 164, 255, 0.18))"
+                : "blur(12px) drop-shadow(0 0 0 rgba(115, 164, 255, 0))",
               opacity: entered ? 1 : 0,
-              transform: entered ? "translateY(0)" : "translateY(10px)",
-              transition: `opacity 500ms cubic-bezier(0.16, 1, 0.3, 1) ${d_title}ms, transform 500ms cubic-bezier(0.16, 1, 0.3, 1) ${d_title}ms`,
+              transform: entered ? "scale(1)" : "scale(0.94)",
+              transition: `opacity 1440ms cubic-bezier(0.22, 1, 0.36, 1) ${d_title}ms, transform 1600ms cubic-bezier(0.22, 1, 0.36, 1) ${d_title}ms, filter 1600ms cubic-bezier(0.22, 1, 0.36, 1) ${d_title}ms`,
             }}
           >
             IMMERSIVE GALA<br className="sm:hidden" /> DINNER
