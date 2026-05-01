@@ -153,7 +153,9 @@ export default function LoadingOverlay() {
 
     // IMPORTANT: keep the original `translate(-50%, -50%)` centering so
     // the logo doesn't snap to a top-left anchor at the start of the
-    // flight. The new translate / scale stack on top of it.
+    // flight.  The full chain stays `translate translate scale` to
+    // exactly match the initial style — same number of ops on both
+    // sides means CSS will smoothly interpolate, not discrete-swap.
     wrapper.style.transform = `translate(-50%, -50%) translate(${dx}px, ${dy}px) scale(${scale})`;
     setPhase("flying");
 
@@ -205,6 +207,13 @@ export default function LoadingOverlay() {
     >
       <div
         ref={logoWrapperRef}
+        // Match the desktop `zoom: 0.8` applied to the hero's section
+        // flex wrapper in globals.css.  Without this, the overlay logo
+        // renders at native scale while the hero static lockup renders
+        // at 80 % — two visibly different sizes in the same `h-8
+        // sm:w-[30vw]` class.  Mobile (< lg) has no zoom on either side
+        // so it stays untouched.
+        className="lg:[zoom:0.8]"
         style={{
           position: "absolute",
           // The wrapper sits at the centre of the viewport via `top: 50%
@@ -214,7 +223,16 @@ export default function LoadingOverlay() {
           // off-centre at the start of the flight.
           top: "50%",
           left: "50%",
-          transform: "translate(-50%, -50%) scale(1)",
+          // Initial transform MUST have the same number of
+          // operations as the post-FLIP transform (translate +
+          // translate + scale).  CSS interpolates a `transform`
+          // chain function-by-function only when both states have
+          // matching shapes — when FROM had `translate scale`
+          // (2 ops) and TO had `translate translate scale` (3 ops)
+          // the browser fell back to discrete swap, which is what
+          // the user kept seeing as the logo "locking" instantly
+          // at the hero position with no inflate animation.
+          transform: "translate(-50%, -50%) translate(0px, 0px) scale(1)",
           transformOrigin: "center center",
           transition: `transform ${FLIP_DURATION_MS}ms cubic-bezier(0.22, 1, 0.36, 1) ${FLIP_DELAY_MS}ms, opacity ${HANDOFF_FADE_MS}ms ease-out`,
           opacity: logoFaded ? 0 : 1,
@@ -227,15 +245,14 @@ export default function LoadingOverlay() {
           width={520}
           height={58}
           priority
-          // Splash logo deliberately STARTS smaller than the hero
-          // lockup so the FLIP transition reads as a gentle
-          // inflation up to "settled" size — what the user keeps
-          // calling the "хийлж байгаа мэт" / inflating effect.
-          // Mobile: h-6 (24 px) → hero's h-8 (32 px) = scale 1.33.
-          // Desktop: 22 vw → hero's 30 vw = scale 1.36.
-          // The targetRect is measured per-viewport so the scale
-          // automatically adapts at every size.
-          className="h-6 w-auto sm:h-auto sm:w-[22vw]"
+          // Splash logo uses the EXACT same sizing rules as the
+          // hero static lockup so the FLIP transition is pure
+          // translation — no scale change at all.  Same pixel
+          // dimensions on both ends means the overlay→hero
+          // cross-fade lines up perfectly and the user no longer
+          // sees a doubled / blurry "two-logo" composite at the
+          // hand-off boundary.
+          className="h-8 w-auto sm:h-auto sm:w-[30vw]"
         />
       </div>
     </div>

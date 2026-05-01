@@ -310,16 +310,32 @@ export default function HeroSection() {
         className="pointer-events-none absolute inset-x-0 top-0 z-[5] mx-auto h-auto w-[440px] max-w-[90vw] sm:w-[520px] md:hidden"
       />
 
+      {/* Soft top-band fade behind the lockup — a smooth linear
+          gradient from semi-opaque black at the top edge fading to
+          transparent below, so the UNITEL 20th Anniversary mark
+          gets elegant breathing room above the dust-mascot mp4
+          on every viewport.  Applied on top of the mobile shader
+          PNG (when present) and as the sole fade on desktop where
+          the shader is hidden. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 z-[4] h-[18vh]"
+        style={{
+          background:
+            "linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.4) 45%, rgba(0,0,0,0.18) 75%, rgba(0,0,0,0) 100%)",
+        }}
+      />
+
       {/* The single inner wrapper carries `flex` so the existing 1024+
           desktop zoom rule in globals.css (which scopes via
           `section[data-reveal] > div.flex`) keeps working. */}
       <div className="relative z-10 flex h-full w-full">
         {/* TOP — anniversary lockup, anchored ~6–8vh from the top edge
-            to match the Figma artboard's optical placement.  Desktop
-            scales the lockup up so it reads at the same proportional
-            weight against the larger centre block (the global zoom:0.8
-            rule on this section's flex wrapper trims the rendered size
-            back toward the design spec). */}
+            to match the Figma artboard's optical placement.  Lives
+            INSIDE the flex wrapper so it inherits the global
+            `zoom: 0.8` rule (globals.css 1024px+ scope) — without
+            that zoom the lockup renders too large vs. the centre
+            copy on desktop. */}
         <div className="absolute inset-x-0 top-[7vh] flex justify-center sm:top-[8vh] md:top-[6vh]">
           <Image
             id="hero-lockup"
@@ -328,22 +344,35 @@ export default function HeroSection() {
             width={520}
             height={58}
             priority
-            // Figma spec (1280×832 frame): 384.968 × 48.215 px.  We
-            // express that as 30vw width with auto-derived height so
-            // the lockup scales linearly with viewport — on the Figma
-            // artboard (1280) it lands at 384 px (1:1), and on a
-            // 1920×1200 laptop it lands at 576 px (the 1.5× scale the
-            // user asked for).  Mobile keeps the original height-
-            // anchored sizing because the lockup needs a hard cap on
-            // narrow phones (30vw on a 360-wide phone is too tiny).
+            // Figma spec (1280×832 frame): 384.968 × 48.215 px,
+            // expressed as 30vw with auto-derived height so the
+            // lockup scales linearly with viewport.  The flex
+            // wrapper's zoom:0.8 trims the final rendered size
+            // back toward the design spec on desktop.
             className="h-8 w-auto sm:h-auto sm:w-[30vw]"
             style={{
+              // Morph-in hand-off: same pattern used on the script
+              // signature so the lockup feels like it's resolving
+              // into focus rather than swapping in.  Three layered
+              // transitions:
+              //   • opacity 700 ms — matches the LoadingOverlay's
+              //     HANDOFF_FADE_MS so the splash → static
+              //     cross-fade stays at constant total opacity (no
+              //     mid-fade dip)
+              //   • blur 2600 ms — the visual "morph": the
+              //     static lockup starts gauzy (8 px blur) and
+              //     sharpens slowly into final clarity over 2.6 s
+              //   • transform 2800 ms — gentle grow from scale
+              //     0.92 to 1.0 on the same easing curve, so size
+              //     and focus settle together AFTER the splash is
+              //     long gone.  Reads as a single soft exhale.
               opacity: introDone ? 1 : 0,
-              // Match the LoadingOverlay's HANDOFF_FADE_MS (700 ms)
-              // so the static hero logo eases in over the same
-              // window the overlay logo eases out — no double-paint
-              // "snap" at the cross-fade boundary.
-              transition: "opacity 700ms ease-out",
+              transform: introDone ? "scale(1)" : "scale(0.92)",
+              filter: introDone ? "blur(0px)" : "blur(8px)",
+              transformOrigin: "center center",
+              transition:
+                "opacity 700ms ease-out, transform 2800ms cubic-bezier(0.22, 1, 0.36, 1), filter 2600ms cubic-bezier(0.22, 1, 0.36, 1)",
+              willChange: "opacity, transform, filter",
             }}
           />
         </div>
