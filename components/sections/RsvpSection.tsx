@@ -278,10 +278,11 @@ export default function RsvpSection() {
             Single inline line `18:00 June 18, 2026` per the desktop
             Figma frame.  "18:00" keeps the gradient; month/day/year
             stay white.  Hidden on mobile (mobile uses the vertical
-            stack above).  `sm:order-3` places this AFTER the dress
-            code on desktop without changing DOM order. */}
+            stack above).  `sm:order-2` puts the date directly under
+            the title (mobile-style flow), with `sm:mt-12` lifting
+            the date up from the previous `sm:mt-24`. */}
         <h2
-          className="hidden font-sans font-bold leading-none tracking-tight sm:order-3 sm:mt-24 sm:flex sm:items-baseline sm:justify-center sm:gap-3"
+          className="hidden font-sans font-bold leading-none tracking-tight sm:order-2 sm:mt-8 sm:flex sm:items-baseline sm:justify-center sm:gap-3"
           style={{
             opacity: entered ? 1 : 0,
             transform: entered ? "translateY(0)" : "translateY(8px)",
@@ -311,12 +312,11 @@ export default function RsvpSection() {
 
         {/* ---------- Dress code ----------
             "Dress code:" is bold per the Figma; the rest stays
-            regular.  Hand-faded so the inline <span> bold weight
-            survives.  Desktop reorders to position 2 (between title
-            and date) via `sm:order-2`, with the gap to the title
-            tightened down from the mobile `mt-7`. */}
+            regular.  Desktop reorders to position 3 — date sits
+            above (mobile-style flow), and the dress code follows
+            with a comfortable gap (`sm:mt-10`). */}
         <p
-          className="mt-7 font-sans text-[16px] font-normal leading-[1.4] text-white sm:order-2 sm:mt-3 sm:text-[22px]"
+          className="mt-7 font-sans text-[16px] font-normal leading-[1.4] text-white sm:order-3 sm:mt-10 sm:text-[22px]"
           style={{
             opacity: entered ? 1 : 0,
             transform: entered ? "translateY(0)" : "translateY(6px)",
@@ -330,7 +330,7 @@ export default function RsvpSection() {
             Mobile Figma spec: 259×50 box, three lines.  At 12 px font-
             size with 1.4 line-height the text wraps to exactly three
             rows.  Desktop pinned to the last position via `sm:order-4`. */}
-        <div className="mt-3 sm:order-4 sm:mt-8">
+        <div className="mt-3 sm:order-4 sm:mt-10">
           <RevealText
             as="p"
             className="w-[259px] text-center font-sans text-[16px] font-normal leading-[1.4] text-white sm:w-auto sm:max-w-[420px] sm:text-[22px] md:max-w-[540px]"

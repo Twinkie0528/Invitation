@@ -269,7 +269,7 @@ export default function CeoLetterSection() {
           wider and breaks fewer lines.  Layout mirrors the Figma:
           name + title on the left, green signature mark to the right. */}
       <div
-        className="absolute inset-x-0 top-[81%] mx-auto flex w-full items-center justify-center gap-4 px-6 sm:top-[78%] sm:gap-6 sm:px-14 md:gap-8 md:px-20"
+        className="absolute inset-x-0 top-[85%] mx-auto flex w-full items-center justify-center gap-4 px-6 sm:top-[78%] sm:gap-6 sm:px-14 md:gap-8 md:px-20"
         style={{
           fontFamily: "var(--font-manrope), system-ui, sans-serif",
           opacity: entered ? 1 : 0,
