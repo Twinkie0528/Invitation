@@ -71,9 +71,12 @@ export default function RootLayout({
             by the time the LoadingOverlay finishes flying.  The mp4
             preload uses `as="video"` (Chromium / Edge / modern Safari)
             with `type` so older browsers that don't recognise the
-            hint just ignore it. */}
-        <link rel="preload" as="image" href="/media/hero/unitel-20-lockup.svg" />
-        <link rel="preload" as="video" href="/media/hero/first.mp4" type="video/mp4" />
+            hint just ignore it.  `fetchpriority="high"` lifts both
+            assets above other late-discovered resources on Chromium
+            engines so the hero never queues behind a third-party
+            font CSS or analytics tag. */}
+        <link rel="preload" as="image" href="/media/hero/unitel-20-lockup.svg" fetchPriority="high" />
+        <link rel="preload" as="video" href="/media/hero/first.mp4" type="video/mp4" fetchPriority="high" />
 
         {/* Below-the-fold scenes — `prefetch` (not `preload`) tells
             the browser these are needed soon but at lower priority,
@@ -90,6 +93,7 @@ export default function RootLayout({
         <link rel="prefetch" as="image" href="/media/hero/shader.png" />
         <link rel="prefetch" as="image" href="/media/rsvp/cosmos.png" />
         <link rel="prefetch" as="image" href="/media/rsvp/invitation-title.png" />
+        <link rel="prefetch" as="image" href="/media/rsvp/full.png" />
         <link rel="prefetch" as="image" href="/media/ceo/signature.svg" />
       </head>
       <body>

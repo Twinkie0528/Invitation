@@ -128,10 +128,17 @@ export default function HeroSection() {
   // racing against the browser's autoplay throttle, with one losing
   // the race and never firing `onPlaying` (so its fade-in stayed at
   // opacity 0).  Mounting only the active set eliminates the race.
-  // Initial value is `null` — render no video on the SSR/pre-hydrate
-  // pass so we don't briefly mount the wrong viewport's instance and
-  // trigger a hydration mismatch / mount/unmount churn.
-  const [viewport, setViewport] = useState<"mobile" | "desktop" | null>(null);
+  // Initial value is computed synchronously on the client so the very
+  // first render already mounts the correct video instance — saves the
+  // ~16-30 ms gap that the previous `null → useEffect → setState`
+  // sequence introduced before the mp4 element appeared in the DOM.
+  // SSR still returns `null` (server has no `window`), but the hero
+  // section is already client-only-rendered (`"use client"`), so the
+  // hydration cost is paid once at boot anyway.
+  const [viewport, setViewport] = useState<"mobile" | "desktop" | null>(() => {
+    if (typeof window === "undefined") return null;
+    return window.matchMedia("(min-width: 768px)").matches ? "desktop" : "mobile";
+  });
   useEffect(() => {
     const mql = window.matchMedia("(min-width: 768px)");
     const apply = () => setViewport(mql.matches ? "desktop" : "mobile");
