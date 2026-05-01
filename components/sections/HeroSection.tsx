@@ -118,7 +118,9 @@ export default function HeroSection() {
             // 2.4 s visual transition so evening fires while the
             // name is still completing (graceful overlap, not a
             // 4 s cold wait).
-      240, // "to an exclusive evening" PNG (short fade)
+      900, // "to an exclusive evening" PNG — extended chain step so
+           // the scroll cue gets a small breath AFTER evening
+           // settles instead of arriving on the same beat.
       120, // scroll cue (short fade)
     ],
     { stagger: 32, duration: 650, pause: 50 },
@@ -334,10 +336,14 @@ export default function HeroSection() {
             // user asked for).  Mobile keeps the original height-
             // anchored sizing because the lockup needs a hard cap on
             // narrow phones (30vw on a 360-wide phone is too tiny).
-            className="h-9 w-auto sm:h-auto sm:w-[30vw]"
+            className="h-8 w-auto sm:h-auto sm:w-[30vw]"
             style={{
               opacity: introDone ? 1 : 0,
-              transition: "opacity 220ms ease-out",
+              // Match the LoadingOverlay's HANDOFF_FADE_MS (700 ms)
+              // so the static hero logo eases in over the same
+              // window the overlay logo eases out — no double-paint
+              // "snap" at the cross-fade boundary.
+              transition: "opacity 700ms ease-out",
             }}
           />
         </div>
@@ -450,7 +456,7 @@ export default function HeroSection() {
           className="absolute inset-x-0 bottom-[6vh] flex flex-col items-center gap-2 text-white/60 md:bottom-[10vh] md:gap-1.5"
           style={{
             opacity: mounted ? 1 : 0,
-            transition: `opacity 280ms ease-out ${d_scroll}ms`,
+            transition: `opacity 1000ms cubic-bezier(0.22, 1, 0.36, 1) ${d_scroll}ms`,
           }}
         >
           <span className="font-sans text-[13px] md:text-base lg:text-lg">

@@ -93,7 +93,16 @@ export default function RsvpSection() {
     d_dress,
     d_venue,
   ] = useSequentialDelays(
-    [1600, 1600, 600, "Dress code: Cocktail attire", VENUE_TEXT],
+    // Every step is now a number (literal duration) because the
+    // body lines also use the same blur+scale convergence as the
+    // title and date — no glyph-staggered RevealText left to
+    // measure.  Cadence: title (1.6 s) → date (1.6 s) → 0.4 s
+    // hold → dress (chain step 0.6 s; visual 1.4 s) → venue
+    // (visual 1.4 s).  The 0.6 s chain step on dress means the
+    // venue starts halfway through the dress's blur convergence,
+    // so both body lines land in a soft cascade rather than two
+    // discrete beats.
+    [1600, 1600, 400, 600, 1400],
     { stagger: 8, duration: 220, pause: 0, initialDelay: 100 },
   );
   void _afterDateHold;
@@ -337,28 +346,40 @@ export default function RsvpSection() {
           className="mt-7 font-sans text-[16px] font-normal leading-[1.4] text-white sm:order-3 sm:mt-10 sm:text-[22px]"
           style={{
             opacity: entered ? 1 : 0,
-            transform: entered ? "translateY(0)" : "translateY(6px)",
-            transition: `opacity 960ms cubic-bezier(0.22, 1, 0.36, 1) ${d_dress}ms, transform 960ms cubic-bezier(0.22, 1, 0.36, 1) ${d_dress}ms`,
+            // Same blur + scale convergence as the title PNG and
+            // date row above — every element on this RSVP scene
+            // now resolves with the same cosmic-dust-into-focus
+            // animation so the closing copy reads as one unified
+            // landing.  Slightly shorter durations than the
+            // headers (1.2 / 1.4 s vs 1.4 / 1.6 s) so the body
+            // lines settle a touch faster, per user feedback.
+            transform: entered ? "scale(1)" : "scale(0.96)",
+            filter: entered ? "blur(0px)" : "blur(8px)",
+            transition: `opacity 1200ms cubic-bezier(0.22, 1, 0.36, 1) ${d_dress}ms, transform 1400ms cubic-bezier(0.22, 1, 0.36, 1) ${d_dress}ms, filter 1400ms cubic-bezier(0.22, 1, 0.36, 1) ${d_dress}ms`,
           }}
         >
           <span className="font-bold">Dress code:</span> Cocktail attire
         </p>
 
         {/* ---------- Venue ----------
-            Mobile Figma spec: 259×50 box, three lines.  At 12 px font-
+            Mobile Figma spec: 259×50 box, three lines.  At 16 px font-
             size with 1.4 line-height the text wraps to exactly three
-            rows.  Desktop pinned to the last position via `sm:order-4`. */}
+            rows.  Desktop pinned to the last position via `sm:order-4`.
+            Blur + scale convergence matches the dress-code line
+            above so the closing block reads as one synchronised
+            reveal instead of mixing typewriter + blur effects. */}
         <div className="mt-3 sm:order-4 sm:mt-10">
-          <RevealText
-            as="p"
+          <p
             className="w-[259px] text-center font-sans text-[16px] font-normal leading-[1.4] text-white sm:w-auto sm:max-w-[420px] sm:text-[22px] md:max-w-[540px]"
-            stagger={8}
-            duration={220}
-            delay={d_venue}
-            trigger={entered}
+            style={{
+              opacity: entered ? 1 : 0,
+              transform: entered ? "scale(1)" : "scale(0.96)",
+              filter: entered ? "blur(0px)" : "blur(8px)",
+              transition: `opacity 1200ms cubic-bezier(0.22, 1, 0.36, 1) ${d_venue}ms, transform 1400ms cubic-bezier(0.22, 1, 0.36, 1) ${d_venue}ms, filter 1400ms cubic-bezier(0.22, 1, 0.36, 1) ${d_venue}ms`,
+            }}
           >
             {VENUE_TEXT}
-          </RevealText>
+          </p>
         </div>
       </div>
     </section>

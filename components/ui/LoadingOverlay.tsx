@@ -222,13 +222,18 @@ export default function LoadingOverlay() {
         <Image
           src="/media/hero/unitel-20-lockup.svg"
           alt="Unitel 20"
-          width={420}
-          height={46}
+          width={520}
+          height={58}
           priority
-          // Sized to match the hero lockup's md+ size (h-12 = 48px). The
-          // FLIP scale handles smaller screens automatically because the
-          // target rect is measured per-viewport.
-          className="h-12 w-auto"
+          // Splash logo uses the EXACT same sizing rules as the
+          // hero static lockup (`h-8` on mobile, `sm:w-[30vw]` on
+          // desktop) so the FLIP transition only translates — no
+          // scaling at all.  The cross-fade at the hand-off keeps
+          // the same pixel dimensions on both ends, eliminating
+          // the "snap to bigger size" the user was seeing on
+          // desktop where the splash was h-8 but the hero lockup
+          // jumped to ~64 px (30vw on a 1920-wide laptop).
+          className="h-8 w-auto sm:h-auto sm:w-[30vw]"
         />
       </div>
     </div>

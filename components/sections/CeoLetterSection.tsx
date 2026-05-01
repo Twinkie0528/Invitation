@@ -78,6 +78,9 @@ export default function CeoLetterSection() {
     _holdBeforeSignature,
     d_signature,
   ] = useSequentialDelays(
+    // 1500 ms hold — signature lands 1.5 s after the closing
+    // paragraph settles, so the letter has a moment to "rest"
+    // before the closing flourish writes in.
     [CEO_PARA_2, CEO_PARA_3, CEO_PARA_4, CEO_PARA_5, 1500, 0],
     {
       stagger: 8,
@@ -301,9 +304,9 @@ export default function CeoLetterSection() {
           // gathering into focus, not a snap-on.  Larger initial
           // translateY (32 px) + scale 0.92 amplifies the slow
           // settle so the eye has time to register the rise.
-          transform: entered ? "translateY(0) scale(1)" : "translateY(32px) scale(0.92)",
-          filter: entered ? "blur(0px)" : "blur(6px)",
-          transition: `opacity 3000ms cubic-bezier(0.22, 1, 0.36, 1) ${d_signature}ms, transform 3200ms cubic-bezier(0.22, 1, 0.36, 1) ${d_signature}ms, filter 3000ms cubic-bezier(0.22, 1, 0.36, 1) ${d_signature}ms`,
+          transform: entered ? "translateY(0) scale(1)" : "translateY(28px) scale(0.93)",
+          filter: entered ? "blur(0px)" : "blur(5px)",
+          transition: `opacity 2200ms cubic-bezier(0.22, 1, 0.36, 1) ${d_signature}ms, transform 2400ms cubic-bezier(0.22, 1, 0.36, 1) ${d_signature}ms, filter 2200ms cubic-bezier(0.22, 1, 0.36, 1) ${d_signature}ms`,
         }}
       >
         {/* Name + title block — Figma `Mobile Version` (canvas 440×956)
