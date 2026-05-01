@@ -191,10 +191,12 @@ export default function LoadingOverlay() {
         position: "fixed",
         inset: 0,
         zIndex: 100,
-        // Backdrop only — the logo wrapper paints separately so it can
-        // outlive the backdrop during the FLIP transition.
-        background: backdropFaded ? "transparent" : "var(--bg)",
-        transition: `background ${BACKDROP_FADE_MS}ms ease-out`,
+        // Backdrop is fully transparent from the start so the hero
+        // mp4 (dust mascot) reads through the splash from the very
+        // first paint — per user request the background asset must
+        // always be visible underneath, never covered by a solid
+        // colour plate.  The logo wrapper still paints on top.
+        background: "transparent",
         // Disable interactions once the logo starts flying — clicks should
         // hit the page underneath, not the overlay.
         pointerEvents: backdropFaded ? "none" : "auto",
