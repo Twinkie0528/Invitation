@@ -36,15 +36,17 @@ const PRELOAD_TIMEOUT_MS = 8_000;
 
 // Animation cadence — invitation pacing: warm, calm, deliberate.
 // Logo holds on the splash for a full 1 s, then glides into the
-// hero lockup over 2.2 s on a smooth no-overshoot curve, and the
-// hand-off cross-fade runs 700 ms so the overlay logo melts into
-// place rather than flicking off.  Total splash → hero handoff
-// runs ~3.9 s, after which the hero text starts revealing
-// top-down (gated on `introDone` in HeroSection).
+// hero lockup over 2.2 s on a smooth no-overshoot curve, fades
+// out over 700 ms at the target position, then a deliberate
+// 200 ms pause of empty header space before the static hero
+// lockup morphs in (per user request — sequential hand-off, not
+// a cross-fade, so the user reads "splash logo arrives → goes
+// away → hero logo materialises" as three distinct beats).
 const BACKDROP_FADE_MS = 900;
 const FLIP_DURATION_MS = 2200;
 const FLIP_DELAY_MS = 1000;
 const HANDOFF_FADE_MS = 700;
+const POST_HANDOFF_GAP_MS = 200;
 
 export default function LoadingOverlay() {
   const { ready } = useLoadGate();
@@ -159,8 +161,19 @@ export default function LoadingOverlay() {
     wrapper.style.transform = `translate(-50%, -50%) translate(${dx}px, ${dy}px) scale(${scale})`;
     setPhase("flying");
 
+    // Three sequential beats:
+    //   1. handoff — splash arrives at the header position and starts
+    //      its 700 ms opacity fade-out.  The static hero lockup is
+    //      still hidden (introDone === false) so the header slot
+    //      goes briefly empty after the splash dies down.
+    //   2. finish — splash unmounts.  We then wait POST_HANDOFF_GAP_MS
+    //      with NO logo painted at all (the deliberate pause the
+    //      user asked for).
+    //   3. introDone — fired AFTER the gap so the static lockup's
+    //      blur/scale morph kicks off into a clean header slot,
+    //      reading as "logo materialises into focus" rather than a
+    //      cross-fade with the splash.
     const handoff = window.setTimeout(() => {
-      markIntroDone();
       setPhase("handoff");
     }, FLIP_DELAY_MS + FLIP_DURATION_MS);
 
@@ -168,8 +181,13 @@ export default function LoadingOverlay() {
       setPhase("done");
     }, FLIP_DELAY_MS + FLIP_DURATION_MS + HANDOFF_FADE_MS);
 
+    const introDoneTimer = window.setTimeout(() => {
+      markIntroDone();
+    }, FLIP_DELAY_MS + FLIP_DURATION_MS + HANDOFF_FADE_MS + POST_HANDOFF_GAP_MS);
+
     return () => {
       window.clearTimeout(handoff);
+      window.clearTimeout(introDoneTimer);
       window.clearTimeout(finish);
     };
   }, [ready]);
