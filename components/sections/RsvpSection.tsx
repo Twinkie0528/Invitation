@@ -155,9 +155,9 @@ export default function RsvpSection() {
           className="cosmos-drift-mobile pointer-events-none absolute md:hidden"
           style={{
             width: "281.13vw",
-            aspectRatio: "1400 / 613",
-            top: "48.33vh",
-            left: "-98.64vw",
+            aspectRatio: "1650 / 613",
+            top: "40.33vh",
+            left: "-110.64vw",
           }}
         >
           <Image
