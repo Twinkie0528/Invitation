@@ -188,26 +188,23 @@ export default function HeroSection() {
           `display:none` on the inactive viewport keeps each
           decoder asleep so we don't pay a triple-decode tax for
           mounting all three instances. */}
-      {/* Mobile asset — Figma `Mobile Version` spec (canvas 351×773):
-          first.mp4 measures 644×1288 with top:-25 / left:-141, so
-          it bleeds the canvas on every side.  We translate the
-          design's pixel offsets into viewport-proportional units
-          (vw/vh) so the mascot keeps the same relative footprint
-          on every phone we ship to:
-            width  = 644 / 351 = 183.5vw
-            height = 1288 / 773 = 166.6vh
-            top    = -25 / 773 = -3.2vh
-            left   = -141 / 351 = -40.2vw
-          The section's `overflow-hidden` clips the bleed; the
-          mobile shader (just below) keeps the lockup readable. */}
+      {/* Mobile asset — zoom reduced from the original 183.5 vw / 166.6
+          vh design footprint per user feedback, with the new bleed
+          tuned to the golden ratio (φ ≈ 1.618).  Width 161.8 vw means
+          the mascot extends 30.9 vw past each viewport edge, and the
+          vertical bleed splits 1 : φ (top -2 vh, bottom -45 vh) so the
+          figure feels weighted toward the lower frame instead of
+          floating off the top.  `overflow-hidden` on the section
+          clips the bleed; the mobile shader keeps the lockup
+          readable. */}
       {viewport === "mobile" && (
-        <div className="absolute left-[-40.2vw] top-[-3.2vh] h-[166.6vh] w-[183.5vw]">
+        <div className="absolute inset-x-0 top-0 bottom-[-15vh]">
           <BackgroundVideoFrame
             src="/media/hero/first.mp4"
             start={HERO_VIDEO_RANGE.start}
             end={HERO_VIDEO_RANGE.end}
             objectFit="cover"
-            className="absolute inset-0 h-full w-full brightness-110 contrast-110"
+            className="absolute inset-0 h-full w-full brightness-120 contrast-145 saturate-110"
           />
         </div>
       )}
@@ -402,13 +399,20 @@ export default function HeroSection() {
               transition: `opacity 700ms cubic-bezier(0.16, 1, 0.3, 1) ${d_evening}ms, transform 700ms cubic-bezier(0.16, 1, 0.3, 1) ${d_evening}ms`,
             }}
           >
+            {/* Mobile: live 16 px text per the new spec (uppercase
+                with letter-spacing).  Desktop keeps the pre-rendered
+                Figma PNG so the baked-in 4.8 px blur matches the
+                artboard's atmospheric treatment. */}
+            <span className="block text-center font-sans text-[16px] font-light uppercase tracking-[0.3em] text-[#B7B7B7] sm:hidden">
+              to an exclusive evening
+            </span>
             <Image
               src="/media/hero/exclusive-evening.png"
               alt="to an exclusive evening"
               width={358}
               height={31}
               priority={false}
-              className="mx-auto h-auto w-[87.7vw] brightness-125 contrast-115 sm:w-[22vw]"
+              className="mx-auto hidden h-auto w-[22vw] brightness-125 contrast-115 sm:block"
             />
           </div>
         </div>

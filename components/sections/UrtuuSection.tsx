@@ -235,7 +235,9 @@ export default function UrtuuSection() {
               alt=""
               fill
               priority={false}
-              sizes="100vw"
+              unoptimized
+              sizes="(min-width: 768px) 100vw, 110vw"
+              quality={100}
               className="object-cover"
               style={{
                 opacity: 0.6,
