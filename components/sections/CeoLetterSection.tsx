@@ -7,7 +7,6 @@ import { useSequentialDelays } from "@/hooks/useSequentialDelays";
 import BackgroundVideoFrame from "@/components/ui/BackgroundVideoFrame";
 import TopMark from "@/components/ui/TopMark";
 import { RevealText } from "@/components/ui/RevealText";
-import SceneCue from "@/components/ui/SceneCue";
 
 const CEO_PARA_1 = "Dear Valued Partner,";
 const CEO_PARA_2 = "I am proud to acknowledge the role you have played in shaping this journey.";
@@ -341,8 +340,6 @@ export default function CeoLetterSection() {
           className="h-[52px] w-auto sm:h-[64px] md:h-[78px]"
         />
       </div>
-
-      <SceneCue scene="ceo" />
     </section>
   );
 }
