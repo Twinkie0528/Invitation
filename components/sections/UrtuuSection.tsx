@@ -7,6 +7,7 @@ import { useSequentialDelays } from "@/hooks/useSequentialDelays";
 import BackgroundVideoFrame from "@/components/ui/BackgroundVideoFrame";
 import TopMark from "@/components/ui/TopMark";
 import { RevealText } from "@/components/ui/RevealText";
+import SceneCue from "@/components/ui/SceneCue";
 
 // UNITEL wordmark for the desktop right-corner placement.  Same SVG
 // asset as TopMark, sized to match.  We render this in addition to
@@ -401,6 +402,8 @@ export default function UrtuuSection() {
           </div>
         </div>
       </div>
+
+      <SceneCue scene="urtuu" />
     </section>
   );
 }

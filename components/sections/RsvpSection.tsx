@@ -93,7 +93,7 @@ export default function RsvpSection() {
     d_dress,
     d_venue,
   ] = useSequentialDelays(
-    [1600, 1600, 800, "Dress code: Cocktail attire", VENUE_TEXT],
+    [1600, 1600, 600, "Dress code: Cocktail attire", VENUE_TEXT],
     { stagger: 8, duration: 220, pause: 0, initialDelay: 100 },
   );
   void _afterDateHold;

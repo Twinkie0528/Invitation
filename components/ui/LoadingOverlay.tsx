@@ -34,16 +34,17 @@ const GATE_VIDEOS: string[] = [];
 // behind the overlay (e.g. a guest on a flaky cellular link).
 const PRELOAD_TIMEOUT_MS = 8_000;
 
-// Animation cadence — slower, softer transition per user feedback
-// (the previous 80 ms hold + 850 ms flight read as the logo "flying
-// off too fast").  We now hold the logo on the splash for ~700 ms,
-// then glide it over 1.6 s with a gentler ease, and let the
-// hand-off cross-fade run a longer 500 ms so the overlay logo
-// melts into the hero lockup instead of snapping out.
-const BACKDROP_FADE_MS = 700;
-const FLIP_DURATION_MS = 1600;
-const FLIP_DELAY_MS = 700;
-const HANDOFF_FADE_MS = 500;
+// Animation cadence — invitation pacing: warm, calm, deliberate.
+// Logo holds on the splash for a full 1 s, then glides into the
+// hero lockup over 2.2 s on a smooth no-overshoot curve, and the
+// hand-off cross-fade runs 700 ms so the overlay logo melts into
+// place rather than flicking off.  Total splash → hero handoff
+// runs ~3.9 s, after which the hero text starts revealing
+// top-down (gated on `introDone` in HeroSection).
+const BACKDROP_FADE_MS = 900;
+const FLIP_DURATION_MS = 2200;
+const FLIP_DELAY_MS = 1000;
+const HANDOFF_FADE_MS = 700;
 
 export default function LoadingOverlay() {
   const { ready } = useLoadGate();

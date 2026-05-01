@@ -7,6 +7,7 @@ import { useSequentialDelays } from "@/hooks/useSequentialDelays";
 import BackgroundVideoFrame from "@/components/ui/BackgroundVideoFrame";
 import TopMark from "@/components/ui/TopMark";
 import { RevealText } from "@/components/ui/RevealText";
+import SceneCue from "@/components/ui/SceneCue";
 
 const GALA_PARA_1 = "Created exclusively for you, this immersive gala dinner is designed as an evening beyond the ordinary where storytelling is not simply observed, but experienced.";
 const GALA_PARA_2 = "Throughout the night, you will move through three distinct thematic settings, each offering its own atmosphere for dining and discovery.";
@@ -258,6 +259,8 @@ export default function GalaSection() {
           </div>
         </div>
       </div>
+
+      <SceneCue scene="gala" />
     </section>
   );
 }

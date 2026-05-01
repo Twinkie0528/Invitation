@@ -7,6 +7,7 @@ import { useSequentialDelays } from "@/hooks/useSequentialDelays";
 import BackgroundVideoFrame from "@/components/ui/BackgroundVideoFrame";
 import TopMark from "@/components/ui/TopMark";
 import { RevealText } from "@/components/ui/RevealText";
+import SceneCue from "@/components/ui/SceneCue";
 
 const CEO_PARA_1 = "Dear Valued Partner,";
 const CEO_PARA_2 = "I am proud to acknowledge the role you have played in shaping this journey.";
@@ -64,11 +65,21 @@ export default function CeoLetterSection() {
   // run through useSequentialDelays starting 1 s after the title
   // resolves, with only 60 ms between each paragraph so the four
   // lines write themselves continuously like a hand-penned letter.
+  // After the closing paragraph finishes, a 1500 ms sentinel hold
+  // sits between the final body line and the signature row so the
+  // letter has a moment to "settle" before the closing flourish.
   const TITLE_DURATION = 1600;
   const PAUSE_AFTER_TITLE = 800;
   const d_para1 = 100;
-  const [d_para2, d_para3, d_para4, d_para5, d_signature] = useSequentialDelays(
-    [CEO_PARA_2, CEO_PARA_3, CEO_PARA_4, CEO_PARA_5, 0],
+  const [
+    d_para2,
+    d_para3,
+    d_para4,
+    d_para5,
+    _holdBeforeSignature,
+    d_signature,
+  ] = useSequentialDelays(
+    [CEO_PARA_2, CEO_PARA_3, CEO_PARA_4, CEO_PARA_5, 1500, 0],
     {
       stagger: 8,
       duration: 220,
@@ -76,6 +87,7 @@ export default function CeoLetterSection() {
       initialDelay: 100 + TITLE_DURATION + PAUSE_AFTER_TITLE,
     },
   );
+  void _holdBeforeSignature;
 
   return (
     <section
@@ -284,15 +296,15 @@ export default function CeoLetterSection() {
           fontFamily: "var(--font-manrope), system-ui, sans-serif",
           opacity: entered ? 1 : 0,
           // Signature row reveals as a single GROUPED unit — name +
-          // title + signature SVG cross-fade in together over a
-          // long, soft 2.4 s glide.  Bouncy easing dropped per user
-          // feedback ("elegant" reads better without the spring);
-          // both opacity AND transform now use the smooth no-overshoot
-          // cubic-bezier(0.22, 1, 0.36, 1) curve.  Larger initial
-          // translateY (24 px) + scale 0.94 amplifies the soft
-          // settle into focus.
-          transform: entered ? "translateY(0) scale(1)" : "translateY(24px) scale(0.94)",
-          transition: `opacity 2400ms cubic-bezier(0.22, 1, 0.36, 1) ${d_signature}ms, transform 2400ms cubic-bezier(0.22, 1, 0.36, 1) ${d_signature}ms`,
+          // title + signature SVG cross-fade in together over an
+          // even longer 3.2 s glide with a soft `blur(6 px) → 0`
+          // ramp so the closing flourish feels like cosmic dust
+          // gathering into focus, not a snap-on.  Larger initial
+          // translateY (32 px) + scale 0.92 amplifies the slow
+          // settle so the eye has time to register the rise.
+          transform: entered ? "translateY(0) scale(1)" : "translateY(32px) scale(0.92)",
+          filter: entered ? "blur(0px)" : "blur(6px)",
+          transition: `opacity 3000ms cubic-bezier(0.22, 1, 0.36, 1) ${d_signature}ms, transform 3200ms cubic-bezier(0.22, 1, 0.36, 1) ${d_signature}ms, filter 3000ms cubic-bezier(0.22, 1, 0.36, 1) ${d_signature}ms`,
         }}
       >
         {/* Name + title block — Figma `Mobile Version` (canvas 440×956)
@@ -329,6 +341,8 @@ export default function CeoLetterSection() {
           className="h-[52px] w-auto sm:h-[64px] md:h-[78px]"
         />
       </div>
+
+      <SceneCue scene="ceo" />
     </section>
   );
 }

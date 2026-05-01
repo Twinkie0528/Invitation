@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useSectionReveal } from "@/hooks/useSectionReveal";
-import { useSceneEntered } from "@/hooks/useScrollProgress";
 import { useSequentialDelays } from "@/hooks/useSequentialDelays";
 import { useLoadGate } from "@/hooks/useLoadGate";
 import { formatGuestName, useGuestName } from "@/lib/guestContext";
@@ -42,7 +41,6 @@ export default function HeroSection() {
     hold: 0.10,
     end: 0.16,
   });
-  const entered = useSceneEntered(0);
   // The lockup stays invisible until LoadingOverlay finishes its FLIP
   // transition — the static logo cross-fades in at the exact position
   // the overlay logo flew to.
@@ -123,7 +121,7 @@ export default function HeroSection() {
       240, // "to an exclusive evening" PNG (short fade)
       120, // scroll cue (short fade)
     ],
-    { stagger: 20, duration: 500, pause: 50 },
+    { stagger: 32, duration: 650, pause: 50 },
   );
 
   // Viewport-aware mount: only mount the video instances that are
@@ -153,19 +151,19 @@ export default function HeroSection() {
     return () => mql.removeEventListener("change", apply);
   }, []);
 
-  // Local "mounted" gate — `entered` from useSceneEntered is true on
-  // the very first render (the hero IS the scene at progress 0), so an
-  // inline CSS transition keyed off `entered` has no false→true edge
-  // to animate against and the calligraphy zoom-in stayed invisible.
-  // We start `mounted` at false, flip it on the next paint, and key
-  // the guest-name + scroll-cue transitions off mounted instead.  The
-  // RevealText components above are unaffected because they manage
-  // their own internal visibility state.
+  // Local "mounted" gate — flips true ONLY after the LoadingOverlay
+  // hands off (`introDone === true`), so every hero reveal waits
+  // until the lockup logo has finished gliding into position.  The
+  // 30 ms `setTimeout` delay ensures the next paint has the static
+  // hero logo committed before we kick off the text reveals — that
+  // way the user sees a calm, top-down sequence: logo lands → name
+  // copy fades in line by line.
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
+    if (!introDone) return;
     const t = window.setTimeout(() => setMounted(true), 30);
     return () => window.clearTimeout(t);
-  }, []);
+  }, [introDone]);
 
   // Desktop pillar synchronisation — both <BackgroundVideoFrame>
   // instances paint the same first.mp4 source, but each one's
@@ -357,20 +355,20 @@ export default function HeroSection() {
           <RevealText
             as="div"
             className="font-sans text-[22px] font-semibold tracking-[0.18em] text-white sm:text-[2vw] md:tracking-[0.22em]"
-            stagger={20}
-            duration={500}
+            stagger={32}
+            duration={650}
             delay={d_unitel}
-            trigger={entered}
+            trigger={introDone}
           >
             UNITEL GROUP
           </RevealText>
           <RevealText
             as="div"
             className="mt-[1.5vh] font-sans text-[16px] font-light text-white/85 sm:mt-1 sm:text-[1.5vw]"
-            stagger={20}
-            duration={500}
+            stagger={32}
+            duration={650}
             delay={d_invite}
-            trigger={entered}
+            trigger={introDone}
           >
             is pleased to invite
           </RevealText>
@@ -423,7 +421,7 @@ export default function HeroSection() {
             style={{
               opacity: mounted ? 1 : 0,
               transform: mounted ? "translateY(0)" : "translateY(8px)",
-              transition: `opacity 320ms cubic-bezier(0.16, 1, 0.3, 1) ${d_evening}ms, transform 320ms cubic-bezier(0.16, 1, 0.3, 1) ${d_evening}ms`,
+              transition: `opacity 1400ms cubic-bezier(0.22, 1, 0.36, 1) ${d_evening}ms, transform 1400ms cubic-bezier(0.22, 1, 0.36, 1) ${d_evening}ms`,
             }}
           >
             {/* Mobile: live 16 px text per the new spec (uppercase

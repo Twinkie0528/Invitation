@@ -118,6 +118,30 @@ html.lenis body {
   }
 }
 
+/* Scene-cue chevron — gentle levitation so the "scroll on" prompt
+   draws the eye without competing with the section's main reveal.
+   Bobs ±3 px every 1.6 s on a smooth ease-in-out, with a faint
+   opacity breath so the prompt feels alive rather than pinned. */
+@keyframes scene-cue-bob {
+  0%, 100% {
+    transform: translateY(0);
+    opacity: 0.7;
+  }
+  50% {
+    transform: translateY(3px);
+    opacity: 1;
+  }
+}
+.scene-cue-bob {
+  animation: scene-cue-bob 1600ms ease-in-out infinite;
+  will-change: transform, opacity;
+}
+@media (prefers-reduced-motion: reduce) {
+  .scene-cue-bob {
+    animation: none;
+  }
+}
+
 /* Floor drift — used by UrtuuSection's blended floor.jpg layer.
    A slow horizontal sway combined with a tiny vertical breathe so
    the topographic plate reads as a "flowing" / "swaying" horizon
