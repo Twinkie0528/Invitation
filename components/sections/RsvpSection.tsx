@@ -64,8 +64,8 @@ function parseGuestDate(raw?: string): { month: string; day: string } | null {
 // particles painted underneath in the lower half.
 export default function RsvpSection() {
   const ref = useSectionReveal<HTMLElement>({
-    start: 0.85,
-    peak: 0.91,
+    start: 0.79,
+    peak: 0.85,
     hold: 1.0,
     end: 1.05,
   });

@@ -27,9 +27,9 @@ const BG_POSTER = "/media/common/gala-bloom.webp";
 // Reveal range — also drives the video play/pause window.
 // Gala is page 4 (after Hero + CEO + Urtuu): scroll progress 0.64 → 0.85.
 const REVEAL_RANGE = {
-  start: 0.64,
-  peak: 0.697,
-  hold: 0.802,
+  start: 0.58,
+  peak: 0.64,
+  hold: 0.79,
   end: 0.85,
 };
 
@@ -54,19 +54,17 @@ export default function GalaSection() {
   // Reveal cadence — eyebrow → title (2 s convergence) → 1 s
   // sentinel hold → body paragraphs (continuous, only 60 ms breath
   // between them so the four lines read as one flowing letter).
-  // Header chain (eyebrow → title → sentinel hold) keeps the old
-  // calm 0.4 s wait cadence.  All four body paragraphs share a
-  // single group-fade delay so they reveal as a unified slow fade.
-  const [
-    d_eyebrow,
-    d_title,
-    _afterTitleHold,
-    d_para_group,
-  ] = useSequentialDelays(
-    [800, 1600, 0, 0],
+  // Header chain (eyebrow → title) — body starts a short
+  // `TITLE_TO_BODY_PAUSE_MS` after the title's 1.6 s fade
+  // settles so the body lines feel tied to the headline rather
+  // than waiting for an extra sentinel hold.
+  const [d_eyebrow, d_title] = useSequentialDelays(
+    [800, 1600],
     { stagger: 0, duration: 0, pause: 400 },
   );
-  void _afterTitleHold;
+  const TITLE_DURATION_MS = 1600;
+  const TITLE_TO_BODY_PAUSE_MS = 188;
+  const d_para_group = d_title + TITLE_DURATION_MS + TITLE_TO_BODY_PAUSE_MS;
   // Continuous line cascade — every paragraph shares a single
   // `delay` and offsets its internal line index by the running
   // line count of earlier paragraphs, so the four body paragraphs

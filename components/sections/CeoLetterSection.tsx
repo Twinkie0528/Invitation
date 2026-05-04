@@ -32,9 +32,9 @@ const CEO_SIGNATURE_SRC = "/media/ceo/signature.svg";
 // gap where the CEO bg-black faded enough to expose the global
 // MainScene cosmos behind it.
 const REVEAL_RANGE = {
-  start: 0.16,
-  peak: 0.222,
-  hold: 0.408,
+  start: 0.10,
+  peak: 0.16,
+  hold: 0.36,
   end: 0.42,
 };
 
@@ -109,7 +109,7 @@ export default function CeoLetterSection() {
   // arrives as a separate event 1.5–2 s after the body looks
   // visually "done".
   const TITLE_DURATION = 1600;
-  const PAUSE_AFTER_TITLE = 400;
+  const PAUSE_AFTER_TITLE = 188;
   const LINE_STAGGER_MS = 100;
   const LINE_FADE_DURATION_MS = 4000;
   const SIGNATURE_SETTLE_MS = 800;
