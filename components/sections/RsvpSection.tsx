@@ -6,20 +6,16 @@ import { useSceneEntered } from "@/hooks/useScrollProgress";
 import { useGuest } from "@/lib/guestContext";
 import { useSequentialDelays } from "@/hooks/useSequentialDelays";
 import TopMark from "@/components/ui/TopMark";
-import { RevealText } from "@/components/ui/RevealText";
 import BackgroundVideoFrame from "@/components/ui/BackgroundVideoFrame";
 
-// Pre-rendered Figma title — the 4.8px blur, Manrope weight, and
-// 306×113 box are baked into the PNG itself, so we just drop it in
-// instead of fighting CSS blur / web-font swap drift.  Served from
-// /public/media so the file ships through Next.js's static asset
-// pipeline (no webpack /assets import needed; that path is gitignored
-// on CI).
-const INVITATION_TITLE_SRC = "/media/rsvp/invitation-title.png";
-// Desktop cosmos backdrop — galloping rider silhouette built from
-// drifting stars (mp4 export with cosmos.png poster fallback).
-// Mobile uses the static `full.png` per the new Figma design;
-// desktop keeps the original mp4 for the cinematic motion.
+// Title copy — rendered as live Manrope text inside the same
+// 306×113 (mobile) / 600px-wide (desktop) box the Figma export used.
+// The wrapper still drives the blur 12 → 0 + scale 0.94 → 1 entry
+// transition; only the inner element changed from <Image> to <h2>.
+const INVITATION_TITLE_TEXT = "This invitation is reserved exclusively for you.";
+// Cosmos backdrop — galloping rider silhouette built from drifting
+// stars.  Both mobile and desktop now play the mp4 (cosmos.png is
+// the poster fallback for data-saver / pre-decode states).
 const COSMOS_SRC = "/media/rsvp/cosmos.mp4";
 const COSMOS_POSTER = "/media/rsvp/cosmos.png";
 
@@ -119,72 +115,77 @@ export default function RsvpSection() {
       // (Galaxy / ParticleField) canvas from bleeding through.
       className="pointer-events-none fixed inset-0 z-20 overflow-hidden bg-black"
     >
-      {/* ---------- Background — cosmos rider PNG.
-          Mobile and desktop use different layout strategies:
+      {/* ---------- Background — cosmos rider mp4.
+          Mobile and desktop each render a single BackgroundVideoFrame
+          inside a positioning wrapper.  The wrapper carries explicit
+          top / left / width (and height on desktop / aspectRatio on
+          mobile) so the cosmos box can be nudged or resized without
+          touching the inner video.
 
             Mobile (md:hidden) — Figma `Mobile` artboard 440 × 956
-            spec verbatim: image is 1237 × 613 px, anchored at
-            top:462 / left:-434 within the canvas.  Converted to
-            viewport-relative units so it scales with phone size:
-              width  : 1237 / 440 = 281.13 vw
-              left   : -434 / 440 = -98.64 vw
-              top    : 462 / 956  = 48.33 vh
-              height : auto via aspect-ratio 1237/613 (preserves
-                       the source image proportions; the section
-                       carries `overflow-hidden` so any overhang
-                       past the bottom edge is clipped).
-            The `cosmos-drift-mobile` class layers a tiny ±0.4 %
-            translate + opacity breath on top so the plate still
-            feels alive without disturbing the Figma placement.
+            spec, translated to viewport-relative units.  cosmos.png
+            is wired as the poster fallback for data-saver users.
 
-            Desktop (hidden md:block) — full-bleed `object-cover
-            object-bottom` with the original `cosmos-drift`
-            (scale 1.1 + 5 % Y baseline) so the rider reads
-            cinematic across the wider canvas. */}
+            Desktop (hidden md:block) — wrapper sized to nudge the
+            video box down/left/right; `object-bottom` (set on the
+            inner <video> via the `[&>video]:!object-bottom`
+            Tailwind descendant) keeps the rider anchored to the
+            box's bottom edge.
+
+          Animation overlays were removed when the static cosmos.png
+          was replaced with the mp4: the previous wrapper-level
+          `cosmos-drift` / `cosmos-drift-mobile` transforms plus the
+          `cosmos-shimmer` / `cosmos-pulse` light overlays were
+          authored to give a static plate cinematic life, but the
+          mp4 already has its own internal motion and lighting, so
+          layering them on top fought the video at the compositor
+          and broke the "river of stars flowing smoothly" feel.
+
+          Colour treatment — both viewports apply
+          `brightness-120 contrast-130 saturate-150` to the inner
+          <video> + <img> via Tailwind descendant selectors so the
+          rider's blue→silver palette reads vivid and cinematic
+          instead of muted. */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 overflow-hidden"
       >
-        {/* Mobile wrapper carries the Figma-spec absolute dimensions
-            (1237×613 at top:462 / left:-434 within a 440×956 canvas,
-            translated to viewport-relative units).  Image inside uses
-            `fill` so Next/Image fills the wrapper exactly — keeps us
-            free from any intrinsic-size conflicts that prevented the
-            previous direct-width approach from rendering. */}
         <div
-          className="cosmos-drift-mobile pointer-events-none absolute md:hidden"
+          className="pointer-events-none absolute md:hidden"
           style={{
             width: "281.13vw",
-            aspectRatio: "1650 / 613",
-            top: "40.33vh",
-            left: "-110.64vw",
+            aspectRatio: "1550 / 550",
+            top: "50.33vh",
+            left: "-85.64vw",
           }}
         >
-          <Image
-            src="/media/rsvp/full.png"
-            alt=""
-            fill
-            aria-hidden
-            priority
-            unoptimized
-            sizes="281vw"
-            quality={100}
-            className="object-cover"
+          <BackgroundVideoFrame
+            src={COSMOS_SRC}
+            poster={COSMOS_POSTER}
+            start={0.85}
+            end={1.05}
+            objectFit="cover"
+            className="absolute inset-0 h-full w-full [&>video]:brightness-120 [&>video]:contrast-130 [&>video]:saturate-150 [&>img]:brightness-120 [&>img]:contrast-130 [&>img]:saturate-150"
           />
         </div>
-        <Image
-          src="/media/rsvp/full.png"
-          alt=""
-          fill
-          aria-hidden
-          priority
-          unoptimized
-          sizes="100vw"
-          quality={100}
-          className="cosmos-drift hidden object-cover object-bottom md:block"
-        />
-        <div className="cosmos-shimmer absolute inset-0" />
-        <div className="cosmos-pulse absolute inset-0" />
+        <div
+          className="pointer-events-none absolute hidden md:block"
+          style={{
+            top: "15vh",
+            left: "-4vw",
+            width: "106vw",
+            height: "104vh",
+          }}
+        >
+          <BackgroundVideoFrame
+            src={COSMOS_SRC}
+            poster={COSMOS_POSTER}
+            start={0.85}
+            end={1.05}
+            objectFit="cover"
+            className="absolute inset-0 h-full w-full [&>video]:!object-bottom [&>video]:brightness-120 [&>video]:contrast-130 [&>video]:saturate-150 [&>img]:!object-bottom [&>img]:brightness-120 [&>img]:contrast-130 [&>img]:saturate-150"
+          />
+        </div>
       </div>
 
       {/* ---------- Shader plate behind the text ----------
@@ -238,11 +239,10 @@ export default function RsvpSection() {
           colliding. */}
       <div className="absolute inset-x-0 top-0 flex h-full w-full flex-col items-center justify-start px-6 pt-[14vh] sm:pt-[15vh]">
         {/* ---------- Title ----------
-            Pre-rendered Figma export at
-            /public/media/rsvp/invitation-title.png.  The 4.8px blur,
-            Manrope weight, line-height, and exact 306×113 box are
-            baked into the pixels so we don't have to fight CSS-blur
-            or web-font swap drift. */}
+            Live Manrope text rendered inside the same 306×113 (mobile)
+            / 600 px-wide (desktop) box the Figma export used.  The
+            wrapper drives the blur 12 → 0 + scale 0.94 → 1 entry
+            transition exactly as before. */}
         <div
           className="w-[306px] sm:w-[600px]"
           style={{
@@ -252,17 +252,12 @@ export default function RsvpSection() {
             // Gala / CEO title treatment.
             transform: entered ? "scale(1)" : "scale(0.94)",
             filter: entered ? "blur(0px)" : "blur(12px)",
-            transition: `opacity 1440ms cubic-bezier(0.22, 1, 0.36, 1) ${d_title}ms, transform 1600ms cubic-bezier(0.22, 1, 0.36, 1) ${d_title}ms, filter 1600ms cubic-bezier(0.22, 1, 0.36, 1) ${d_title}ms`,
+            transition: `opacity 2200ms cubic-bezier(0.16, 1, 0.3, 1) ${d_title}ms, transform 2400ms cubic-bezier(0.16, 1, 0.3, 1) ${d_title}ms, filter 2400ms cubic-bezier(0.16, 1, 0.3, 1) ${d_title}ms`,
           }}
         >
-          <Image
-            src={INVITATION_TITLE_SRC}
-            alt="This invitation is reserved exclusively for you."
-            width={306}
-            height={113}
-            priority={false}
-            className="h-auto w-full"
-          />
+          <h2 className="text-center font-sans text-[30px] font-normal leading-[1.02] tracking-normal text-white sm:text-[58px]">
+            {INVITATION_TITLE_TEXT}
+          </h2>
         </div>
 
         {/* ---------- Mobile-only date stack ----------
@@ -271,12 +266,12 @@ export default function RsvpSection() {
             an inline single-line render below.  `sm:hidden` keeps
             this block out of the desktop layout entirely. */}
         <div
-          className="mt-7 flex flex-col items-center sm:hidden"
+          className="mt-10 flex flex-col items-center sm:hidden"
           style={{
             opacity: entered ? 1 : 0,
             transform: entered ? "scale(1)" : "scale(0.94)",
             filter: entered ? "blur(0px)" : "blur(12px)",
-            transition: `opacity 1440ms cubic-bezier(0.22, 1, 0.36, 1) ${d_date}ms, transform 1600ms cubic-bezier(0.22, 1, 0.36, 1) ${d_date}ms, filter 1600ms cubic-bezier(0.22, 1, 0.36, 1) ${d_date}ms`,
+            transition: `opacity 2200ms cubic-bezier(0.16, 1, 0.3, 1) ${d_date}ms, transform 2400ms cubic-bezier(0.16, 1, 0.3, 1) ${d_date}ms, filter 2400ms cubic-bezier(0.16, 1, 0.3, 1) ${d_date}ms`,
           }}
         >
           {/* 18:00 — gradient blue→silver. */}
@@ -319,12 +314,12 @@ export default function RsvpSection() {
             the title (mobile-style flow), with `sm:mt-12` lifting
             the date up from the previous `sm:mt-24`. */}
         <h2
-          className="hidden font-sans font-bold leading-none tracking-tight sm:order-2 sm:mt-8 sm:flex sm:items-baseline sm:justify-center sm:gap-3"
+          className="hidden font-sans font-bold leading-none tracking-tight sm:order-2 sm:mt-16 sm:flex sm:items-baseline sm:justify-center sm:gap-3"
           style={{
             opacity: entered ? 1 : 0,
             transform: entered ? "scale(1)" : "scale(0.94)",
             filter: entered ? "blur(0px)" : "blur(12px)",
-            transition: `opacity 1440ms cubic-bezier(0.22, 1, 0.36, 1) ${d_date}ms, transform 1600ms cubic-bezier(0.22, 1, 0.36, 1) ${d_date}ms, filter 1600ms cubic-bezier(0.22, 1, 0.36, 1) ${d_date}ms`,
+            transition: `opacity 2200ms cubic-bezier(0.16, 1, 0.3, 1) ${d_date}ms, transform 2400ms cubic-bezier(0.16, 1, 0.3, 1) ${d_date}ms, filter 2400ms cubic-bezier(0.16, 1, 0.3, 1) ${d_date}ms`,
           }}
         >
           <span
@@ -354,7 +349,7 @@ export default function RsvpSection() {
             above (mobile-style flow), and the dress code follows
             with a comfortable gap (`sm:mt-10`). */}
         <p
-          className="mt-7 font-sans text-[16px] font-normal leading-[1.4] text-white sm:order-3 sm:mt-10 sm:text-[22px]"
+          className="mt-10 font-sans text-[16px] font-normal leading-[1.55] text-white sm:order-3 sm:mt-14 sm:text-[22px]"
           style={{
             opacity: entered ? 1 : 0,
             // Same blur + scale convergence as the title PNG and
@@ -366,7 +361,7 @@ export default function RsvpSection() {
             // lines settle a touch faster, per user feedback.
             transform: entered ? "scale(1)" : "scale(0.96)",
             filter: entered ? "blur(0px)" : "blur(8px)",
-            transition: `opacity 1200ms cubic-bezier(0.22, 1, 0.36, 1) ${d_dress}ms, transform 1400ms cubic-bezier(0.22, 1, 0.36, 1) ${d_dress}ms, filter 1400ms cubic-bezier(0.22, 1, 0.36, 1) ${d_dress}ms`,
+            transition: `opacity 1800ms cubic-bezier(0.16, 1, 0.3, 1) ${d_dress}ms, transform 2000ms cubic-bezier(0.16, 1, 0.3, 1) ${d_dress}ms, filter 2000ms cubic-bezier(0.16, 1, 0.3, 1) ${d_dress}ms`,
           }}
         >
           <span className="font-bold">Dress code:</span> Cocktail attire
@@ -379,14 +374,14 @@ export default function RsvpSection() {
             Blur + scale convergence matches the dress-code line
             above so the closing block reads as one synchronised
             reveal instead of mixing typewriter + blur effects. */}
-        <div className="mt-3 sm:order-4 sm:mt-10">
+        <div className="mt-6 sm:order-4 sm:mt-12">
           <p
-            className="w-[259px] text-center font-sans text-[16px] font-normal leading-[1.4] text-white sm:w-auto sm:max-w-[420px] sm:text-[22px] md:max-w-[540px]"
+            className="w-[259px] text-center font-sans text-[16px] font-normal leading-[1.55] text-white sm:w-auto sm:max-w-[420px] sm:text-[22px] md:max-w-[540px]"
             style={{
               opacity: entered ? 1 : 0,
               transform: entered ? "scale(1)" : "scale(0.96)",
               filter: entered ? "blur(0px)" : "blur(8px)",
-              transition: `opacity 1200ms cubic-bezier(0.22, 1, 0.36, 1) ${d_venue}ms, transform 1400ms cubic-bezier(0.22, 1, 0.36, 1) ${d_venue}ms, filter 1400ms cubic-bezier(0.22, 1, 0.36, 1) ${d_venue}ms`,
+              transition: `opacity 1800ms cubic-bezier(0.16, 1, 0.3, 1) ${d_venue}ms, transform 2000ms cubic-bezier(0.16, 1, 0.3, 1) ${d_venue}ms, filter 2000ms cubic-bezier(0.16, 1, 0.3, 1) ${d_venue}ms`,
             }}
           >
             {VENUE_TEXT}

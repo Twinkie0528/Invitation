@@ -12,16 +12,16 @@ export type SceneBreakpoint = {
 
 // Master scroll timeline.  Page narrative order:
 //   1. Hero — invitation
-//   2. Urtuu — "The Urtuu" immersive experience
-//   3. Gala — "Immersive Gala Dinner"
-//   4. CEO Letter — formal welcome from Jamiyan-Sharav D.
+//   2. CEO Letter — formal welcome from Jamiyan-Sharav D.
+//   3. Urtuu — "The Urtuu" immersive experience
+//   4. Gala — "Immersive Gala Dinner"
 //   5. RSVP
 export const SCENES: SceneBreakpoint[] = [
   { id: "cold", start: -0.01, end: 0.0, label: "Cold start" },
   { id: "hero", start: 0.0, end: 0.16, label: "Hero · Seal breathes" },
-  { id: "urtuu", start: 0.16, end: 0.42, label: "Urtuu journey" },
-  { id: "gala", start: 0.42, end: 0.64, label: "Gala bloom" },
-  { id: "ceo", start: 0.64, end: 0.85, label: "CEO letter" },
+  { id: "ceo", start: 0.16, end: 0.42, label: "CEO letter" },
+  { id: "urtuu", start: 0.42, end: 0.64, label: "Urtuu journey" },
+  { id: "gala", start: 0.64, end: 0.85, label: "Gala bloom" },
   { id: "rsvp", start: 0.85, end: 1.01, label: "Convergence · RSVP" },
 ];
 

@@ -127,138 +127,24 @@ html.lenis body {
    gutters at the wrapper edges.  Cadence is intentionally slow
    (22s) so the motion never reads as scrolling — just gentle
    atmospheric drift. */
-/* Cosmos depth — subtle drift for the RSVP particle-depth PNG.
-   Keeps the otherwise-static plate alive with a slow translate +
-   scale loop and a faint opacity breath, so the image reads as
-   a moving cosmos rather than a photo print.  Cadence is gentle
-   (16 s) so the motion never reads as a literal scroll. */
-@keyframes cosmos-drift {
-  0%, 100% {
-    transform: scale(1.1) translate3d(0, 5%, 0) rotate(0deg);
-    opacity: 0.88;
-  }
-  33% {
-    transform: scale(1.1) translate3d(0.5%, 4.6%, 0) rotate(0.15deg);
-    opacity: 0.96;
-  }
-  66% {
-    transform: scale(1.1) translate3d(-0.4%, 5.3%, 0) rotate(-0.1deg);
-    opacity: 1;
-  }
-}
-/* Cosmos drift — constant 1.1× scale + 5 % translate-y baseline
-   (the user's previous "10 % zoom + slight downshift") with a
-   sub-pixel sway + opacity breath layered on top.  Scale stays
-   FIXED across all keyframes so the GPU only interpolates a
-   single transform, not a continuously-changing one — that's
-   the difference between sharp-but-zoomed and the previous
-   blur-from-animated-scale.  26 s cadence keeps the motion
-   cinematic. */
-.cosmos-drift {
-  animation: cosmos-drift 26s ease-in-out infinite;
-  will-change: transform, opacity;
-}
-
-/* Mobile-only drift — the cosmos plate is sized + positioned
-   per the Figma artboard (`top:462px / left:-434px / 1237×613`
-   on a 440×956 canvas) so we can't apply the desktop's scale
-   1.1 + 5 % Y translate without dragging the image off its
-   spec position.  Instead we layer a very small ±0.4 % drift +
-   tiny opacity breath on top of the absolute placement so the
-   plate still feels alive (slow current-of-stars motion)
-   without disturbing the design's intended composition. */
-@keyframes cosmos-drift-mobile {
-  0%, 100% {
-    transform: translate3d(0%, 0%, 0);
-    opacity: 0.92;
-  }
-  33% {
-    transform: translate3d(0.4%, -0.2%, 0);
-    opacity: 1;
-  }
-  66% {
-    transform: translate3d(-0.3%, 0.3%, 0);
-    opacity: 0.96;
-  }
-}
-.cosmos-drift-mobile {
-  animation: cosmos-drift-mobile 22s ease-in-out infinite;
-  will-change: transform, opacity;
-}
-@media (prefers-reduced-motion: reduce) {
-  .cosmos-drift-mobile {
-    animation: none;
-  }
-}
-
-@keyframes cosmos-shimmer {
+/* Letter-glow with persistent halo — each letter pulses up to
+   a peak glow at 66 %, then settles into a gentle steady-state
+   shadow that REMAINS after the animation ends, so the text
+   keeps its soft luminous halo instead of fading back to flat
+   white.  Opacity also holds at 1 in the final state for full
+   readability. */
+@keyframes letter-glow {
   0% {
-    background-position: -150% 50%;
     opacity: 0;
+    text-shadow: 0 0 1px rgba(255, 255, 255, 0.1);
   }
-  15%, 85% {
-    opacity: 0.3;
+  66% {
+    opacity: 1;
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.9);
   }
   100% {
-    background-position: 250% 50%;
-    opacity: 0;
-  }
-}
-/* Shimmer pass — softer diagonal cyan/silver light strip every
-   14 s.  Opacity dropped from 0.55 → 0.3 and gradient stops
-   thinned so the wash doesn't bleach the underlying particles.
-   `mix-blend-mode: screen` adds light only to the bright
-   particle pixels, leaving the dark spaces untouched. */
-.cosmos-shimmer {
-  background: linear-gradient(
-    115deg,
-    transparent 40%,
-    rgba(115, 164, 255, 0.25) 49%,
-    rgba(225, 225, 225, 0.15) 51%,
-    rgba(115, 164, 255, 0.22) 53%,
-    transparent 62%
-  );
-  background-size: 250% 100%;
-  background-repeat: no-repeat;
-  mix-blend-mode: screen;
-  animation: cosmos-shimmer 14s linear infinite;
-  will-change: background-position, opacity;
-}
-
-@keyframes cosmos-pulse {
-  0%, 100% {
-    opacity: 0.18;
-  }
-  50% {
-    opacity: 0.4;
-  }
-}
-/* Radial pulse — much softer glow than before (0.18 → 0.4 vs
-   the earlier 0.35 → 0.65) so the particle detail underneath
-   stays sharp.  Scale loop removed so the radial centre stays
-   anchored — the opacity breath is enough to read as a heartbeat
-   without washing the cosmos plate. */
-.cosmos-pulse {
-  background: radial-gradient(
-    ellipse 55% 40% at 50% 65%,
-    rgba(115, 164, 255, 0.25) 0%,
-    rgba(115, 164, 255, 0.12) 40%,
-    rgba(0, 0, 0, 0) 75%
-  );
-  mix-blend-mode: screen;
-  animation: cosmos-pulse 9s ease-in-out infinite;
-  will-change: opacity;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .cosmos-shimmer,
-  .cosmos-pulse {
-    animation: none;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .cosmos-drift {
-    animation: none;
+    opacity: 1;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
   }
 }
 

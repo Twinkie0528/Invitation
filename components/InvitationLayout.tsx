@@ -20,9 +20,9 @@ export default function InvitationLayout() {
       <EdgeGradient />
 
       <HeroSection />
+      <CeoLetterSection />
       <UrtuuSection />
       <GalaSection />
-      <CeoLetterSection />
       <RsvpSection />
 
       <SectionDots />

@@ -3,12 +3,11 @@
 import Image from "next/image";
 import { useSectionReveal } from "@/hooks/useSectionReveal";
 import { useSceneEntered } from "@/hooks/useScrollProgress";
-import { useSequentialDelays } from "@/hooks/useSequentialDelays";
+import { formatGuestName, useGuestName } from "@/lib/guestContext";
 import BackgroundVideoFrame from "@/components/ui/BackgroundVideoFrame";
+import { LetterGlow, estimateLineCount } from "@/components/ui/LetterGlow";
 import TopMark from "@/components/ui/TopMark";
-import { RevealText } from "@/components/ui/RevealText";
 
-const CEO_PARA_1 = "Dear Valued Partner,";
 const CEO_PARA_2 = "I am proud to acknowledge the role you have played in shaping this journey.";
 const CEO_PARA_3 = "Over the past two decades, Unitel Group has played a meaningful role in advancing Mongolia’s telecommunications landscape introducing technological innovations and helping shape the evolution of connectivity across the nation.";
 const CEO_PARA_4 = "This 20 year milestone is not only a celebration of our journey, but an opportunity to share that progress with those who have been part of it.";
@@ -27,15 +26,16 @@ const CEO_SIGNATURE_SRC = "/media/ceo/signature.svg";
 // the mp4 mounts.  Saves ~7 MB of needless image fetch.
 
 // Reveal range — also drives the video play/pause window.
-// CEO Letter is page 4 (after Hero + Urtuu + Gala): scroll 0.64 → 0.85.
-// Hold extends to 0.84 so the section stays at 100% opacity right up to
-// the RSVP handoff — earlier hold values left a 5% window where the
-// CEO bg-black faded enough to expose the global MainScene cosmos.
+// CEO Letter is page 2 (after Hero, before Urtuu): scroll 0.16 → 0.42.
+// Hold extends to 0.408 (≈ local 0.95) so the section stays at 100%
+// opacity right up to the Urtuu handoff — earlier hold values left a
+// gap where the CEO bg-black faded enough to expose the global
+// MainScene cosmos behind it.
 const REVEAL_RANGE = {
-  start: 0.64,
-  peak: 0.69,
-  hold: 0.84,
-  end: 0.85,
+  start: 0.16,
+  peak: 0.222,
+  hold: 0.408,
+  end: 0.42,
 };
 
 // Covers scene `ceo` — formal welcome letter from Jamiyan-Sharav D.
@@ -52,43 +52,81 @@ const REVEAL_RANGE = {
 // height instead of getting compressed by a flex column.
 export default function CeoLetterSection() {
   const ref = useSectionReveal<HTMLElement>(REVEAL_RANGE);
-  const entered = useSceneEntered(0.66);
+  const entered = useSceneEntered(0.18);
+
+  // Guest name — relocated from the Hero section.  Replaces the
+  // previous static "Dear Valued Partner," header.
+  const rawGuestName = useGuestName();
+  const guestName = rawGuestName ? formatGuestName(rawGuestName) : "Esteemed Guest";
+
+  // Calligraphy sizing math.  Ingkar Janji averages ~0.33 em per
+  // glyph, so a 14-char "Esteemed Guest" at 20 vw on a 375 px
+  // phone would render ~370 px wide and overflow the CEO body
+  // column (`max-w-[321px]` mobile).  The Hero's original formula
+  // was tuned to a ~92 vw stage; we scale it down for the CEO's
+  // tighter ~86 vw column so even 16-char names fit on one line.
+  //
+  // Mobile result on 375 px viewport:
+  //   6 chars  "G.Bold"           → 15.0 vw =  56 px
+  //  14 chars  "Esteemed Guest"   → 14.3 vw =  54 px (≈248 px wide)
+  //  16 chars  "Ch.Darkhanbaatar" → 12.5 vw =  47 px (≈247 px wide)
+  // All comfortably within the 321 px column.
+  const charCount = Math.max(guestName.length, 6);
+  const heroScriptDesktopCss = "9vw";
+  const heroScriptMobileVw = Math.min(15, +(200 / charCount).toFixed(2));
   // Continuous typewriter for the letter — the five paragraphs reveal
   // one after the other instead of overlapping.  We append a 0-duration
   // sentinel step at the end so we can read back the timestamp at which
   // the chain settles; that timestamp drives the signature row's
   // inline transition (so the name + signature mark land exactly when
   // the body text finishes).
-  // "Dear Valued Partner," is treated as a HEADER (blur particle
-  // convergence over ~2 s).  Hardcode its delay; body paragraphs
-  // run through useSequentialDelays starting 1 s after the title
-  // resolves, with only 60 ms between each paragraph so the four
-  // lines write themselves continuously like a hand-penned letter.
+  // The personalised guest name is treated as the HEADER (blur
+  // particle convergence over ~2 s) — same rhythm the static
+  // "Dear Valued Partner," used to occupy.  Hardcode its delay;
+  // body paragraphs run through useSequentialDelays starting 1 s
+  // after the title resolves, with only 60 ms between each
+  // paragraph so the four lines write themselves continuously like
+  // a hand-penned letter.
   // After the closing paragraph finishes, a 1500 ms sentinel hold
   // sits between the final body line and the signature row so the
   // letter has a moment to "settle" before the closing flourish.
+  // Calligraphy header lands first (delay 100 ms).  After it
+  // settles, the four body paragraphs reveal as ONE continuous
+  // top-to-bottom line cascade — they share the same `delay`
+  // and offset their internal line index by the running line
+  // count of earlier paragraphs, so the body reads as a single
+  // uninterrupted wave of light from the first line of CEO_PARA_2
+  // through the last line of CEO_PARA_5.  Signature lands once
+  // the final line has settled.
+  //
+  // LINE_STAGGER + LETTER_GLOW_DURATION must mirror the
+  // <LetterGlow> defaults so the signature delay calc stays
+  // accurate.
   const TITLE_DURATION = 1600;
   const PAUSE_AFTER_TITLE = 800;
+  const LINE_STAGGER_MS = 200;
+  const LETTER_GLOW_DURATION_MS = 900;
+  const SIGNATURE_SETTLE_MS = 800;
+  const linesP2 = estimateLineCount(CEO_PARA_2);
+  const linesP3 = estimateLineCount(CEO_PARA_3);
+  const linesP4 = estimateLineCount(CEO_PARA_4);
+  const linesP5 = estimateLineCount(CEO_PARA_5);
+  const totalBodyLines = linesP2 + linesP3 + linesP4 + linesP5;
   const d_para1 = 100;
-  const [
-    d_para2,
-    d_para3,
-    d_para4,
-    d_para5,
-    _holdBeforeSignature,
-    d_signature,
-  ] = useSequentialDelays(
-    // 1000 ms hold — signature lands 1 s after the closing
-    // paragraph settles (1.5 s read too long per user feedback).
-    [CEO_PARA_2, CEO_PARA_3, CEO_PARA_4, CEO_PARA_5, 1000, 0],
-    {
-      stagger: 8,
-      duration: 220,
-      pause: 0,
-      initialDelay: 100 + TITLE_DURATION + PAUSE_AFTER_TITLE,
-    },
-  );
-  void _holdBeforeSignature;
+  const d_para_group = 100 + TITLE_DURATION + PAUSE_AFTER_TITLE;
+  const d_para2 = d_para_group;
+  const d_para3 = d_para_group;
+  const d_para4 = d_para_group;
+  const d_para5 = d_para_group;
+  const offset_p2 = 0;
+  const offset_p3 = linesP2;
+  const offset_p4 = linesP2 + linesP3;
+  const offset_p5 = linesP2 + linesP3 + linesP4;
+  const d_signature =
+    d_para_group +
+    (totalBodyLines - 1) * LINE_STAGGER_MS +
+    LETTER_GLOW_DURATION_MS +
+    SIGNATURE_SETTLE_MS;
 
   return (
     <section
@@ -216,23 +254,35 @@ export default function CeoLetterSection() {
             user requested "багахан Linear space".  Desktop tier
             unchanged (sm: variants). */}
         <div className="w-full max-w-[321px] text-balance text-center sm:max-w-[920px]">
-          {/* "Dear Valued Partner," — HEADER treatment matching the
-              Urtuu / Gala title rule: blur 12 px → 0 + scale 0.94 → 1
-              over 2 s on a smooth no-overshoot curve, so the headline
-              gathers into focus like cosmic dust assembling.  No
-              per-letter typewriter — the whole line resolves as one
-              elegant unit. */}
-          <p
-            className="text-center text-[24px] font-bold normal-case leading-[1.36] text-white sm:text-[24px] sm:font-bold sm:uppercase sm:leading-[1.4]"
+          {/* Personalised guest name — Ingkar Janji calligraphy with
+              the soft blue → silver wash, lifted from the Hero
+              section to anchor the letter.  Replaces the previous
+              static "Dear Valued Partner," header.  Same blur 12 →
+              0 + scale 0.94 → 1 entry as the surrounding section
+              titles so the rhythm with the body paragraphs below is
+              preserved. */}
+          <div
+            className="w-full font-script leading-[1] whitespace-nowrap md:leading-[normal] md:whitespace-normal
+              text-[clamp(32px,var(--ceo-script-mobile),90px)]
+              md:text-[var(--ceo-script-desktop)]"
             style={{
+              ["--ceo-script-mobile" as any]: `${heroScriptMobileVw}vw`,
+              ["--ceo-script-desktop" as any]: heroScriptDesktopCss,
               opacity: entered ? 1 : 0,
               transform: entered ? "scale(1)" : "scale(0.94)",
               filter: entered ? "blur(0px)" : "blur(12px)",
-              transition: `opacity 1440ms cubic-bezier(0.22, 1, 0.36, 1) ${d_para1}ms, transform 1600ms cubic-bezier(0.22, 1, 0.36, 1) ${d_para1}ms, filter 1600ms cubic-bezier(0.22, 1, 0.36, 1) ${d_para1}ms`,
+              transition: `opacity 2200ms cubic-bezier(0.16, 1, 0.3, 1) ${d_para1}ms, transform 2400ms cubic-bezier(0.16, 1, 0.3, 1) ${d_para1}ms, filter 2400ms cubic-bezier(0.16, 1, 0.3, 1) ${d_para1}ms`,
+              transformOrigin: "center center",
+              backgroundImage:
+                "linear-gradient(215deg, #73A4FF 14.69%, #E1E1E1 83.64%)",
+              WebkitBackgroundClip: "text",
+              backgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              color: "transparent",
             }}
           >
-            {CEO_PARA_1}
-          </p>
+            {guestName}
+          </div>
           {/* Body paragraphs 2–5 — Manrope Regular 16 / lh 100 % on
               mobile per the Figma spec.  The Bold 24 / lh 100 %
               entry in the inspect panel is the *whitespace* spacer
@@ -240,46 +290,38 @@ export default function CeoLetterSection() {
               empty span), so the gap is rendered here as `mt-6`
               (= 1.5 rem = 24 px).  Subsequent paragraphs keep the
               same 24 px rhythm.  Desktop tier (sm:) is unchanged. */}
-          <RevealText
-            as="p"
-            className="mt-6 text-[16px] font-normal leading-[1.2] text-white sm:mt-10 sm:text-[24px] sm:font-light sm:leading-[1.4] sm:text-white/90"
-            stagger={8}
-            duration={220}
-            delay={d_para2}
-            trigger={entered}
-          >
-            {CEO_PARA_2}
-          </RevealText>
-          <RevealText
-            as="p"
-            className="mt-6 text-[16px] font-normal leading-[1.2] text-white sm:mt-7 sm:text-[24px] sm:font-light sm:leading-[1.4] sm:text-white/90"
-            stagger={8}
-            duration={220}
-            delay={d_para3}
-            trigger={entered}
-          >
-            {CEO_PARA_3}
-          </RevealText>
-          <RevealText
-            as="p"
-            className="mt-6 text-[16px] font-normal leading-[1.2] text-white sm:mt-7 sm:text-[24px] sm:font-light sm:leading-[1.4] sm:text-white/90"
-            stagger={8}
-            duration={220}
-            delay={d_para4}
-            trigger={entered}
-          >
-            {CEO_PARA_4}
-          </RevealText>
-          <RevealText
-            as="p"
-            className="mt-6 text-[16px] font-normal leading-[1.2] text-white sm:mt-7 sm:text-[24px] sm:font-light sm:leading-[1.4] sm:text-white/90"
-            stagger={8}
-            duration={220}
-            delay={d_para5}
-            trigger={entered}
-          >
-            {CEO_PARA_5}
-          </RevealText>
+          <p className="mt-6 text-[16px] font-normal leading-[1.4] text-white sm:mt-10 sm:text-[24px] sm:font-light sm:leading-[1.55] sm:text-white/90">
+            <LetterGlow
+              text={CEO_PARA_2}
+              delay={d_para2}
+              lineOffset={offset_p2}
+              trigger={entered}
+            />
+          </p>
+          <p className="mt-6 text-[16px] font-normal leading-[1.4] text-white sm:mt-7 sm:text-[24px] sm:font-light sm:leading-[1.55] sm:text-white/90">
+            <LetterGlow
+              text={CEO_PARA_3}
+              delay={d_para3}
+              lineOffset={offset_p3}
+              trigger={entered}
+            />
+          </p>
+          <p className="mt-6 text-[16px] font-normal leading-[1.4] text-white sm:mt-7 sm:text-[24px] sm:font-light sm:leading-[1.55] sm:text-white/90">
+            <LetterGlow
+              text={CEO_PARA_4}
+              delay={d_para4}
+              lineOffset={offset_p4}
+              trigger={entered}
+            />
+          </p>
+          <p className="mt-6 text-[16px] font-normal leading-[1.4] text-white sm:mt-7 sm:text-[24px] sm:font-light sm:leading-[1.55] sm:text-white/90">
+            <LetterGlow
+              text={CEO_PARA_5}
+              delay={d_para5}
+              lineOffset={offset_p5}
+              trigger={entered}
+            />
+          </p>
         </div>
       </div>
 

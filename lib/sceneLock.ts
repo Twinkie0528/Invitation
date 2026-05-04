@@ -2,13 +2,16 @@
 //
 // First-visit guests are clamped at a hand-picked progress cap per
 // scene for 3 seconds while the section's reveal animations get
-// their attention.  Caps were measured against the actual mobile
-// scroll layout the user inspected:
+// their attention.  Caps target the same content-meaningful
+// boundary as before (signature settled, final paragraph in view,
+// scroll-cue position) but the absolute progress values were
+// remapped after the page reorder (Hero → CEO → Urtuu → Gala →
+// RSVP) so each cap still lands at its scene's content beat:
 //
 //   Hero  — cap 0.099 (scroll-cue chevron position)
-//   Urtuu — cap 0.350 ("…you to experience it" final paragraph)
-//   Gala  — cap 0.550 ("…for invited guests" final paragraph)
-//   CEO   — cap 0.800 (signature row settled)
+//   CEO   — cap 0.360 (signature row settled)
+//   Urtuu — cap 0.580 ("…you to experience it" final paragraph)
+//   Gala  — cap 0.760 ("…for invited guests" final paragraph)
 //   RSVP  — cap 1.0   (no cap; final scene)
 //
 // After the 3 s timer fires the cap releases and the user can
@@ -27,9 +30,9 @@ const VISITED_STORAGE_KEY = "unitel_visited_scenes_v1";
 const SCENE_CAP_PROGRESS: Record<SceneId, number> = {
   cold: 0,
   hero: 0.099,
-  urtuu: 0.35,
-  gala: 0.55,
-  ceo: 0.8,
+  ceo: 0.36,
+  urtuu: 0.58,
+  gala: 0.76,
   rsvp: 1.0,
 };
 

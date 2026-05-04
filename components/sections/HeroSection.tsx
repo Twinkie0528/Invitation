@@ -5,8 +5,6 @@ import Image from "next/image";
 import { useSectionReveal } from "@/hooks/useSectionReveal";
 import { useSequentialDelays } from "@/hooks/useSequentialDelays";
 import { useLoadGate } from "@/hooks/useLoadGate";
-import { formatGuestName, useGuestName } from "@/lib/guestContext";
-import { RevealText } from "@/components/ui/RevealText";
 import BackgroundVideoFrame from "@/components/ui/BackgroundVideoFrame";
 
 // Hero is the first scene users see on page load, so the play-window
@@ -45,48 +43,6 @@ export default function HeroSection() {
   // transition — the static logo cross-fades in at the exact position
   // the overlay logo flew to.
   const { introDone } = useLoadGate();
-  const rawGuestName = useGuestName();
-  const guestName = rawGuestName ? formatGuestName(rawGuestName) : "Esteemed Guest";
-
-  // Hero script sizing — Figma spec is 180 px on desktop and 120 px on
-  // mobile, but those are the *ceilings* not the actual rendered size:
-  // Ingkar Janji's loose calligraphy averages ~0.35 em per glyph, so a
-  // 16-char name like "Ch.Darkhanbaatar" at 180 px would span ~1000 px
-  // and overflow the 640 px centre column.  We pick the largest size
-  // that still fits both edges of the box and cap the Figma ideal
-  // there.
-  //
-  //   desktop budget: 530 px (centre column max-w-[560px] minus 30 px
-  //     breathing on each side, also fits the 640 px lg-column with
-  //     extra room).  Result for our guest list:
-  //       6-char "G.Bold"          → 180 px  (Figma ideal)
-  //       9-char "R.Ganbold"       → 168 px
-  //      14-char "Esteemed Guest"  → 108 px
-  //      16-char "Ch.Darkhanbaatar"→  95 px
-  //
-  //   mobile budget: 92 vw (8 vw of horizontal padding combined),
-  //     which on a 375 px iPhone is 345 px.  Result:
-  //       6 chars  → 32 vw   (= 120 px on 375px = Figma ideal)
-  //      14 chars  → 17.86 vw (= 67 px)
-  //      16 chars  → 15.63 vw (= 59 px)
-  //
-  // Math.max(…, 6) holds very short names ("J.Od" = 4 chars) at the
-  // 180/120-px ceiling instead of letting the formula scale them up
-  // beyond the Figma spec.
-  const charCount = Math.max(guestName.length, 6);
-  // Desktop: 17.5 vw lands the calligraphy at ~224 px on a 1280-wide
-  // artboard and ~328 px on a 1875-laptop — slightly bigger than the
-  // previous 15.6 vw so the script reads with more presence on the
-  // entry card (per design feedback).  Still proportionally bounded
-  // so it stays inside the lockup column without dominating.
-  const heroScriptDesktopCss = "17.5vw";
-  // Mobile: tuned so even 16-char names ("Jargalsaikhan B.") render on
-  // a single line with the same controlled tail-flourish overflow the
-  // Figma reference ("Ryenchindorj.A") shows.  Short names cap at
-  // 22 vw to stay inside the calligraphy ceiling; long names taper
-  // via `280 / charCount`.  Combined with `whitespace-nowrap` on the
-  // name container this prevents the two-line wrap users were seeing.
-  const heroScriptMobileVw = Math.min(22, +(280 / charCount).toFixed(2));
 
   // Continuous typewriter for the centre block: each line lands the
   // moment the previous one settles.  String steps are word-counted by
@@ -97,33 +53,30 @@ export default function HeroSection() {
   // exclusive evening" PNG → scroll cue → NAME (calligraphy zoom-in
   // arrives LAST, after every other element on screen, so the guest's
   // name is the climactic moment of the hero composition).
-  // Reveal order — UNITEL GROUP → is pleased to invite → NAME
-  // (calligraphy as one elegant unit, blur 14 px → 0 + scale 0.94 →
-  // 1 over 2 s) → "to an exclusive evening" → scroll cue.  Per-letter
-  // signature reveal was tried and rolled back per user feedback
-  // (broke the calligraphy's connected strokes); the name now
-  // resolves as a single unit again, with the chain still ordered
-  // so personalisation lands before the supporting copy.
+  // Reveal order — UNITEL GROUP → is pleased to invite →
+  // PLACEHOLDER ("lorem ipsum") → "to an exclusive evening" →
+  // scroll cue.  Every step is a literal duration (no
+  // word-counted typewriter); each line resolves with the same
+  // fade-in pattern (opacity + blur + scale convergence) used
+  // on the RSVP scene so the whole site reads with a single
+  // unified entry treatment.  Chain steps are kept shorter than
+  // each line's visual duration so reveals overlap gracefully
+  // instead of waiting for full settle.
   const [
     d_unitel,
     d_invite,
-    d_name,
+    d_placeholder,
     d_evening,
     d_scroll,
   ] = useSequentialDelays(
     [
-      "UNITEL GROUP",
-      "is pleased to invite",
-      1500, // calligraphy name — chain step shorter than its
-            // 2.4 s visual transition so evening fires while the
-            // name is still completing (graceful overlap, not a
-            // 4 s cold wait).
-      900, // "to an exclusive evening" PNG — extended chain step so
-           // the scroll cue gets a small breath AFTER evening
-           // settles instead of arriving on the same beat.
+      900, // UNITEL GROUP
+      900, // is pleased to invite
+      900, // placeholder copy (lorem ipsum)
+      900, // "to an exclusive evening"
       120, // scroll cue (short fade)
     ],
-    { stagger: 32, duration: 650, pause: 50 },
+    { stagger: 0, duration: 0, pause: 400 },
   );
 
   // Viewport-aware mount: only mount the video instances that are
@@ -387,93 +340,62 @@ export default function HeroSection() {
             global zoom:0.8 rule on this section's flex wrapper trims
             the rendered output back toward the artboard spec. */}
         <div className="absolute inset-x-0 top-[45vh] -translate-y-1/2 flex flex-col items-center px-4 text-center md:top-1/2 md:mx-auto md:max-w-[900px] md:px-0 lg:max-w-[1200px]">
-          <RevealText
-            as="div"
-            className="font-sans text-[22px] font-semibold tracking-[0.18em] text-white sm:text-[2vw] md:tracking-[0.22em]"
-            stagger={32}
-            duration={650}
-            delay={d_unitel}
-            trigger={introDone}
-          >
-            UNITEL GROUP
-          </RevealText>
-          <RevealText
-            as="div"
-            className="mt-[1.5vh] font-sans text-[16px] font-light text-white/85 sm:mt-1 sm:text-[1.5vw]"
-            stagger={32}
-            duration={650}
-            delay={d_invite}
-            trigger={introDone}
-          >
-            is pleased to invite
-          </RevealText>
-
-          {/* Guest name — Ingkar Janji handwriting, revealed
-              LETTER-BY-LETTER like a hand-signed signature.  Each
-              glyph fades + lifts on its own staggered timeline; the
-              vertical gradient is held on the parent <div> so the
-              soft blue → silver wash flows continuously across the
-              script (children inherit `background-clip: text` and
-              keep the gradient unbroken).  Whitespace is rendered
-              as a non-breaking space so multi-word names don't
-              wrap mid-stroke. */}
           <div
-            className="mt-[5vh] w-full font-script leading-[1] whitespace-nowrap md:mt-8 md:leading-[normal] md:whitespace-normal lg:mt-10
-              text-[clamp(40px,var(--hero-script-mobile),120px)]
-              md:text-[var(--hero-script-desktop)]"
+            className="font-sans text-[22px] font-semibold tracking-[0.18em] text-white sm:text-[2vw] md:tracking-[0.22em]"
             style={{
-              ["--hero-script-mobile" as any]: `${heroScriptMobileVw}vw`,
-              ["--hero-script-desktop" as any]: heroScriptDesktopCss,
-              opacity: mounted ? 1 : 0,
-              transform: mounted ? "scale(1)" : "scale(0.94)",
-              filter: mounted ? "blur(0px)" : "blur(14px)",
-              transition: `opacity 2200ms cubic-bezier(0.22, 1, 0.36, 1) ${d_name}ms, transform 2400ms cubic-bezier(0.22, 1, 0.36, 1) ${d_name}ms, filter 2400ms cubic-bezier(0.22, 1, 0.36, 1) ${d_name}ms`,
-              transformOrigin: "center center",
-              backgroundImage:
-                "linear-gradient(215deg, #73A4FF 14.69%, #E1E1E1 83.64%)",
-              WebkitBackgroundClip: "text",
-              backgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              color: "transparent",
+              opacity: introDone ? 1 : 0,
+              transform: introDone ? "scale(1)" : "scale(0.94)",
+              filter: introDone ? "blur(0px)" : "blur(12px)",
+              transition: `opacity 2200ms cubic-bezier(0.16, 1, 0.3, 1) ${d_unitel}ms, transform 2400ms cubic-bezier(0.16, 1, 0.3, 1) ${d_unitel}ms, filter 2400ms cubic-bezier(0.16, 1, 0.3, 1) ${d_unitel}ms`,
             }}
           >
-            {guestName}
+            UNITEL GROUP
+          </div>
+          <div
+            className="mt-[1.5vh] font-sans text-[16px] font-light text-white/85 sm:mt-1 sm:text-[1.5vw]"
+            style={{
+              opacity: introDone ? 1 : 0,
+              transform: introDone ? "scale(1)" : "scale(0.96)",
+              filter: introDone ? "blur(0px)" : "blur(8px)",
+              transition: `opacity 1800ms cubic-bezier(0.16, 1, 0.3, 1) ${d_invite}ms, transform 2000ms cubic-bezier(0.16, 1, 0.3, 1) ${d_invite}ms, filter 2000ms cubic-bezier(0.16, 1, 0.3, 1) ${d_invite}ms`,
+            }}
+          >
+            is pleased to invite
           </div>
 
-          {/* "to an exclusive evening" — pre-rendered PNG export from
-              Figma.  Both mobile and desktop now ship the PNG; the
-              prior live-CSS version (Manrope Light 300 + filter blur)
-              produced an unreadable result across browsers, and the
-              mobile fallback text never matched the artboard.  Width
-              follows the Figma spec on each viewport:
-                mobile  : 308 / 351 = 87.7 vw   (Figma `Mobile`)
-                desktop : 358 / 1280 = 28 vw   (Figma `Screen PC`)
-              On mobile the PNG anchors to the design's top:501px
-              (= 64.81 vh on a 773-tall canvas), so the mt is tuned
-              to land near that line below the script flourish. */}
+          {/* Placeholder copy — sits in the slot the personalised
+              calligraphy used to occupy (now relocated to CEO).
+              Manrope 34 px so the placeholder visually anchors the
+              centre block until the user supplies the final copy. */}
+          <div
+            className="mt-[3vh] sm:mt-6"
+            style={{
+              opacity: mounted ? 1 : 0,
+              transform: mounted ? "translateY(0)" : "translateY(8px)",
+              transition: `opacity 1800ms cubic-bezier(0.16, 1, 0.3, 1) ${d_placeholder}ms, transform 2000ms cubic-bezier(0.16, 1, 0.3, 1) ${d_placeholder}ms`,
+            }}
+          >
+            <p className="block text-center font-sans text-[34px] font-normal text-white">
+              lorem ipsum
+            </p>
+          </div>
+
+          {/* "to an exclusive evening" — live Manrope text on every
+              breakpoint.  Mobile keeps its 16 px / 0.3 em-tracked
+              treatment; desktop scales up to ~20 px so the line
+              occupies the same visual footprint the prior PNG
+              (358×31 at w-[22vw]) used in the artboard. */}
           <div
             className="mt-[1vh] sm:mt-12"
             style={{
               opacity: mounted ? 1 : 0,
               transform: mounted ? "translateY(0)" : "translateY(8px)",
-              transition: `opacity 1400ms cubic-bezier(0.22, 1, 0.36, 1) ${d_evening}ms, transform 1400ms cubic-bezier(0.22, 1, 0.36, 1) ${d_evening}ms`,
+              transition: `opacity 1800ms cubic-bezier(0.16, 1, 0.3, 1) ${d_evening}ms, transform 2000ms cubic-bezier(0.16, 1, 0.3, 1) ${d_evening}ms`,
             }}
           >
-            {/* Mobile: live 16 px text per the new spec (uppercase
-                with letter-spacing).  Desktop keeps the pre-rendered
-                Figma PNG so the baked-in 4.8 px blur matches the
-                artboard's atmospheric treatment. */}
-            <span className="block text-center font-sans text-[16px] font-light uppercase tracking-[0.3em] text-[#B7B7B7] sm:hidden">
+            <span className="block text-center font-sans text-[16px] font-light uppercase tracking-[0.3em] text-[#B7B7B7] sm:text-[20px]">
               to an exclusive evening
             </span>
-            <Image
-              src="/media/hero/exclusive-evening.png"
-              alt="to an exclusive evening"
-              width={358}
-              height={31}
-              priority={false}
-              className="mx-auto hidden h-auto w-[22vw] brightness-125 contrast-115 sm:block"
-            />
           </div>
         </div>
 

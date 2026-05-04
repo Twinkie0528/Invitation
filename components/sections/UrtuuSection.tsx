@@ -5,8 +5,8 @@ import { useSectionReveal } from "@/hooks/useSectionReveal";
 import { useSceneEntered } from "@/hooks/useScrollProgress";
 import { useSequentialDelays } from "@/hooks/useSequentialDelays";
 import BackgroundVideoFrame from "@/components/ui/BackgroundVideoFrame";
+import { LetterGlow, estimateLineCount } from "@/components/ui/LetterGlow";
 import TopMark from "@/components/ui/TopMark";
-import { RevealText } from "@/components/ui/RevealText";
 
 // UNITEL wordmark for the desktop right-corner placement.  Same SVG
 // asset as TopMark, sized to match.  We render this in addition to
@@ -27,12 +27,12 @@ const BG_VIDEO = "/media/urtuu/urtuu-script.mp4";
 const BG_POSTER = "/media/urtuu/urtuu-script.webp";
 
 // Reveal range — also drives the video play/pause window.
-// Urtuu is page 2: scroll progress 0.16 → 0.42.
+// Urtuu is page 3 (after Hero + CEO): scroll progress 0.42 → 0.64.
 const REVEAL_RANGE = {
-  start: 0.16,
-  peak: 0.22,
-  hold: 0.37,
-  end: 0.42,
+  start: 0.42,
+  peak: 0.471,
+  hold: 0.598,
+  end: 0.64,
 };
 
 // Covers scene `urtuu` — "The Urtuu" immersive experience reveal.
@@ -55,7 +55,7 @@ const BODY_PARA_2 = "Unitel Group proudly presents Mongolia’s largest immersiv
 
 export default function UrtuuSection() {
   const ref = useSectionReveal<HTMLElement>(REVEAL_RANGE);
-  const entered = useSceneEntered(0.18);
+  const entered = useSceneEntered(0.44);
   // Chain every reveal in this section so the eyebrow → title → body
   // copy plays as one continuous typewriter.  String steps are
   // word-counted; the title is a single inline opacity/transform
@@ -67,17 +67,31 @@ export default function UrtuuSection() {
   // that contributes a 1 s wait without rendering anything; the
   // small `pause: 60` between every step turns the body lines
   // into a near-continuous typewriter rather than separate beats.
+  // Header chain (eyebrow → title → sentinel hold) keeps the old
+  // calm 0.4 s wait cadence.  Both body paragraphs share a single
+  // group-fade delay so they reveal as a unified slow fade rather
+  // than staggered cascade.
   const [
     d_eyebrow,
     d_title,
     _afterTitleHold,
-    d_para1,
-    d_para2,
+    d_para_group,
   ] = useSequentialDelays(
-    ["Introducing", 1600, 320, BODY_PARA_1, BODY_PARA_2],
-    { stagger: 8, duration: 220, pause: 0 },
+    [800, 1600, 320, 0],
+    { stagger: 0, duration: 0, pause: 400 },
   );
   void _afterTitleHold;
+  // Continuous line cascade — both body paragraphs share a single
+  // `delay` and offset their internal line index by the previous
+  // paragraph's estimated line count, so paragraph 2 line 0 fires
+  // the instant paragraph 1's last line ends.  No breath, no
+  // per-paragraph delay — the body reads as ONE long top-to-bottom
+  // glow that doesn't notice the paragraph boundary.
+  const linesP1 = estimateLineCount(BODY_PARA_1);
+  const d_para1 = d_para_group;
+  const d_para2 = d_para_group;
+  const offset_p1 = 0;
+  const offset_p2 = linesP1;
 
   return (
     <section
@@ -332,16 +346,17 @@ export default function UrtuuSection() {
         <div className="w-full max-w-[347px] sm:max-w-[48vw]">
           {/* Eyebrow — Figma: 16px, color #b7b7b7, letter-spacing
               6.4px (= 0.4em).  No italics. */}
-          <RevealText
-            as="div"
+          <div
             className="mb-3 text-center font-sans text-[13px] font-normal uppercase tracking-[0.4em] text-[#b7b7b7] sm:mb-4 sm:text-[20px] md:text-[21px] lg:text-[22px]"
-            stagger={8}
-            duration={220}
-            delay={d_eyebrow}
-            trigger={entered}
+            style={{
+              opacity: entered ? 1 : 0,
+              transform: entered ? "scale(1)" : "scale(0.96)",
+              filter: entered ? "blur(0px)" : "blur(8px)",
+              transition: `opacity 1800ms cubic-bezier(0.16, 1, 0.3, 1) ${d_eyebrow}ms, transform 2000ms cubic-bezier(0.16, 1, 0.3, 1) ${d_eyebrow}ms, filter 2000ms cubic-bezier(0.16, 1, 0.3, 1) ${d_eyebrow}ms`,
+            }}
           >
             Introducing
-          </RevealText>
+          </div>
 
           {/* Title — Figma `Mobile Version`: 22 px to match the Hero's
               "UNITEL GROUP" header weight (the user's typography rule
@@ -370,7 +385,7 @@ export default function UrtuuSection() {
                 : "blur(12px) drop-shadow(0 0 0 rgba(115, 164, 255, 0))",
               opacity: entered ? 1 : 0,
               transform: entered ? "scale(1)" : "scale(0.94)",
-              transition: `opacity 1440ms cubic-bezier(0.22, 1, 0.36, 1) ${d_title}ms, transform 1600ms cubic-bezier(0.22, 1, 0.36, 1) ${d_title}ms, filter 1600ms cubic-bezier(0.22, 1, 0.36, 1) ${d_title}ms`,
+              transition: `opacity 2200ms cubic-bezier(0.16, 1, 0.3, 1) ${d_title}ms, transform 2400ms cubic-bezier(0.16, 1, 0.3, 1) ${d_title}ms, filter 2400ms cubic-bezier(0.16, 1, 0.3, 1) ${d_title}ms`,
             }}
           >
             {"“The Urtuu” immersive Experience"}
@@ -378,26 +393,22 @@ export default function UrtuuSection() {
 
           {/* Body — two paragraphs of immersive copy. */}
           <div className="space-y-5 sm:space-y-5 md:space-y-6">
-            <RevealText
-              as="p"
-              className="font-sans text-[16px] font-light leading-[1] text-white sm:text-[22px] sm:leading-[1.6]"
-              stagger={8}
-              duration={250}
-              delay={d_para1}
-              trigger={entered}
-            >
-              {BODY_PARA_1}
-            </RevealText>
-            <RevealText
-              as="p"
-              className="font-sans text-[16px] font-light leading-[1] text-white sm:text-[22px] sm:leading-[1.6]"
-              stagger={8}
-              duration={250}
-              delay={d_para2}
-              trigger={entered}
-            >
-              {BODY_PARA_2}
-            </RevealText>
+            <p className="font-sans text-[16px] font-light leading-[1.4] text-white sm:text-[22px] sm:leading-[1.7]">
+              <LetterGlow
+                text={BODY_PARA_1}
+                delay={d_para1}
+                lineOffset={offset_p1}
+                trigger={entered}
+              />
+            </p>
+            <p className="font-sans text-[16px] font-light leading-[1.4] text-white sm:text-[22px] sm:leading-[1.7]">
+              <LetterGlow
+                text={BODY_PARA_2}
+                delay={d_para2}
+                lineOffset={offset_p2}
+                trigger={entered}
+              />
+            </p>
           </div>
         </div>
       </div>

@@ -5,8 +5,8 @@ import { useSectionReveal } from "@/hooks/useSectionReveal";
 import { useSceneEntered } from "@/hooks/useScrollProgress";
 import { useSequentialDelays } from "@/hooks/useSequentialDelays";
 import BackgroundVideoFrame from "@/components/ui/BackgroundVideoFrame";
+import { LetterGlow, estimateLineCount } from "@/components/ui/LetterGlow";
 import TopMark from "@/components/ui/TopMark";
-import { RevealText } from "@/components/ui/RevealText";
 
 const GALA_PARA_1 = "Created exclusively for you, this immersive gala dinner is designed as an evening beyond the ordinary where storytelling is not simply observed, but experienced.";
 const GALA_PARA_2 = "Throughout the night, you will move through three distinct thematic settings, each offering its own atmosphere for dining and discovery.";
@@ -25,12 +25,12 @@ const BG_VIDEO = "/media/common/gala-bloom.mp4";
 const BG_POSTER = "/media/common/gala-bloom.webp";
 
 // Reveal range — also drives the video play/pause window.
-// Gala is page 3: scroll progress 0.42 → 0.64.
+// Gala is page 4 (after Hero + CEO + Urtuu): scroll progress 0.64 → 0.85.
 const REVEAL_RANGE = {
-  start: 0.42,
-  peak: 0.48,
-  hold: 0.59,
-  end: 0.64,
+  start: 0.64,
+  peak: 0.697,
+  hold: 0.802,
+  end: 0.85,
 };
 
 // Covers scene `gala` — "Immersive Gala Dinner" reveal.
@@ -48,33 +48,41 @@ const REVEAL_RANGE = {
 //   - Multi-paragraph body — gala dinner copy.
 export default function GalaSection() {
   const ref = useSectionReveal<HTMLElement>(REVEAL_RANGE);
-  const entered = useSceneEntered(0.44);
+  const entered = useSceneEntered(0.66);
   // Continuous typewriter: eyebrow → headline (inline 800 ms) → 4
   // paragraphs.  Each step starts the moment the previous one settles.
   // Reveal cadence — eyebrow → title (2 s convergence) → 1 s
   // sentinel hold → body paragraphs (continuous, only 60 ms breath
   // between them so the four lines read as one flowing letter).
+  // Header chain (eyebrow → title → sentinel hold) keeps the old
+  // calm 0.4 s wait cadence.  All four body paragraphs share a
+  // single group-fade delay so they reveal as a unified slow fade.
   const [
     d_eyebrow,
     d_title,
     _afterTitleHold,
-    d_para1,
-    d_para2,
-    d_para3,
-    d_para4,
+    d_para_group,
   ] = useSequentialDelays(
-    [
-      "An Exclusive",
-      1600,
-      320,
-      GALA_PARA_1,
-      GALA_PARA_2,
-      GALA_PARA_3,
-      GALA_PARA_4,
-    ],
-    { stagger: 8, duration: 220, pause: 0 },
+    [800, 1600, 320, 0],
+    { stagger: 0, duration: 0, pause: 400 },
   );
   void _afterTitleHold;
+  // Continuous line cascade — every paragraph shares a single
+  // `delay` and offsets its internal line index by the running
+  // line count of earlier paragraphs, so the four body paragraphs
+  // read as one uninterrupted top-to-bottom wave (paragraph N+1
+  // line 0 fires the instant paragraph N's last line ends).
+  const linesP1 = estimateLineCount(GALA_PARA_1);
+  const linesP2 = estimateLineCount(GALA_PARA_2);
+  const linesP3 = estimateLineCount(GALA_PARA_3);
+  const d_para1 = d_para_group;
+  const d_para2 = d_para_group;
+  const d_para3 = d_para_group;
+  const d_para4 = d_para_group;
+  const offset_p1 = 0;
+  const offset_p2 = linesP1;
+  const offset_p3 = linesP1 + linesP2;
+  const offset_p4 = linesP1 + linesP2 + linesP3;
 
   return (
     <section
@@ -165,16 +173,17 @@ export default function GalaSection() {
         <div className="w-full max-w-[347px] text-balance sm:max-w-[920px] sm:text-pretty">
           {/* Eyebrow — Figma: Manrope Regular 16px, #b7b7b7,
               letter-spacing 6.4px (= 0.4em).  No italics. */}
-          <RevealText
-            as="div"
+          <div
             className="mb-3 text-center font-sans text-[13px] font-normal tracking-[0.4em] text-[#b7b7b7] sm:mb-4 sm:text-[27px]"
-            stagger={8}
-            duration={220}
-            delay={d_eyebrow}
-            trigger={entered}
+            style={{
+              opacity: entered ? 1 : 0,
+              transform: entered ? "scale(1)" : "scale(0.96)",
+              filter: entered ? "blur(0px)" : "blur(8px)",
+              transition: `opacity 1800ms cubic-bezier(0.16, 1, 0.3, 1) ${d_eyebrow}ms, transform 2000ms cubic-bezier(0.16, 1, 0.3, 1) ${d_eyebrow}ms, filter 2000ms cubic-bezier(0.16, 1, 0.3, 1) ${d_eyebrow}ms`,
+            }}
           >
             An Exclusive
-          </RevealText>
+          </div>
 
           {/* Title — Figma confirmed:
               - font: Manrope 700, 26px (mobile)
@@ -205,7 +214,7 @@ export default function GalaSection() {
                 : "blur(12px) drop-shadow(0 0 0 rgba(115, 164, 255, 0))",
               opacity: entered ? 1 : 0,
               transform: entered ? "scale(1)" : "scale(0.94)",
-              transition: `opacity 1440ms cubic-bezier(0.22, 1, 0.36, 1) ${d_title}ms, transform 1600ms cubic-bezier(0.22, 1, 0.36, 1) ${d_title}ms, filter 1600ms cubic-bezier(0.22, 1, 0.36, 1) ${d_title}ms`,
+              transition: `opacity 2200ms cubic-bezier(0.16, 1, 0.3, 1) ${d_title}ms, transform 2400ms cubic-bezier(0.16, 1, 0.3, 1) ${d_title}ms, filter 2400ms cubic-bezier(0.16, 1, 0.3, 1) ${d_title}ms`,
             }}
           >
             IMMERSIVE GALA<br className="sm:hidden" /> DINNER
@@ -215,46 +224,38 @@ export default function GalaSection() {
               tight (space-y-2) so the whole block fits above the
               bloom; desktop opens up the rhythm. */}
           <div className="space-y-4 sm:space-y-0">
-            <RevealText
-              as="p"
-              className="font-sans text-[16px] font-light leading-[1] text-white sm:mb-6 sm:text-[24px] sm:font-light sm:leading-[1.4] sm:text-white/90"
-              stagger={8}
-              duration={250}
-              delay={d_para1}
-              trigger={entered}
-            >
-              {GALA_PARA_1}
-            </RevealText>
-            <RevealText
-              as="p"
-              className="font-sans text-[16px] font-light leading-[1] text-white sm:text-[24px] sm:font-light sm:leading-[1.4] sm:text-white/90"
-              stagger={8}
-              duration={250}
-              delay={d_para2}
-              trigger={entered}
-            >
-              {GALA_PARA_2}
-            </RevealText>
-            <RevealText
-              as="p"
-              className="font-sans text-[16px] font-light leading-[1] text-white sm:text-[24px] sm:font-light sm:leading-[1.4] sm:text-white/90"
-              stagger={8}
-              duration={250}
-              delay={d_para3}
-              trigger={entered}
-            >
-              {GALA_PARA_3}
-            </RevealText>
-            <RevealText
-              as="p"
-              className="font-sans text-[16px] font-light leading-[1] text-white sm:text-[24px] sm:font-light sm:leading-[1.4] sm:text-white/90"
-              stagger={8}
-              duration={250}
-              delay={d_para4}
-              trigger={entered}
-            >
-              {GALA_PARA_4}
-            </RevealText>
+            <p className="font-sans text-[16px] font-light leading-[1.4] text-white sm:mb-6 sm:text-[24px] sm:font-light sm:leading-[1.55] sm:text-white/90">
+              <LetterGlow
+                text={GALA_PARA_1}
+                delay={d_para1}
+                lineOffset={offset_p1}
+                trigger={entered}
+              />
+            </p>
+            <p className="font-sans text-[16px] font-light leading-[1.4] text-white sm:text-[24px] sm:font-light sm:leading-[1.55] sm:text-white/90">
+              <LetterGlow
+                text={GALA_PARA_2}
+                delay={d_para2}
+                lineOffset={offset_p2}
+                trigger={entered}
+              />
+            </p>
+            <p className="font-sans text-[16px] font-light leading-[1.4] text-white sm:text-[24px] sm:font-light sm:leading-[1.55] sm:text-white/90">
+              <LetterGlow
+                text={GALA_PARA_3}
+                delay={d_para3}
+                lineOffset={offset_p3}
+                trigger={entered}
+              />
+            </p>
+            <p className="font-sans text-[16px] font-light leading-[1.4] text-white sm:text-[24px] sm:font-light sm:leading-[1.55] sm:text-white/90">
+              <LetterGlow
+                text={GALA_PARA_4}
+                delay={d_para4}
+                lineOffset={offset_p4}
+                trigger={entered}
+              />
+            </p>
           </div>
         </div>
       </div>
