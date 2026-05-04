@@ -31,6 +31,22 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* Suppress the iOS Safari "tap to play" overlay that draws a centered
+   triangle on top of the <video> element whenever autoplay is blocked
+   (Low Power Mode, Reduced Motion, or Auto-Play off in Settings).  Our
+   BackgroundVideoFrame already arms a one-shot retry on the first
+   touch / scroll / click so the video catches up the moment the user
+   interacts; the native overlay just clutters the cinematic backdrops
+   for guests on Low Power batteries. */
+video::-webkit-media-controls-overlay-play-button,
+video::-webkit-media-controls-start-playback-button {
+  display: none !important;
+  -webkit-appearance: none;
+}
+video::-webkit-media-controls {
+  display: none !important;
+}
+
 html {
   /* Lock the root font-size to 16 px so anything Tailwind authored in
      `rem` resolves to the same pixel value on every device, regardless
