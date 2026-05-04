@@ -5,7 +5,7 @@ import { useSectionReveal } from "@/hooks/useSectionReveal";
 import { useSceneEntered } from "@/hooks/useScrollProgress";
 import { useSequentialDelays } from "@/hooks/useSequentialDelays";
 import BackgroundVideoFrame from "@/components/ui/BackgroundVideoFrame";
-import { LetterGlow, estimateLineCount } from "@/components/ui/LetterGlow";
+import { LineFade, estimateLineCount } from "@/components/ui/LineFade";
 import TopMark from "@/components/ui/TopMark";
 
 const GALA_PARA_1 = "Created exclusively for you, this immersive gala dinner is designed as an evening beyond the ordinary where storytelling is not simply observed, but experienced.";
@@ -63,7 +63,7 @@ export default function GalaSection() {
     _afterTitleHold,
     d_para_group,
   ] = useSequentialDelays(
-    [800, 1600, 320, 0],
+    [800, 1600, 0, 0],
     { stagger: 0, duration: 0, pause: 400 },
   );
   void _afterTitleHold;
@@ -169,7 +169,7 @@ export default function GalaSection() {
           Desktop matches Figma `Screen PC` (node 4:80): centered title
           + 535-px body column sits in the upper-middle band (eyebrow
           ~28 % from top), bloom banner underneath at top:52 %. */}
-      <div className="relative mx-auto flex w-full max-w-[1320px] flex-col items-center px-6 pt-[21vh] pb-[42vh] text-center sm:px-14 sm:pt-[33vh] sm:pb-[28vh] md:px-20 lg:px-28">
+      <div className="relative mx-auto flex w-full max-w-[1320px] flex-col items-center px-6 pt-[14vh] pb-[42vh] text-center sm:px-14 sm:pt-[26vh] sm:pb-[28vh] md:px-20 lg:px-28">
         <div className="w-full max-w-[347px] text-balance sm:max-w-[920px] sm:text-pretty">
           {/* Eyebrow — Figma: Manrope Regular 16px, #b7b7b7,
               letter-spacing 6.4px (= 0.4em).  No italics. */}
@@ -225,7 +225,7 @@ export default function GalaSection() {
               bloom; desktop opens up the rhythm. */}
           <div className="space-y-4 sm:space-y-0">
             <p className="font-sans text-[16px] font-light leading-[1.4] text-white sm:mb-6 sm:text-[24px] sm:font-light sm:leading-[1.55] sm:text-white/90">
-              <LetterGlow
+              <LineFade
                 text={GALA_PARA_1}
                 delay={d_para1}
                 lineOffset={offset_p1}
@@ -233,7 +233,7 @@ export default function GalaSection() {
               />
             </p>
             <p className="font-sans text-[16px] font-light leading-[1.4] text-white sm:text-[24px] sm:font-light sm:leading-[1.55] sm:text-white/90">
-              <LetterGlow
+              <LineFade
                 text={GALA_PARA_2}
                 delay={d_para2}
                 lineOffset={offset_p2}
@@ -241,7 +241,7 @@ export default function GalaSection() {
               />
             </p>
             <p className="font-sans text-[16px] font-light leading-[1.4] text-white sm:text-[24px] sm:font-light sm:leading-[1.55] sm:text-white/90">
-              <LetterGlow
+              <LineFade
                 text={GALA_PARA_3}
                 delay={d_para3}
                 lineOffset={offset_p3}
@@ -249,7 +249,7 @@ export default function GalaSection() {
               />
             </p>
             <p className="font-sans text-[16px] font-light leading-[1.4] text-white sm:text-[24px] sm:font-light sm:leading-[1.55] sm:text-white/90">
-              <LetterGlow
+              <LineFade
                 text={GALA_PARA_4}
                 delay={d_para4}
                 lineOffset={offset_p4}

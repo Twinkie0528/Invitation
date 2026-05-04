@@ -386,7 +386,7 @@ export default function HeroSection() {
               occupies the same visual footprint the prior PNG
               (358×31 at w-[22vw]) used in the artboard. */}
           <div
-            className="mt-[1vh] sm:mt-12"
+            className="mt-[5vh] sm:mt-20"
             style={{
               opacity: mounted ? 1 : 0,
               transform: mounted ? "translateY(0)" : "translateY(8px)",

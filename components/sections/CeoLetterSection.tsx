@@ -5,7 +5,7 @@ import { useSectionReveal } from "@/hooks/useSectionReveal";
 import { useSceneEntered } from "@/hooks/useScrollProgress";
 import { formatGuestName, useGuestName } from "@/lib/guestContext";
 import BackgroundVideoFrame from "@/components/ui/BackgroundVideoFrame";
-import { LetterGlow, estimateLineCount } from "@/components/ui/LetterGlow";
+import { LineFade, estimateLineCount } from "@/components/ui/LineFade";
 import TopMark from "@/components/ui/TopMark";
 
 const CEO_PARA_2 = "I am proud to acknowledge the role you have played in shaping this journey.";
@@ -99,14 +99,21 @@ export default function CeoLetterSection() {
   // through the last line of CEO_PARA_5.  Signature lands once
   // the final line has settled.
   //
-  // LINE_STAGGER + LETTER_GLOW_DURATION must mirror the
-  // <LetterGlow> defaults so the signature delay calc stays
-  // accurate.
+  // LINE_STAGGER + LINE_FADE_DURATION must mirror the
+  // <LineFade> defaults so the signature delay calc stays
+  // accurate.  SIGNATURE_SPEEDUP_FACTOR halves the post-body
+  // wait so the signature lands while the last line is still
+  // mid-fade (~42 % through its 4 s opacity transition) instead
+  // of waiting for the slow fade to fully settle — without this
+  // the closing flourish feels detached from the letter and
+  // arrives as a separate event 1.5–2 s after the body looks
+  // visually "done".
   const TITLE_DURATION = 1600;
-  const PAUSE_AFTER_TITLE = 800;
-  const LINE_STAGGER_MS = 200;
-  const LETTER_GLOW_DURATION_MS = 900;
+  const PAUSE_AFTER_TITLE = 400;
+  const LINE_STAGGER_MS = 100;
+  const LINE_FADE_DURATION_MS = 4000;
   const SIGNATURE_SETTLE_MS = 800;
+  const SIGNATURE_SPEEDUP_FACTOR = 0.3;
   const linesP2 = estimateLineCount(CEO_PARA_2);
   const linesP3 = estimateLineCount(CEO_PARA_3);
   const linesP4 = estimateLineCount(CEO_PARA_4);
@@ -124,9 +131,12 @@ export default function CeoLetterSection() {
   const offset_p5 = linesP2 + linesP3 + linesP4;
   const d_signature =
     d_para_group +
-    (totalBodyLines - 1) * LINE_STAGGER_MS +
-    LETTER_GLOW_DURATION_MS +
-    SIGNATURE_SETTLE_MS;
+    Math.round(
+      ((totalBodyLines - 1) * LINE_STAGGER_MS +
+        LINE_FADE_DURATION_MS +
+        SIGNATURE_SETTLE_MS) *
+        SIGNATURE_SPEEDUP_FACTOR,
+    );
 
   return (
     <section
@@ -235,7 +245,7 @@ export default function CeoLetterSection() {
           upper-middle band of the 1280×832 frame (matches the Figma
           desktop reference) with the signature visible underneath. */}
       <div
-        className="absolute inset-x-0 top-[22%] mx-auto flex w-full justify-center px-6 sm:top-[28%] sm:px-14 md:px-20"
+        className="absolute inset-x-0 top-[16%] mx-auto flex w-full justify-center px-6 sm:top-[22%] sm:px-14 md:px-20"
         style={{ fontFamily: "var(--font-manrope), system-ui, sans-serif" }}
       >
         {/* Figma `Mobile Version` text block — Width 321 / Height 521
@@ -291,7 +301,7 @@ export default function CeoLetterSection() {
               (= 1.5 rem = 24 px).  Subsequent paragraphs keep the
               same 24 px rhythm.  Desktop tier (sm:) is unchanged. */}
           <p className="mt-6 text-[16px] font-normal leading-[1.4] text-white sm:mt-10 sm:text-[24px] sm:font-light sm:leading-[1.55] sm:text-white/90">
-            <LetterGlow
+            <LineFade
               text={CEO_PARA_2}
               delay={d_para2}
               lineOffset={offset_p2}
@@ -299,7 +309,7 @@ export default function CeoLetterSection() {
             />
           </p>
           <p className="mt-6 text-[16px] font-normal leading-[1.4] text-white sm:mt-7 sm:text-[24px] sm:font-light sm:leading-[1.55] sm:text-white/90">
-            <LetterGlow
+            <LineFade
               text={CEO_PARA_3}
               delay={d_para3}
               lineOffset={offset_p3}
@@ -307,7 +317,7 @@ export default function CeoLetterSection() {
             />
           </p>
           <p className="mt-6 text-[16px] font-normal leading-[1.4] text-white sm:mt-7 sm:text-[24px] sm:font-light sm:leading-[1.55] sm:text-white/90">
-            <LetterGlow
+            <LineFade
               text={CEO_PARA_4}
               delay={d_para4}
               lineOffset={offset_p4}
@@ -315,7 +325,7 @@ export default function CeoLetterSection() {
             />
           </p>
           <p className="mt-6 text-[16px] font-normal leading-[1.4] text-white sm:mt-7 sm:text-[24px] sm:font-light sm:leading-[1.55] sm:text-white/90">
-            <LetterGlow
+            <LineFade
               text={CEO_PARA_5}
               delay={d_para5}
               lineOffset={offset_p5}

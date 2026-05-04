@@ -5,7 +5,7 @@ import { useSectionReveal } from "@/hooks/useSectionReveal";
 import { useSceneEntered } from "@/hooks/useScrollProgress";
 import { useSequentialDelays } from "@/hooks/useSequentialDelays";
 import BackgroundVideoFrame from "@/components/ui/BackgroundVideoFrame";
-import { LetterGlow, estimateLineCount } from "@/components/ui/LetterGlow";
+import { LineFade, estimateLineCount } from "@/components/ui/LineFade";
 import TopMark from "@/components/ui/TopMark";
 
 // UNITEL wordmark for the desktop right-corner placement.  Same SVG
@@ -77,7 +77,7 @@ export default function UrtuuSection() {
     _afterTitleHold,
     d_para_group,
   ] = useSequentialDelays(
-    [800, 1600, 320, 0],
+    [800, 1600, 0, 0],
     { stagger: 0, duration: 0, pause: 400 },
   );
   void _afterTitleHold;
@@ -342,7 +342,7 @@ export default function UrtuuSection() {
           framed left + right by the mascot mp4's wings.  This
           replaces the previous left-aligned split-layout (which the
           Figma reference does not use). */}
-      <div className="absolute inset-0 mx-auto flex w-full max-w-[1320px] flex-col items-center px-6 pt-[21vh] pb-8 text-center sm:justify-center sm:px-14 sm:py-16 md:px-20 md:py-20 lg:px-28 lg:py-24">
+      <div className="absolute inset-0 mx-auto flex w-full max-w-[1320px] flex-col items-center px-6 pt-[14vh] pb-8 text-center sm:justify-center sm:px-14 sm:py-16 md:px-20 md:py-20 lg:px-28 lg:py-24">
         <div className="w-full max-w-[347px] sm:max-w-[48vw]">
           {/* Eyebrow — Figma: 16px, color #b7b7b7, letter-spacing
               6.4px (= 0.4em).  No italics. */}
@@ -394,7 +394,7 @@ export default function UrtuuSection() {
           {/* Body — two paragraphs of immersive copy. */}
           <div className="space-y-5 sm:space-y-5 md:space-y-6">
             <p className="font-sans text-[16px] font-light leading-[1.4] text-white sm:text-[22px] sm:leading-[1.7]">
-              <LetterGlow
+              <LineFade
                 text={BODY_PARA_1}
                 delay={d_para1}
                 lineOffset={offset_p1}
@@ -402,7 +402,7 @@ export default function UrtuuSection() {
               />
             </p>
             <p className="font-sans text-[16px] font-light leading-[1.4] text-white sm:text-[22px] sm:leading-[1.7]">
-              <LetterGlow
+              <LineFade
                 text={BODY_PARA_2}
                 delay={d_para2}
                 lineOffset={offset_p2}

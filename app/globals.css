@@ -127,26 +127,6 @@ html.lenis body {
    gutters at the wrapper edges.  Cadence is intentionally slow
    (22s) so the motion never reads as scrolling — just gentle
    atmospheric drift. */
-/* Letter-glow with persistent halo — each letter pulses up to
-   a peak glow at 66 %, then settles into a gentle steady-state
-   shadow that REMAINS after the animation ends, so the text
-   keeps its soft luminous halo instead of fading back to flat
-   white.  Opacity also holds at 1 in the final state for full
-   readability. */
-@keyframes letter-glow {
-  0% {
-    opacity: 0;
-    text-shadow: 0 0 1px rgba(255, 255, 255, 0.1);
-  }
-  66% {
-    opacity: 1;
-    text-shadow: 0 0 20px rgba(255, 255, 255, 0.9);
-  }
-  100% {
-    opacity: 1;
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
-  }
-}
 
 @keyframes floor-drift {
   0% {

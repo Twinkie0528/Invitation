@@ -15,36 +15,48 @@ type Props = {
    *  ends, no breath, no per-paragraph delay. */
   lineOffset?: number;
   /** ms between consecutive visual lines.  Every letter in the
-   *  same rendered line shares the same animation-delay, so each
-   *  line glows as a unit before the next line begins. */
+   *  same rendered line shares the same opacity-transition delay,
+   *  so each line fades in as a unit before the next line begins. */
   lineStagger?: number;
-  /** ms duration of each letter's glow-pulse. */
+  /** ms duration of each line's opacity fade. */
   duration?: number;
   /** Toggle that arms the animation (typically the section's
    *  `entered` flag).  When false, every letter stays at opacity 0. */
   trigger: boolean;
 };
 
-// LINE-BY-LINE glow.  The text is spanized letter-by-letter so the
-// browser still wraps words at natural breakpoints; after mount the
-// component measures each span's `offsetTop` and groups letters
-// into lines.  Every letter on the same visual line gets the same
-// animation-delay, so the glow flows top-to-bottom one line at a
-// time rather than rippling per-letter.  Re-measures on resize so
-// the line groups stay correct if the viewport changes.
-export function LetterGlow({
+// LINE-BY-LINE fade.  Reuses the line-measurement strategy from the
+// glow component but swaps the heavy text-shadow keyframe for a
+// plain opacity transition — the only visible effect per letter is
+// `opacity 0 → 1`, which is GPU-cheap on mobile (no per-letter
+// shadow blur, no concurrent keyframe state).  The scale + blur
+// "cosmic dust" feel of the RSVP body fade lives on the parent
+// `<p>` element instead, so the paragraph as a whole settles while
+// the letters reveal line-by-line through the opacity cascade.
+//
+// Text is spanized letter-by-letter so the browser still wraps
+// words at natural breakpoints; `data-letter` lets us measure
+// `offsetTop` and group letters into lines.  Re-measures on
+// resize and after fonts load (Manrope can swap in late on slow
+// mobile networks, which would otherwise leave the line groups
+// stale and the cascade misaligned).
+export function LineFade({
   text,
   delay = 0,
   lineOffset = 0,
   lineStagger = 100,
-  duration = 2500,
+  duration = 4000,
   trigger,
 }: Props) {
   const ref = useRef<HTMLSpanElement>(null);
   const [lineIndices, setLineIndices] = useState<number[]>([]);
 
   useEffect(() => {
+    let cancelled = false;
+    let raf = 0;
+
     const measure = () => {
+      if (cancelled) return;
       const node = ref.current;
       if (!node) return;
       const spans = Array.from(
@@ -63,9 +75,34 @@ export function LetterGlow({
       });
       setLineIndices(indices);
     };
-    measure();
-    window.addEventListener("resize", measure);
-    return () => window.removeEventListener("resize", measure);
+
+    const scheduleMeasure = () => {
+      if (cancelled) return;
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        if (!cancelled) measure();
+      });
+    };
+
+    const fonts =
+      typeof document !== "undefined"
+        ? (
+            document as Document & {
+              fonts?: { ready?: Promise<unknown> };
+            }
+          ).fonts
+        : undefined;
+    if (fonts && fonts.ready && typeof fonts.ready.then === "function") {
+      fonts.ready.then(() => scheduleMeasure());
+    }
+    scheduleMeasure();
+
+    window.addEventListener("resize", scheduleMeasure);
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", scheduleMeasure);
+    };
   }, [text]);
 
   const chars = Array.from(text);
@@ -73,23 +110,24 @@ export function LetterGlow({
 
   return (
     <span ref={ref}>
-      {chars.map((char, i) => (
-        <span
-          key={i}
-          data-letter
-          style={{
-            opacity: 0,
-            animation:
-              trigger && ready
-                ? `letter-glow ${duration}ms ease ${
-                    delay + ((lineIndices[i] ?? 0) + lineOffset) * lineStagger
-                  }ms both`
+      {chars.map((char, i) => {
+        const lineIdx = (lineIndices[i] ?? 0) + lineOffset;
+        const lineDelay = delay + lineIdx * lineStagger;
+        return (
+          <span
+            key={i}
+            data-letter
+            style={{
+              opacity: trigger && ready ? 1 : 0,
+              transition: ready
+                ? `opacity ${duration}ms cubic-bezier(0.16, 1, 0.3, 1) ${lineDelay}ms`
                 : "none",
-          }}
-        >
-          {char}
-        </span>
-      ))}
+            }}
+          >
+            {char}
+          </span>
+        );
+      })}
     </span>
   );
 }
