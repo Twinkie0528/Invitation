@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Manrope } from "next/font/google";
+import { Fraunces, Lora, Manrope } from "next/font/google";
 import localFont from "next/font/local";
 import Providers from "./providers";
 import LoadingOverlay from "@/components/ui/LoadingOverlay";
@@ -16,7 +16,17 @@ const fraunces = Fraunces({
 const manrope = Manrope({
   subsets: ["latin"],
   variable: "--font-manrope",
-  weight: ["300", "400", "500", "600", "700"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+  display: "swap",
+});
+
+// Display serif for the Dear scene's stage-3 INVITATION title.
+// Figma spec: Lora, 30px, weight 400, white.  Imported here so
+// next/font self-hosts it alongside Fraunces and Manrope.
+const lora = Lora({
+  subsets: ["latin"],
+  variable: "--font-lora",
+  weight: ["400"],
   display: "swap",
 });
 
@@ -63,34 +73,32 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${fraunces.variable} ${manrope.variable} ${ingkar.variable}`}
+      className={`${fraunces.variable} ${manrope.variable} ${ingkar.variable} ${lora.variable}`}
     >
       <head>
-        {/* Critical hero — gate the FLIP handoff on the SVG lockup
-            and pre-warm the hero MP4 so its first frame is decoded
-            by the time the LoadingOverlay finishes flying.  The mp4
-            preload uses `as="video"` (Chromium / Edge / modern Safari)
-            with `type` so older browsers that don't recognise the
-            hint just ignore it.  `fetchpriority="high"` lifts both
-            assets above other late-discovered resources on Chromium
-            engines so the hero never queues behind a third-party
-            font CSS or analytics tag. */}
+        {/* Critical Dear scene — gate the FLIP handoff on the SVG
+            lockup and pre-warm both Dear mp4s so their first frames
+            are decoded by the time the LoadingOverlay finishes
+            flying.  The loop mp4 backs stage 1 the moment the splash
+            clears; the animation mp4 plays the instant the user
+            scrolls.  `fetchpriority="high"` lifts these above other
+            late-discovered resources on Chromium engines. */}
         <link rel="preload" as="image" href="/media/hero/unitel-20-lockup.svg" fetchPriority="high" />
-        <link rel="preload" as="video" href="/media/hero/first.mp4" type="video/mp4" fetchPriority="high" />
+        <link rel="preload" as="video" href="/media/dear/default-final-invitation.mp4" type="video/mp4" fetchPriority="high" />
+        <link rel="preload" as="video" href="/media/dear/final-invitation-animation.mp4" type="video/mp4" fetchPriority="high" />
 
         {/* Below-the-fold scenes — `prefetch` (not `preload`) tells
             the browser these are needed soon but at lower priority,
-            so they only consume bandwidth once the critical hero
+            so they only consume bandwidth once the critical Dear
             assets above are in flight.  By the time the user
-            scrolls past the hero, every section's mp4 / poster /
-            shader is already cached and enters via `loadeddata`. */}
+            scrolls past Dear, every section's mp4 / poster / shader
+            is already cached and enters via `loadeddata`. */}
         <link rel="prefetch" as="video" href="/media/urtuu/urtuu-script.mp4" type="video/mp4" />
         <link rel="prefetch" as="video" href="/media/common/gala-bloom.mp4" type="video/mp4" />
         <link rel="prefetch" as="video" href="/media/ceo/mascot.mp4" type="video/mp4" />
         <link rel="prefetch" as="video" href="/media/rsvp/cosmos.mp4" type="video/mp4" />
         <link rel="prefetch" as="image" href="/media/urtuu/floor.jpg" />
         <link rel="prefetch" as="image" href="/media/common/shader.png" />
-        <link rel="prefetch" as="image" href="/media/hero/shader.png" />
         <link rel="prefetch" as="image" href="/media/rsvp/cosmos.png" />
         <link rel="prefetch" as="image" href="/media/rsvp/invitation-title.png" />
         <link rel="prefetch" as="image" href="/media/rsvp/full.png" />

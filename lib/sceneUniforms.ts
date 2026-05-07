@@ -86,23 +86,22 @@ const AUTHORED: Record<SceneId, AuthoredScene> = {
     sideOuterY: 0.85,
   },
 
-  // SCENE 1 — hero. Aggressive rectangular clearance so the body copy on
-  // the left and the dust figure on the right both sit on a clean stage.
-  hero: {
-    attractors: pad([
-      { pos: [-3.4, 0.0, 0], strength: 0.07 },
-      { pos: [3.4, 0.0, 0], strength: 0.07 },
-    ]),
-    noiseScale: 0.75,
-    noiseStrength: 0.10,
-    drag: 0.986,
-    maxSpeed: 0.32,
-    oscAmp: 0.032,
-    pointSize: 4.3,
-    opacity: 0.9,
+  // SCENE 1 — dear (personalised welcome card).  Mirrors cold's calm
+  // baseline since the section paints a black plate over the canvas;
+  // these uniforms only drive the global MainScene field underneath
+  // for the brief crossfade window between scenes.
+  dear: {
+    attractors: pad([]),
+    noiseScale: 0.72,
+    noiseStrength: 0.09,
+    drag: 0.987,
+    maxSpeed: 0.28,
+    oscAmp: 0.028,
+    pointSize: 4.2,
+    opacity: 0.88,
     colorA: "#cdd5e8",
     colorB: "#ffffff",
-    velocityToColor: 0.8,
+    velocityToColor: 0.7,
     sideOnly: 1.0,
     sideInner: 0.7,
     sideOuter: 0.95,

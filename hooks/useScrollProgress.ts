@@ -9,7 +9,7 @@ type Listener = (s: SceneState) => void;
 // Shared ref-like store so many components and the R3F frame loop can
 // read scroll state without triggering React re-renders.
 export const sceneRef: { current: SceneState } = {
-  current: { progress: 0, active: "hero", localT: 0 },
+  current: { progress: 0, active: "dear", localT: 0 },
 };
 
 const listeners = new Set<Listener>();

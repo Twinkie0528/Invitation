@@ -15,11 +15,12 @@ import { SCENES } from "@/lib/scenes";
 // the dots never intercept TubesCursor input.
 const PAGES = SCENES.filter((s) => s.id !== "cold");
 
-// Pages where the pagination should stay hidden.  The hero (and the
-// `cold` pre-roll that fades into it) is the entry card — showing the
-// dots there would compete with the invitation reveal, so we suppress
-// them until the user starts scrolling into the actual story pages.
-const HIDDEN_ON: ReadonlySet<string> = new Set(["cold", "hero"]);
+// Pages where the pagination should stay hidden.  The dear card (and
+// the `cold` pre-roll that fades into it) is the entry treatment —
+// showing the dots there would compete with the personalised welcome
+// reveal, so we suppress them until the user starts scrolling into
+// the hero invitation copy.
+const HIDDEN_ON: ReadonlySet<string> = new Set(["cold", "dear"]);
 
 function activeIndex(progress: number): number {
   for (let i = 0; i < PAGES.length; i++) {

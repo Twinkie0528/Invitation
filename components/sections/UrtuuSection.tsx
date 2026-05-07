@@ -27,12 +27,16 @@ const BG_VIDEO = "/media/urtuu/urtuu-script.mp4";
 const BG_POSTER = "/media/urtuu/urtuu-script.webp";
 
 // Reveal range — also drives the video play/pause window.
-// Urtuu is page 3 (after Hero + CEO): scroll progress 0.42 → 0.64.
+// Urtuu is page 3 (Dear → CEO → Urtuu → Gala → RSVP):
+// scroll progress 0.42 → 0.62.  Reveal aligned with scene
+// boundaries (start at 0.42, hold 0.60, end 0.63) so the CEO →
+// Urtuu and Urtuu → Gala handoffs share the same minimal-overlap
+// pattern as the Dear → CEO transition.
 const REVEAL_RANGE = {
-  start: 0.36,
-  peak: 0.42,
-  hold: 0.58,
-  end: 0.64,
+  start: 0.42,
+  peak: 0.46,
+  hold: 0.60,
+  end: 0.63,
 };
 
 // Covers scene `urtuu` — "The Urtuu" immersive experience reveal.
@@ -365,7 +369,7 @@ export default function UrtuuSection() {
             className="mb-5 text-center font-sans text-[22px] font-bold uppercase leading-[1.2] tracking-tight sm:mb-7 sm:text-[40px] md:mb-8"
             style={{
               backgroundImage:
-                "linear-gradient(215deg, #73A4FF 14.69%, #E1E1E1 83.64%)",
+                "linear-gradient(215deg, #46C800 14.69%, #E1E1E1 83.64%)",
               WebkitBackgroundClip: "text",
               backgroundClip: "text",
               WebkitTextFillColor: "transparent",
@@ -375,11 +379,12 @@ export default function UrtuuSection() {
               // focus over 2 s on a smooth, no-overshoot curve.  Reads
               // as cosmic dust gathering into the headline rather than
               // a marquee zoom-in, per user feedback.  `drop-shadow`
-              // glow is eased in alongside so the focus moment lands
-              // with a subtle bloom.
+              // glow uses the same UNITEL green (#46C800 → rgb
+              // 70/200/0) as the gradient so the bloom reinforces the
+              // headline tint instead of fighting it.
               filter: entered
-                ? "blur(0px) drop-shadow(0 0 18px rgba(115, 164, 255, 0.18))"
-                : "blur(12px) drop-shadow(0 0 0 rgba(115, 164, 255, 0))",
+                ? "blur(0px) drop-shadow(0 0 18px rgba(70, 200, 0, 0.20))"
+                : "blur(12px) drop-shadow(0 0 0 rgba(70, 200, 0, 0))",
               opacity: entered ? 1 : 0,
               transform: entered ? "scale(1)" : "scale(0.94)",
               transition: `opacity 2200ms cubic-bezier(0.16, 1, 0.3, 1) ${d_title}ms, transform 2400ms cubic-bezier(0.16, 1, 0.3, 1) ${d_title}ms, filter 2400ms cubic-bezier(0.16, 1, 0.3, 1) ${d_title}ms`,

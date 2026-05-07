@@ -3,15 +3,14 @@
 import Image from "next/image";
 import { useSectionReveal } from "@/hooks/useSectionReveal";
 import { useSceneEntered } from "@/hooks/useScrollProgress";
-import { formatGuestName, useGuestName } from "@/lib/guestContext";
 import BackgroundVideoFrame from "@/components/ui/BackgroundVideoFrame";
 import { LineFade, estimateLineCount } from "@/components/ui/LineFade";
 import TopMark from "@/components/ui/TopMark";
 
-const CEO_PARA_2 = "I am proud to acknowledge the role you have played in shaping this journey.";
-const CEO_PARA_3 = "Over the past two decades, Unitel Group has played a meaningful role in advancing Mongolia’s telecommunications landscape introducing technological innovations and helping shape the evolution of connectivity across the nation.";
-const CEO_PARA_4 = "This 20 year milestone is not only a celebration of our journey, but an opportunity to share that progress with those who have been part of it.";
-const CEO_PARA_5 = "To mark this occasion, we are curating immersive experience dedicated to our customers and partners one that reflects the transformation of the industry, the milestones we have achieved together, and the future we continue to build.";
+const CEO_PARA_2 = "Over the past two decades, Unitel Group has played a meaningful role in advancing Mongolia’s telecommunications landscape, introducing technological innovations and helping shape the evolution of connectivity across the nation.";
+const CEO_PARA_3 = "As we mark this 20 year milestone, it is not only a celebration of progress, but also a moment to recognize those connected to this journey.";
+const CEO_PARA_4 = "To honor this occasion, we are curating an immersive experience dedicated to our customers and partners. It reflects the transformation we have witnessed together and the future we continue to build.";
+const CEO_PARA_5 = "I sincerely look forward to welcoming you.";
 
 // Cinematic background — Jamiyan-Sharav mascot animation, mounted
 // only once the user is within scroll range.  Served from /public/media
@@ -26,16 +25,17 @@ const CEO_SIGNATURE_SRC = "/media/ceo/signature.svg";
 // the mp4 mounts.  Saves ~7 MB of needless image fetch.
 
 // Reveal range — also drives the video play/pause window.
-// CEO Letter is page 2 (after Hero, before Urtuu): scroll 0.16 → 0.42.
-// Hold extends to 0.408 (≈ local 0.95) so the section stays at 100%
-// opacity right up to the Urtuu handoff — earlier hold values left a
-// gap where the CEO bg-black faded enough to expose the global
-// MainScene cosmos behind it.
+// CEO Letter is page 2 (Dear → CEO → Urtuu → Gala → RSVP):
+// scroll progress 0.18 → 0.42.  Reveal starts at the scene
+// boundary (0.18) so it doesn't bleed onto the dear scene's
+// envelope content; peaks 4 % in for a smooth fade.  Hold ends
+// 2 % before the scene boundary so the Urtuu handoff has the same
+// minimal-overlap pattern.
 const REVEAL_RANGE = {
-  start: 0.10,
-  peak: 0.16,
-  hold: 0.36,
-  end: 0.42,
+  start: 0.18,
+  peak: 0.22,
+  hold: 0.40,
+  end: 0.43,
 };
 
 // Covers scene `ceo` — formal welcome letter from Jamiyan-Sharav D.
@@ -53,27 +53,6 @@ const REVEAL_RANGE = {
 export default function CeoLetterSection() {
   const ref = useSectionReveal<HTMLElement>(REVEAL_RANGE);
   const entered = useSceneEntered(0.18);
-
-  // Guest name — relocated from the Hero section.  Replaces the
-  // previous static "Dear Valued Partner," header.
-  const rawGuestName = useGuestName();
-  const guestName = rawGuestName ? formatGuestName(rawGuestName) : "Esteemed Guest";
-
-  // Calligraphy sizing math.  Ingkar Janji averages ~0.33 em per
-  // glyph, so a 14-char "Esteemed Guest" at 20 vw on a 375 px
-  // phone would render ~370 px wide and overflow the CEO body
-  // column (`max-w-[321px]` mobile).  The Hero's original formula
-  // was tuned to a ~92 vw stage; we scale it down for the CEO's
-  // tighter ~86 vw column so even 16-char names fit on one line.
-  //
-  // Mobile result on 375 px viewport:
-  //   6 chars  "G.Bold"           → 15.0 vw =  56 px
-  //  14 chars  "Esteemed Guest"   → 14.3 vw =  54 px (≈248 px wide)
-  //  16 chars  "Ch.Darkhanbaatar" → 12.5 vw =  47 px (≈247 px wide)
-  // All comfortably within the 321 px column.
-  const charCount = Math.max(guestName.length, 6);
-  const heroScriptDesktopCss = "9vw";
-  const heroScriptMobileVw = Math.min(15, +(200 / charCount).toFixed(2));
   // Continuous typewriter for the letter — the five paragraphs reveal
   // one after the other instead of overlapping.  We append a 0-duration
   // sentinel step at the end so we can read back the timestamp at which
@@ -108,19 +87,27 @@ export default function CeoLetterSection() {
   // the closing flourish feels detached from the letter and
   // arrives as a separate event 1.5–2 s after the body looks
   // visually "done".
-  const TITLE_DURATION = 1600;
-  const PAUSE_AFTER_TITLE = 188;
-  const LINE_STAGGER_MS = 100;
-  const LINE_FADE_DURATION_MS = 4000;
-  const SIGNATURE_SETTLE_MS = 800;
-  const SIGNATURE_SPEEDUP_FACTOR = 0.3;
+  // The calligraphy header was retired, so the body paragraphs are
+  // now the FIRST thing on the scene and need to land quickly
+  // enough that the user sees text the moment they enter CEO,
+  // rather than waiting through a slow 1.6 s per-line ramp.  Each
+  // line fades in over 1.0 s with 60 ms between adjacent lines so
+  // the four paragraphs read as one snappy top-to-bottom wave that
+  // settles in well under 2 s — fast enough to feel responsive
+  // without losing the "deliberate convergence" character.
+  const LINE_STAGGER_MS = 77;
+  const LINE_FADE_DURATION_MS = 1430;
+  const SIGNATURE_SETTLE_MS = 400;
+  const SIGNATURE_SPEEDUP_FACTOR = 0.5;
   const linesP2 = estimateLineCount(CEO_PARA_2);
   const linesP3 = estimateLineCount(CEO_PARA_3);
   const linesP4 = estimateLineCount(CEO_PARA_4);
   const linesP5 = estimateLineCount(CEO_PARA_5);
   const totalBodyLines = linesP2 + linesP3 + linesP4 + linesP5;
-  const d_para1 = 100;
-  const d_para_group = 100 + TITLE_DURATION + PAUSE_AFTER_TITLE;
+  // Body cascade kicks in 100 ms after the user enters the scene —
+  // same small initial delay every other scene's first reveal step
+  // uses, so the rhythm with Urtuu/Gala/RSVP stays consistent.
+  const d_para_group = 100;
   const d_para2 = d_para_group;
   const d_para3 = d_para_group;
   const d_para4 = d_para_group;
@@ -264,35 +251,6 @@ export default function CeoLetterSection() {
             user requested "багахан Linear space".  Desktop tier
             unchanged (sm: variants). */}
         <div className="w-full max-w-[321px] text-balance text-center sm:max-w-[920px]">
-          {/* Personalised guest name — Ingkar Janji calligraphy with
-              the soft blue → silver wash, lifted from the Hero
-              section to anchor the letter.  Replaces the previous
-              static "Dear Valued Partner," header.  Same blur 12 →
-              0 + scale 0.94 → 1 entry as the surrounding section
-              titles so the rhythm with the body paragraphs below is
-              preserved. */}
-          <div
-            className="w-full font-script leading-[1] whitespace-nowrap md:leading-[normal] md:whitespace-normal
-              text-[clamp(32px,var(--ceo-script-mobile),90px)]
-              md:text-[var(--ceo-script-desktop)]"
-            style={{
-              ["--ceo-script-mobile" as any]: `${heroScriptMobileVw}vw`,
-              ["--ceo-script-desktop" as any]: heroScriptDesktopCss,
-              opacity: entered ? 1 : 0,
-              transform: entered ? "scale(1)" : "scale(0.94)",
-              filter: entered ? "blur(0px)" : "blur(12px)",
-              transition: `opacity 2200ms cubic-bezier(0.16, 1, 0.3, 1) ${d_para1}ms, transform 2400ms cubic-bezier(0.16, 1, 0.3, 1) ${d_para1}ms, filter 2400ms cubic-bezier(0.16, 1, 0.3, 1) ${d_para1}ms`,
-              transformOrigin: "center center",
-              backgroundImage:
-                "linear-gradient(215deg, #73A4FF 14.69%, #E1E1E1 83.64%)",
-              WebkitBackgroundClip: "text",
-              backgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              color: "transparent",
-            }}
-          >
-            {guestName}
-          </div>
           {/* Body paragraphs 2–5 — Manrope Regular 16 / lh 100 % on
               mobile per the Figma spec.  The Bold 24 / lh 100 %
               entry in the inspect panel is the *whitespace* spacer
@@ -305,6 +263,8 @@ export default function CeoLetterSection() {
               text={CEO_PARA_2}
               delay={d_para2}
               lineOffset={offset_p2}
+              lineStagger={LINE_STAGGER_MS}
+              duration={LINE_FADE_DURATION_MS}
               trigger={entered}
             />
           </p>
@@ -313,6 +273,8 @@ export default function CeoLetterSection() {
               text={CEO_PARA_3}
               delay={d_para3}
               lineOffset={offset_p3}
+              lineStagger={LINE_STAGGER_MS}
+              duration={LINE_FADE_DURATION_MS}
               trigger={entered}
             />
           </p>
@@ -321,6 +283,8 @@ export default function CeoLetterSection() {
               text={CEO_PARA_4}
               delay={d_para4}
               lineOffset={offset_p4}
+              lineStagger={LINE_STAGGER_MS}
+              duration={LINE_FADE_DURATION_MS}
               trigger={entered}
             />
           </p>
@@ -329,6 +293,8 @@ export default function CeoLetterSection() {
               text={CEO_PARA_5}
               delay={d_para5}
               lineOffset={offset_p5}
+              lineStagger={LINE_STAGGER_MS}
+              duration={LINE_FADE_DURATION_MS}
               trigger={entered}
             />
           </p>

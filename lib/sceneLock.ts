@@ -1,21 +1,20 @@
 // Progress-based scroll lock for the mobile invitation flow.
 //
 // First-visit guests are clamped at a hand-picked progress cap per
-// scene for 3 seconds while the section's reveal animations get
-// their attention.  Caps target the same content-meaningful
-// boundary as before (signature settled, final paragraph in view,
-// scroll-cue position) but the absolute progress values were
-// remapped after the page reorder (Hero → CEO → Urtuu → Gala →
-// RSVP) so each cap still lands at its scene's content beat:
+// scene for a few seconds while the section's reveal animations get
+// their attention.  Caps target a content-meaningful boundary in
+// each scene (signature settled, final paragraph in view, etc.).
+// Page narrative is now Dear → CEO → Urtuu → Gala → RSVP (Hero
+// scene was absorbed into Dear's stage-3 INVITATION reveal):
 //
-//   Hero  — cap 0.099 (scroll-cue chevron position)
-//   CEO   — cap 0.360 (signature row settled)
-//   Urtuu — cap 0.580 ("…you to experience it" final paragraph)
-//   Gala  — cap 0.760 ("…for invited guests" final paragraph)
+//   Dear  — cap 0.16 (animation playback boundary)
+//   CEO   — cap 0.40 (signature row settled)
+//   Urtuu — cap 0.60 ("…you to experience it" final paragraph)
+//   Gala  — cap 0.80 ("…for invited guests" final paragraph)
 //   RSVP  — cap 1.0   (no cap; final scene)
 //
-// After the 3 s timer fires the cap releases and the user can
-// continue scrolling.  Visited scene ids are written to
+// After the per-scene timer fires the cap releases and the user
+// can continue scrolling.  Visited scene ids are written to
 // `localStorage` so subsequent visits to the same scene unlock
 // immediately.
 
@@ -29,19 +28,24 @@ const VISITED_STORAGE_KEY = "unitel_visited_scenes_v1";
 // scene ends.  RSVP intentionally sits at 1.0 (no cap).
 const SCENE_CAP_PROGRESS: Record<SceneId, number> = {
   cold: 0,
-  hero: 0.099,
-  ceo: 0.36,
-  urtuu: 0.58,
-  gala: 0.76,
+  dear: 0.16,
+  ceo: 0.40,
+  urtuu: 0.60,
+  gala: 0.80,
   rsvp: 1.0,
 };
 
-// Lock duration per scene (ms).  3 s across the board — long enough
-// to hold the user's attention on the section without feeling
-// punitive.  `cold` and `rsvp` are zero (no lock).
+// Lock duration per scene (ms).  3 s across the body scenes — long
+// enough to hold the user's attention without feeling punitive.
+// `cold` and `rsvp` are zero.  `dear`'s auto-lock is also zero —
+// the lock for dear is triggered MANUALLY by DearSection when the
+// stage-2 animation starts (via `lockDearAnimation`) so the timer
+// covers the actual 8 s mp4 + invitation cascade rather than
+// firing at scene-enter (which may be seconds before the user
+// scrolls).
 const SCENE_LOCK_MS: Record<SceneId, number> = {
   cold: 0,
-  hero: 3000,
+  dear: 0,
   urtuu: 3000,
   gala: 3000,
   ceo: 3000,
@@ -169,6 +173,38 @@ export function tryLockScene(scene: SceneId) {
     unlockTimer = null;
     notifyLockChange();
   }, duration);
+}
+
+// Manual lock trigger for the Dear scene's stage-2 animation.
+// Bypasses the per-session `visited` check so the lock fires every
+// time the user scrolls to start the animation, even on revisits.
+// Pins scroll at the dear cap (0.16) for `durationMs` then releases
+// automatically.  Caller decides the duration based on the actual
+// animation + cascade length.
+export function lockDearAnimation(durationMs: number) {
+  if (!lockEnabled) return;
+  if (unlockTimer) {
+    clearTimeout(unlockTimer);
+    unlockTimer = null;
+  }
+  const dearCap = SCENE_CAP_PROGRESS["dear"];
+  const sceneDef = SCENES.find((s) => s.id === "dear");
+  const boundedCap = sceneDef
+    ? Math.min(dearCap, sceneDef.end - 0.001)
+    : dearCap;
+  lockState = {
+    locked: true,
+    lockedScene: "dear",
+    maxProgress: Math.max(0, boundedCap),
+  };
+  notifyLockChange();
+  unlockTimer = setTimeout(() => {
+    visitedScenes.add("dear");
+    persistVisited();
+    lockState = { locked: false, lockedScene: null, maxProgress: 1.0 };
+    unlockTimer = null;
+    notifyLockChange();
+  }, durationMs);
 }
 
 if (typeof window !== "undefined") {

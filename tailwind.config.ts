@@ -9,7 +9,7 @@ const config: Config = {
     extend: {
       colors: {
         unitel: {
-          green: "#00D95F",
+          green: "#46C800",
           dark: "#030308",
           ink: "#0A0A12",
         },
@@ -21,6 +21,7 @@ const config: Config = {
         display: ["var(--font-fraunces)", "serif"],
         sans: ["var(--font-manrope)", "system-ui", "sans-serif"],
         script: ["var(--font-ingkar)", "cursive"],
+        lora: ["var(--font-lora)", "serif"],
       },
       letterSpacing: {
         ultra: "0.3em",

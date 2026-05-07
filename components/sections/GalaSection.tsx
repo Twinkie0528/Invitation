@@ -25,12 +25,15 @@ const BG_VIDEO = "/media/common/gala-bloom.mp4";
 const BG_POSTER = "/media/common/gala-bloom.webp";
 
 // Reveal range — also drives the video play/pause window.
-// Gala is page 4 (after Hero + CEO + Urtuu): scroll progress 0.64 → 0.85.
+// Gala is page 4 (Dear → CEO → Urtuu → Gala → RSVP):
+// scroll progress 0.62 → 0.82.  Reveal aligned with scene
+// boundaries so the Urtuu → Gala and Gala → RSVP handoffs share
+// the same minimal-overlap pattern as the Dear → CEO transition.
 const REVEAL_RANGE = {
-  start: 0.58,
-  peak: 0.64,
-  hold: 0.79,
-  end: 0.85,
+  start: 0.62,
+  peak: 0.66,
+  hold: 0.80,
+  end: 0.83,
 };
 
 // Covers scene `gala` — "Immersive Gala Dinner" reveal.
@@ -48,7 +51,7 @@ const REVEAL_RANGE = {
 //   - Multi-paragraph body — gala dinner copy.
 export default function GalaSection() {
   const ref = useSectionReveal<HTMLElement>(REVEAL_RANGE);
-  const entered = useSceneEntered(0.66);
+  const entered = useSceneEntered(0.64);
   // Continuous typewriter: eyebrow → headline (inline 800 ms) → 4
   // paragraphs.  Each step starts the moment the previous one settles.
   // Reveal cadence — eyebrow → title (2 s convergence) → 1 s
@@ -198,7 +201,7 @@ export default function GalaSection() {
             className="mb-7 text-center font-sans text-[22px] font-bold uppercase leading-[1.2] tracking-tight sm:mb-10 sm:text-[45px] sm:leading-[1.0]"
             style={{
               backgroundImage:
-                "linear-gradient(190.14deg, #73A4FF 14.69%, #E1E1E1 83.64%)",
+                "linear-gradient(190.14deg, #46C800 14.69%, #E1E1E1 83.64%)",
               WebkitBackgroundClip: "text",
               backgroundClip: "text",
               WebkitTextFillColor: "transparent",
@@ -206,10 +209,13 @@ export default function GalaSection() {
               // Particle-converge feel — blurred at 12 px and slightly
               // under-scaled at first, then resolves into focus over
               // 2 s with a smooth no-overshoot curve.  Reads as
-              // cosmic dust assembling into the headline.
+              // cosmic dust assembling into the headline.  Drop-shadow
+              // glow uses the same UNITEL green (#46C800 → rgb 70/200/0)
+              // as the gradient so the bloom reinforces the headline
+              // tint instead of fighting it.
               filter: entered
-                ? "blur(0px) drop-shadow(0 0 18px rgba(115, 164, 255, 0.18))"
-                : "blur(12px) drop-shadow(0 0 0 rgba(115, 164, 255, 0))",
+                ? "blur(0px) drop-shadow(0 0 18px rgba(70, 200, 0, 0.20))"
+                : "blur(12px) drop-shadow(0 0 0 rgba(70, 200, 0, 0))",
               opacity: entered ? 1 : 0,
               transform: entered ? "scale(1)" : "scale(0.94)",
               transition: `opacity 2200ms cubic-bezier(0.16, 1, 0.3, 1) ${d_title}ms, transform 2400ms cubic-bezier(0.16, 1, 0.3, 1) ${d_title}ms, filter 2400ms cubic-bezier(0.16, 1, 0.3, 1) ${d_title}ms`,

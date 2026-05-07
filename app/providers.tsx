@@ -79,19 +79,38 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     // this lets them re-read the headline / scroll back to the top
     // of the section while the lock is active; only forward
     // navigation past the section is blocked.
+    //
+    // RECURSION GUARD: `lenis.scrollTo` synchronously emits a fresh
+    // scroll event, and floating-point arithmetic in the
+    // pixel→progress conversion can leave the new `progress` value
+    // a hair above `max`.  Without a guard the second event would
+    // re-fire `scrollTo`, which fires another scroll event,
+    // infinite-looping until the JS call stack overflows (the
+    // `BackgroundVideoFrame.setMounted` overflow seen in dev).  We
+    // protect against this with a re-entry flag *and* a small
+    // tolerance so a sub-pixel overshoot doesn't trigger another
+    // clamp.
+    let isClamping = false;
+    const CLAMP_TOLERANCE = 0.0008;
     const onScroll = ({ progress }: { progress: number }) => {
+      if (isClamping) return;
       const max = getMaxAllowedProgress();
-      if (progress > max) {
+      if (progress > max + CLAMP_TOLERANCE) {
         // `lenis.limit` is the total scrollable distance in pixels.
         // Multiplying by `max` gives the pixel position that
         // corresponds to the locked scene's end progress.
         const limit = (lenis as unknown as { limit: number }).limit;
         if (typeof limit === "number" && limit > 0) {
-          lenis.scrollTo(max * limit, {
-            immediate: true,
-            force: true,
-            lock: true,
-          });
+          isClamping = true;
+          try {
+            lenis.scrollTo(max * limit, {
+              immediate: true,
+              force: true,
+              lock: true,
+            });
+          } finally {
+            isClamping = false;
+          }
         }
       }
     };
