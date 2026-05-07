@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useSectionReveal } from "@/hooks/useSectionReveal";
 import { useSceneEntered } from "@/hooks/useScrollProgress";
+import { useSequentialDelays } from "@/hooks/useSequentialDelays";
 import BackgroundVideoFrame from "@/components/ui/BackgroundVideoFrame";
 import { LineFade, estimateLineCount } from "@/components/ui/LineFade";
 import TopMark from "@/components/ui/TopMark";
@@ -103,10 +104,21 @@ export default function CeoLetterSection() {
   const linesP4 = estimateLineCount(CEO_PARA_4);
   const linesP5 = estimateLineCount(CEO_PARA_5);
   const totalBodyLines = linesP2 + linesP3 + linesP4 + linesP5;
-  // Body cascade kicks in 100 ms after the user enters the scene —
-  // same small initial delay every other scene's first reveal step
-  // uses, so the rhythm with Urtuu/Gala/RSVP stays consistent.
-  const d_para_group = 100;
+  // Body cadence — match Urtuu/Gala's `eyebrow → title → body`
+  // structure even though CEO has no visible header (the title +
+  // calligraphy were retired in update2).  A single sentinel step
+  // in `useSequentialDelays` emulates a header settling window so
+  // the body waits a deliberate beat after the user enters the
+  // scene instead of firing immediately.  Same options
+  // (pause: 400) the other body sections use, so the pacing reads
+  // as a coherent set across CEO/Urtuu/Gala.
+  const [d_intro] = useSequentialDelays(
+    [1200],
+    { stagger: 0, duration: 0, pause: 400 },
+  );
+  const INTRO_HOLD_MS = 1200;
+  const INTRO_TO_BODY_PAUSE_MS = 188;
+  const d_para_group = d_intro + INTRO_HOLD_MS + INTRO_TO_BODY_PAUSE_MS;
   const d_para2 = d_para_group;
   const d_para3 = d_para_group;
   const d_para4 = d_para_group;
