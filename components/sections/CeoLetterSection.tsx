@@ -88,14 +88,14 @@ export default function CeoLetterSection() {
   // the closing flourish feels detached from the letter and
   // arrives as a separate event 1.5–2 s after the body looks
   // visually "done".
-  // Strict line-by-line reveal — `LINE_STAGGER_MS > LINE_FADE_DURATION_MS`
-  // so each line completes (1.0 s) before the next begins (after a
-  // 100 ms breath).  Per user feedback the previous overlap
-  // (stagger 275 ms vs fade 2250 ms) launched the next line long
-  // before the previous one had resolved on long paragraphs.  Each
-  // line still uses the blur-into-focus reveal via <LineFade blur />.
-  const LINE_STAGGER_MS = 1100;
-  const LINE_FADE_DURATION_MS = 1000;
+  // Flowing waterfall reveal — stagger 300 ms < fade 1500 ms so
+  // ~5 lines are mid-blur at any instant.  Each line resolves
+  // slowly enough that the blur-into-focus effect lands, but the
+  // cascade as a whole rolls top-to-bottom rather than reading as
+  // discrete one-by-one beats.  Mirrors Dear's Invitation cascade
+  // values so the two scenes share one reveal vocabulary.
+  const LINE_STAGGER_MS = 300;
+  const LINE_FADE_DURATION_MS = 1500;
   // Buffer between the body's final line settling and the signature
   // row beginning its fade-in.  Per user feedback the signature must
   // appear AFTER the body has fully resolved, not partway through.

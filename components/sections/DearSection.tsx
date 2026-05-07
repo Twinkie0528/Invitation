@@ -53,19 +53,16 @@ const NAME_LETTER_FADE_MS = 420;
 const ENVELOPE_AFTER_NAME_MS = 350;
 const CHEVRON_AFTER_ENVELOPE_MS = 600;
 
-// Stage-3 cascade timing — strict line-by-line reveal.  Per user
-// feedback the previous overlap (stagger 200 ms vs fade 3000 ms)
-// kicked the next line off long before the previous one had
-// finished resolving, so the cascade read as a wash rather than
-// distinct lines.  Now `BODY_LINE_STAGGER_MS >
-// BODY_LINE_FADE_MS` so each line completes (1.0 s) before the
-// next begins (after a 100 ms breath).  Each line still uses the
-// blur-into-focus reveal via <LineFade blur />.  Scroll lock
-// bumped to 17 s to cover the longer cumulative settle.
+// Stage-3 cascade timing — flowing waterfall reveal.  Per user
+// feedback the strict line-by-line variant (stagger 1100 / fade
+// 1000) read as discrete beats, not a wave.  Now stagger 300 ms <
+// fade 1500 ms so ~5 lines are mid-blur at any instant — each line
+// resolves slowly enough that the blur-into-focus effect lands, but
+// the cascade as a whole rolls top-to-bottom like a waterfall.
 const TITLE_FADE_MS = 1600;
 const TITLE_TO_BODY_MS = 350;
-const BODY_LINE_STAGGER_MS = 1100;
-const BODY_LINE_FADE_MS = 1000;
+const BODY_LINE_STAGGER_MS = 300;
+const BODY_LINE_FADE_MS = 1500;
 
 const BODY_PARA_1 =
   "Unitel group invites you to an exclusive evening where you become part of the story.";
@@ -129,13 +126,13 @@ export default function DearSection() {
   // --- Scroll lock during animation + cascade ------------------------
   // Trigger a manual scroll lock the moment the user kicks off the
   // stage-2 animation.  Duration covers the 8 s mp4 plus the
-  // line-by-line INVITATION cascade (title 1.6 s + 350 ms breath +
-  // ~6 lines × 1.1 s stagger + 1 s last-line fade ≈ 8.5 s) plus a
-  // small buffer so the user can't skip past dear before the
-  // cascade has finished settling.
+  // flowing INVITATION cascade (title 1.6 s + 350 ms breath + 5 ×
+  // 300 ms stagger + 1.5 s last-line fade ≈ 4.95 s) plus a small
+  // buffer so the user can't skip past dear before the cascade has
+  // finished settling.
   useEffect(() => {
     if (phase !== "playing") return;
-    lockDearAnimation(17000);
+    lockDearAnimation(14000);
   }, [phase]);
 
   // --- Stage-1 loop video --------------------------------------------
