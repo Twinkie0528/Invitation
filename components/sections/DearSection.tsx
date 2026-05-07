@@ -53,16 +53,17 @@ const NAME_LETTER_FADE_MS = 420;
 const ENVELOPE_AFTER_NAME_MS = 350;
 const CHEVRON_AFTER_ENVELOPE_MS = 600;
 
-// Stage-3 cascade timing — continuous downward blur curtain.  At
-// stagger 100 ms / fade 1400 ms ~14 lines are mid-resolve at any
-// instant, so neighbouring lines blend into one another and the eye
-// reads a single wave rolling down the screen rather than line-N
-// finishing then line-N+1 beginning.  Each individual line still
-// takes 1.4 s to resolve from blur(6 px) → blur(0).
-const TITLE_FADE_MS = 1600;
-const TITLE_TO_BODY_MS = 350;
+// Stage-3 cascade timing — soft continuous blur curtain.  Each
+// line resolves from blur(12 px) → blur(0) over 900 ms paired with
+// opacity 0 → 1, so the start state reads as a soft cloud rather
+// than a slightly fuzzy letter.  Stagger 100 ms keeps the
+// neighbouring lines blending into one another (~9 lines mid-
+// resolve at any instant) so the cascade reads as a single soft
+// wave rolling down the screen.
+const TITLE_FADE_MS = 1200;
+const TITLE_TO_BODY_MS = 300;
 const BODY_LINE_STAGGER_MS = 100;
-const BODY_LINE_FADE_MS = 1400;
+const BODY_LINE_FADE_MS = 900;
 
 const BODY_PARA_1 =
   "Unitel group invites you to an exclusive evening where you become part of the story.";
@@ -125,14 +126,13 @@ export default function DearSection() {
 
   // --- Scroll lock during animation + cascade ------------------------
   // Trigger a manual scroll lock the moment the user kicks off the
-  // stage-2 animation.  Duration covers the 8 s mp4 plus the
-  // continuous INVITATION cascade (title 1.6 s + 350 ms breath +
-  // ~5 × 100 ms stagger + 1.4 s last-line fade ≈ 3.85 s) plus a
-  // small buffer so the user can't skip past dear before the
-  // cascade has finished settling.
+  // stage-2 animation.  Duration covers the 8 s mp4 plus the soft
+  // INVITATION cascade (title 1.2 s + 300 ms breath + 5 × 100 ms
+  // stagger + 0.9 s last-line fade ≈ 2.9 s) plus a small buffer so
+  // the user can't skip past dear before the cascade settles.
   useEffect(() => {
     if (phase !== "playing") return;
-    lockDearAnimation(12500);
+    lockDearAnimation(11500);
   }, [phase]);
 
   // --- Stage-1 loop video --------------------------------------------
@@ -492,7 +492,7 @@ export default function DearSection() {
             style={{
               letterSpacing: "0.04em",
               opacity: cascadeOn ? 1 : 0,
-              filter: cascadeOn ? "blur(0px)" : "blur(8px)",
+              filter: cascadeOn ? "blur(0px)" : "blur(12px)",
               transition: `opacity ${TITLE_FADE_MS}ms cubic-bezier(0.16, 1, 0.3, 1), filter ${TITLE_FADE_MS}ms cubic-bezier(0.16, 1, 0.3, 1)`,
               willChange: "opacity, filter",
             }}

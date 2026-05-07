@@ -132,7 +132,7 @@ export function LineFade({
             data-letter
             style={{
               opacity: trigger && ready ? 1 : 0,
-              filter: blur ? (trigger && ready ? "blur(0px)" : "blur(6px)") : undefined,
+              filter: blur ? (trigger && ready ? "blur(0px)" : "blur(12px)") : undefined,
               transition,
               willChange: blur ? "opacity, filter" : undefined,
             }}
