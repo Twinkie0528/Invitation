@@ -53,17 +53,17 @@ const NAME_LETTER_FADE_MS = 420;
 const ENVELOPE_AFTER_NAME_MS = 350;
 const CHEVRON_AFTER_ENVELOPE_MS = 600;
 
-// Stage-3 cascade timing — soft continuous blur curtain.  Each
-// line resolves from blur(12 px) → blur(0) over 900 ms paired with
-// opacity 0 → 1, so the start state reads as a soft cloud rather
-// than a slightly fuzzy letter.  Stagger 100 ms keeps the
-// neighbouring lines blending into one another (~9 lines mid-
-// resolve at any instant) so the cascade reads as a single soft
-// wave rolling down the screen.
-const TITLE_FADE_MS = 1200;
-const TITLE_TO_BODY_MS = 300;
-const BODY_LINE_STAGGER_MS = 100;
-const BODY_LINE_FADE_MS = 900;
+// Stage-3 cascade timing — JP-style stagger fade.  Each line glides
+// up 10 px while fading in opacity 0 → 1 over 1.0 s on a smooth
+// `ease` curve.  Per-line stagger 150 ms gives a clear top-to-
+// bottom cascade with enough overlap (~7 lines mid-resolve at
+// once) that the wave reads as one motion.  No blur — softer
+// because of the gentle translateY rise rather than a dust
+// dispersal.
+const TITLE_FADE_MS = 1000;
+const TITLE_TO_BODY_MS = 250;
+const BODY_LINE_STAGGER_MS = 200;
+const BODY_LINE_FADE_MS = 1000;
 
 const BODY_PARA_1 =
   "Unitel group invites you to an exclusive evening where you become part of the story.";
@@ -126,9 +126,9 @@ export default function DearSection() {
 
   // --- Scroll lock during animation + cascade ------------------------
   // Trigger a manual scroll lock the moment the user kicks off the
-  // stage-2 animation.  Duration covers the 8 s mp4 plus the soft
-  // INVITATION cascade (title 1.2 s + 300 ms breath + 5 × 100 ms
-  // stagger + 0.9 s last-line fade ≈ 2.9 s) plus a small buffer so
+  // stage-2 animation.  Duration covers the 8 s mp4 plus the JP-
+  // style stagger fade (title 1.0 s + 250 ms breath + 5 × 150 ms
+  // stagger + 1.0 s last-line fade ≈ 3.0 s) plus a small buffer so
   // the user can't skip past dear before the cascade settles.
   useEffect(() => {
     if (phase !== "playing") return;
@@ -492,9 +492,9 @@ export default function DearSection() {
             style={{
               letterSpacing: "0.04em",
               opacity: cascadeOn ? 1 : 0,
-              filter: cascadeOn ? "blur(0px)" : "blur(12px)",
-              transition: `opacity ${TITLE_FADE_MS}ms cubic-bezier(0.16, 1, 0.3, 1), filter ${TITLE_FADE_MS}ms cubic-bezier(0.16, 1, 0.3, 1)`,
-              willChange: "opacity, filter",
+              transform: cascadeOn ? "translateY(0)" : "translateY(10px)",
+              transition: `opacity ${TITLE_FADE_MS}ms ease, transform ${TITLE_FADE_MS}ms ease`,
+              willChange: "opacity, transform",
             }}
           >
             INVITATION
@@ -508,7 +508,7 @@ export default function DearSection() {
               lineStagger={BODY_LINE_STAGGER_MS}
               duration={BODY_LINE_FADE_MS}
               trigger={cascadeOn}
-              blur
+              slide
             />
           </p>
 
@@ -520,7 +520,7 @@ export default function DearSection() {
               lineStagger={BODY_LINE_STAGGER_MS}
               duration={BODY_LINE_FADE_MS}
               trigger={cascadeOn}
-              blur
+              slide
             />
           </p>
 
@@ -532,7 +532,7 @@ export default function DearSection() {
               lineStagger={BODY_LINE_STAGGER_MS}
               duration={BODY_LINE_FADE_MS}
               trigger={cascadeOn}
-              blur
+              slide
             />
           </p>
         </div>

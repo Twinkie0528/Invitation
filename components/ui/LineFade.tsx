@@ -30,6 +30,16 @@ type Props = {
    *  the top-to-bottom wave shape — every letter on a given visual
    *  line transitions together. */
   blur?: boolean;
+  /** When true, each letter additionally transitions
+   *  `transform: translateY(10px) → translateY(0)` paired with the
+   *  opacity fade, on the same per-line delay.  Each line glides up
+   *  into place as it fades in — a softer, JP-style "stagger fade"
+   *  cascade.  Letter spans switch to `display: inline-block` +
+   *  `white-space: pre` so transforms apply (transforms on default
+   *  inline elements are unsupported per spec); the spaces between
+   *  words still create wrap opportunities at their natural
+   *  positions. */
+  slide?: boolean;
 };
 
 // LINE-BY-LINE fade.  Reuses the line-measurement strategy from the
@@ -55,6 +65,7 @@ export function LineFade({
   duration = 4000,
   trigger,
   blur = false,
+  slide = false,
 }: Props) {
   const ref = useRef<HTMLSpanElement>(null);
   const [lineIndices, setLineIndices] = useState<number[]>([]);
@@ -121,20 +132,43 @@ export function LineFade({
       {chars.map((char, i) => {
         const lineIdx = (lineIndices[i] ?? 0) + lineOffset;
         const lineDelay = delay + lineIdx * lineStagger;
-        const transition = ready
-          ? blur
-            ? `opacity ${duration}ms cubic-bezier(0.16, 1, 0.3, 1) ${lineDelay}ms, filter ${duration}ms cubic-bezier(0.16, 1, 0.3, 1) ${lineDelay}ms`
-            : `opacity ${duration}ms cubic-bezier(0.16, 1, 0.3, 1) ${lineDelay}ms`
-          : "none";
+        const easing = slide
+          ? "ease"
+          : "cubic-bezier(0.16, 1, 0.3, 1)";
+        const transitionParts: string[] = [
+          `opacity ${duration}ms ${easing} ${lineDelay}ms`,
+        ];
+        if (blur) {
+          transitionParts.push(
+            `filter ${duration}ms ${easing} ${lineDelay}ms`,
+          );
+        }
+        if (slide) {
+          transitionParts.push(
+            `transform ${duration}ms ${easing} ${lineDelay}ms`,
+          );
+        }
+        const transition = ready ? transitionParts.join(", ") : "none";
+        const willChangeParts = ["opacity"];
+        if (blur) willChangeParts.push("filter");
+        if (slide) willChangeParts.push("transform");
         return (
           <span
             key={i}
             data-letter
             style={{
+              display: slide ? "inline-block" : undefined,
+              whiteSpace: slide ? "pre" : undefined,
               opacity: trigger && ready ? 1 : 0,
               filter: blur ? (trigger && ready ? "blur(0px)" : "blur(12px)") : undefined,
+              transform: slide
+                ? trigger && ready
+                  ? "translateY(0)"
+                  : "translateY(10px)"
+                : undefined,
               transition,
-              willChange: blur ? "opacity, filter" : undefined,
+              willChange:
+                blur || slide ? willChangeParts.join(", ") : undefined,
             }}
           >
             {char}

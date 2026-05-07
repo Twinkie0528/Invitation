@@ -88,16 +88,14 @@ export default function CeoLetterSection() {
   // the closing flourish feels detached from the letter and
   // arrives as a separate event 1.5–2 s after the body looks
   // visually "done".
-  // Soft continuous blur curtain — each line resolves from
-  // blur(12 px) → blur(0) over 900 ms paired with opacity 0 → 1,
-  // so the start state reads as a soft cloud rather than a fuzzy
-  // letter.  Stagger 100 ms keeps neighbouring lines blending into
-  // one another (~9 lines mid-resolve at any instant) so the
-  // cascade reads as a single soft wave rolling down the screen.
-  // Mirrors Dear's Invitation cascade values for a shared reveal
-  // vocabulary.
-  const LINE_STAGGER_MS = 100;
-  const LINE_FADE_DURATION_MS = 900;
+  // JP-style stagger fade — each line glides up 10 px while
+  // fading in opacity 0 → 1 over 1.0 s on a smooth `ease` curve.
+  // Per-line stagger 150 ms gives a clear top-to-bottom cascade
+  // with enough overlap (~7 lines mid-resolve at once) that the
+  // wave reads as one motion.  Mirrors Dear's Invitation cascade
+  // values for a shared reveal vocabulary.
+  const LINE_STAGGER_MS = 150;
+  const LINE_FADE_DURATION_MS = 1500;
   // Buffer between the body's final line settling and the signature
   // row beginning its fade-in.  Per user feedback the signature must
   // appear AFTER the body has fully resolved, not partway through.
@@ -282,7 +280,7 @@ export default function CeoLetterSection() {
               lineStagger={LINE_STAGGER_MS}
               duration={LINE_FADE_DURATION_MS}
               trigger={entered}
-              blur
+              slide
             />
           </p>
           <p className="mt-6 text-[16px] font-normal leading-[1.4] text-white sm:mt-7 sm:text-[24px] sm:font-light sm:leading-[1.55] sm:text-white/90">
@@ -293,7 +291,7 @@ export default function CeoLetterSection() {
               lineStagger={LINE_STAGGER_MS}
               duration={LINE_FADE_DURATION_MS}
               trigger={entered}
-              blur
+              slide
             />
           </p>
           <p className="mt-6 text-[16px] font-normal leading-[1.4] text-white sm:mt-7 sm:text-[24px] sm:font-light sm:leading-[1.55] sm:text-white/90">
@@ -304,7 +302,7 @@ export default function CeoLetterSection() {
               lineStagger={LINE_STAGGER_MS}
               duration={LINE_FADE_DURATION_MS}
               trigger={entered}
-              blur
+              slide
             />
           </p>
           <p className="mt-6 text-[16px] font-normal leading-[1.4] text-white sm:mt-7 sm:text-[24px] sm:font-light sm:leading-[1.55] sm:text-white/90">
@@ -315,7 +313,7 @@ export default function CeoLetterSection() {
               lineStagger={LINE_STAGGER_MS}
               duration={LINE_FADE_DURATION_MS}
               trigger={entered}
-              blur
+              slide
             />
           </p>
         </div>
