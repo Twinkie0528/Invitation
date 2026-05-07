@@ -98,8 +98,9 @@ export default function CeoLetterSection() {
   const LINE_FADE_DURATION_MS = 2000;
   // Buffer between the body's final line settling and the signature
   // row beginning its fade-in.  Per user feedback the signature must
-  // appear AFTER the body has fully resolved, not partway through.
-  const SIGNATURE_SETTLE_MS = 400;
+  // appear AFTER the body has fully resolved, with ~1 s of dead-air
+  // between the letter visually completing and the closing flourish.
+  const SIGNATURE_SETTLE_MS = 1000;
   const linesP2 = estimateLineCount(CEO_PARA_2);
   const linesP3 = estimateLineCount(CEO_PARA_3);
   const linesP4 = estimateLineCount(CEO_PARA_4);
@@ -341,7 +342,7 @@ export default function CeoLetterSection() {
           // settle so the eye has time to register the rise.
           transform: entered ? "translateY(0) scale(1)" : "translateY(28px) scale(0.93)",
           filter: entered ? "blur(0px)" : "blur(5px)",
-          transition: `opacity 1700ms cubic-bezier(0.22, 1, 0.36, 1) ${d_signature}ms, transform 1900ms cubic-bezier(0.22, 1, 0.36, 1) ${d_signature}ms, filter 1700ms cubic-bezier(0.22, 1, 0.36, 1) ${d_signature}ms`,
+          transition: `opacity 1000ms cubic-bezier(0.22, 1, 0.36, 1) ${d_signature}ms, transform 1200ms cubic-bezier(0.22, 1, 0.36, 1) ${d_signature}ms, filter 1000ms cubic-bezier(0.22, 1, 0.36, 1) ${d_signature}ms`,
         }}
       >
         {/* Name + title block — Figma `Mobile Version` (canvas 440×956)

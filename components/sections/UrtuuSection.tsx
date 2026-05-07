@@ -93,7 +93,7 @@ export default function UrtuuSection() {
   // tight stagger + slow per-line fade with the slide-and-fade
   // <LineFade slide /> mode.
   const LINE_STAGGER_MS = 50;
-  const LINE_FADE_DURATION_MS = 1500;
+  const LINE_FADE_DURATION_MS = 2000;
   const linesP1 = estimateLineCount(BODY_PARA_1);
   const d_para1 = d_para_group;
   const d_para2 = d_para_group;

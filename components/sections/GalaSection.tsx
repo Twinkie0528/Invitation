@@ -78,7 +78,7 @@ export default function GalaSection() {
   // tight stagger + slow per-line fade with the slide-and-fade
   // <LineFade slide /> mode.
   const LINE_STAGGER_MS = 50;
-  const LINE_FADE_DURATION_MS = 1500;
+  const LINE_FADE_DURATION_MS = 2000;
   const linesP1 = estimateLineCount(GALA_PARA_1);
   const linesP2 = estimateLineCount(GALA_PARA_2);
   const linesP3 = estimateLineCount(GALA_PARA_3);
