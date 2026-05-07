@@ -53,18 +53,19 @@ const NAME_LETTER_FADE_MS = 420;
 const ENVELOPE_AFTER_NAME_MS = 350;
 const CHEVRON_AFTER_ENVELOPE_MS = 600;
 
-// Stage-3 cascade timing — title settles, then body flows
-// top-to-bottom in a slow, tranquil blur-into-focus wave.  Per-line
-// `filter: blur(6px) → blur(0)` (via <LineFade blur />) paired with
-// the opacity fade so each visual line resolves as cosmic dust
-// gathering, not a discrete beat.  Update3 follow-up: cadence
-// stretched (stagger 120 → 200, fade 2000 → 3000) so the wave
-// reads as deliberately calm rather than pacy.  Scroll lock
-// bumped to 14.5 s to cover the new settle window.
+// Stage-3 cascade timing — strict line-by-line reveal.  Per user
+// feedback the previous overlap (stagger 200 ms vs fade 3000 ms)
+// kicked the next line off long before the previous one had
+// finished resolving, so the cascade read as a wash rather than
+// distinct lines.  Now `BODY_LINE_STAGGER_MS >
+// BODY_LINE_FADE_MS` so each line completes (1.0 s) before the
+// next begins (after a 100 ms breath).  Each line still uses the
+// blur-into-focus reveal via <LineFade blur />.  Scroll lock
+// bumped to 17 s to cover the longer cumulative settle.
 const TITLE_FADE_MS = 1600;
 const TITLE_TO_BODY_MS = 350;
-const BODY_LINE_STAGGER_MS = 200;
-const BODY_LINE_FADE_MS = 3000;
+const BODY_LINE_STAGGER_MS = 1100;
+const BODY_LINE_FADE_MS = 1000;
 
 const BODY_PARA_1 =
   "Unitel group invites you to an exclusive evening where you become part of the story.";
@@ -127,13 +128,14 @@ export default function DearSection() {
 
   // --- Scroll lock during animation + cascade ------------------------
   // Trigger a manual scroll lock the moment the user kicks off the
-  // stage-2 animation.  Duration covers the 8 s mp4 plus the slowed
-  // INVITATION cascade (title 1.6 s + 350 ms breath + ~6 lines × 200 ms
-  // stagger + 3 s per-line fade ≈ 6.2 s) plus a small buffer so the
-  // user can't skip past dear before the cascade has finished settling.
+  // stage-2 animation.  Duration covers the 8 s mp4 plus the
+  // line-by-line INVITATION cascade (title 1.6 s + 350 ms breath +
+  // ~6 lines × 1.1 s stagger + 1 s last-line fade ≈ 8.5 s) plus a
+  // small buffer so the user can't skip past dear before the
+  // cascade has finished settling.
   useEffect(() => {
     if (phase !== "playing") return;
-    lockDearAnimation(14500);
+    lockDearAnimation(17000);
   }, [phase]);
 
   // --- Stage-1 loop video --------------------------------------------

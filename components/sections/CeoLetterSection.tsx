@@ -88,17 +88,18 @@ export default function CeoLetterSection() {
   // the closing flourish feels detached from the letter and
   // arrives as a separate event 1.5–2 s after the body looks
   // visually "done".
-  // Update3 cadence — match the Urtuu header chain's elegant clock
-  // (eyebrow 1.8 s + title 1.6 s).  Each body line fades in slowly
-  // with the <LineFade blur /> mode so each line resolves from
-  // cosmic dust rather than a clean opacity stagger.  Update3
-  // follow-up bumped both values 25 % so the body breathes more
-  // (stagger 220 → 275, fade 1800 → 2250) per user feedback that
-  // the previous reveal still felt slightly hurried.
-  const LINE_STAGGER_MS = 275;
-  const LINE_FADE_DURATION_MS = 2250;
+  // Strict line-by-line reveal — `LINE_STAGGER_MS > LINE_FADE_DURATION_MS`
+  // so each line completes (1.0 s) before the next begins (after a
+  // 100 ms breath).  Per user feedback the previous overlap
+  // (stagger 275 ms vs fade 2250 ms) launched the next line long
+  // before the previous one had resolved on long paragraphs.  Each
+  // line still uses the blur-into-focus reveal via <LineFade blur />.
+  const LINE_STAGGER_MS = 1100;
+  const LINE_FADE_DURATION_MS = 1000;
+  // Buffer between the body's final line settling and the signature
+  // row beginning its fade-in.  Per user feedback the signature must
+  // appear AFTER the body has fully resolved, not partway through.
   const SIGNATURE_SETTLE_MS = 400;
-  const SIGNATURE_SPEEDUP_FACTOR = 0.5;
   const linesP2 = estimateLineCount(CEO_PARA_2);
   const linesP3 = estimateLineCount(CEO_PARA_3);
   const linesP4 = estimateLineCount(CEO_PARA_4);
@@ -127,14 +128,16 @@ export default function CeoLetterSection() {
   const offset_p3 = linesP2;
   const offset_p4 = linesP2 + linesP3;
   const offset_p5 = linesP2 + linesP3 + linesP4;
+  // Signature lands AFTER the last body line has fully settled,
+  // plus a SETTLE buffer.  Previous formulation (×0.5 speedup
+  // factor) fired the flourish partway into the last line's fade —
+  // user feedback says the closing mark should arrive only once the
+  // letter is visually complete.
   const d_signature =
     d_para_group +
-    Math.round(
-      ((totalBodyLines - 1) * LINE_STAGGER_MS +
-        LINE_FADE_DURATION_MS +
-        SIGNATURE_SETTLE_MS) *
-        SIGNATURE_SPEEDUP_FACTOR,
-    );
+    (totalBodyLines - 1) * LINE_STAGGER_MS +
+    LINE_FADE_DURATION_MS +
+    SIGNATURE_SETTLE_MS;
 
   return (
     <section
