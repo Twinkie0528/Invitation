@@ -131,6 +131,15 @@ export function LineFade({
     const lineIdx = (lineIndices[i] ?? 0) + lineOffset;
     const lineDelay = delay + lineIdx * lineStagger;
     const easing = slide ? "ease" : "cubic-bezier(0.16, 1, 0.3, 1)";
+    // Spaces stay default `display: inline` even in slide mode so
+    // they participate as natural wrap opportunities in the parent
+    // flow (an `inline-block` space behaves as an atomic box that
+    // packs tight against its neighbours, so the browser ends up
+    // hunting for break opportunities mid-word instead).  Spaces
+    // are invisible anyway — skipping `transform` on them costs
+    // nothing visually.
+    const isSpace = char === " ";
+    const useSlideStyles = slide && !isSpace;
     const transitionParts: string[] = [
       `opacity ${duration}ms ${easing} ${lineDelay}ms`,
     ];
@@ -139,7 +148,7 @@ export function LineFade({
         `filter ${duration}ms ${easing} ${lineDelay}ms`,
       );
     }
-    if (slide) {
+    if (useSlideStyles) {
       transitionParts.push(
         `transform ${duration}ms ${easing} ${lineDelay}ms`,
       );
@@ -147,24 +156,24 @@ export function LineFade({
     const transition = ready ? transitionParts.join(", ") : "none";
     const willChangeParts = ["opacity"];
     if (blur) willChangeParts.push("filter");
-    if (slide) willChangeParts.push("transform");
+    if (useSlideStyles) willChangeParts.push("transform");
     return (
       <span
         key={i}
         data-letter
         style={{
-          display: slide ? "inline-block" : undefined,
-          whiteSpace: slide ? "pre" : undefined,
+          display: useSlideStyles ? "inline-block" : undefined,
+          whiteSpace: useSlideStyles ? "pre" : undefined,
           opacity: trigger && ready ? 1 : 0,
           filter: blur ? (trigger && ready ? "blur(0px)" : "blur(12px)") : undefined,
-          transform: slide
+          transform: useSlideStyles
             ? trigger && ready
               ? "translateY(0)"
               : "translateY(10px)"
             : undefined,
           transition,
           willChange:
-            blur || slide ? willChangeParts.join(", ") : undefined,
+            blur || useSlideStyles ? willChangeParts.join(", ") : undefined,
         }}
       >
         {char}
