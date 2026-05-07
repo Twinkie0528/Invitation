@@ -97,10 +97,10 @@ export default function CeoLetterSection() {
   const LINE_STAGGER_MS = 50;
   const LINE_FADE_DURATION_MS = 2000;
   // Buffer between the body's final line settling and the signature
-  // row beginning its fade-in.  Short — the user wants the WAIT
-  // (delay) snappy while keeping the signature's own fade-in
-  // animation slow and elegant.
-  const SIGNATURE_SETTLE_MS = 300;
+  // row beginning its fade-in.  Snappy — the body's last line
+  // visually finishes and the slow elegant signature fade kicks
+  // off almost immediately afterwards.
+  const SIGNATURE_SETTLE_MS = 150;
   const linesP2 = estimateLineCount(CEO_PARA_2);
   const linesP3 = estimateLineCount(CEO_PARA_3);
   const linesP4 = estimateLineCount(CEO_PARA_4);
