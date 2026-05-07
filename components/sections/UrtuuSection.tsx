@@ -88,6 +88,12 @@ export default function UrtuuSection() {
   // the instant paragraph 1's last line ends.  No breath, no
   // per-paragraph delay — the body reads as ONE long top-to-bottom
   // glow that doesn't notice the paragraph boundary.
+  // Cadence values mirror CEO's body so the three letter-cascade
+  // sections (CEO, Urtuu, Gala) share one reveal vocabulary —
+  // tight stagger + slow per-line fade with the slide-and-fade
+  // <LineFade slide /> mode.
+  const LINE_STAGGER_MS = 50;
+  const LINE_FADE_DURATION_MS = 1500;
   const linesP1 = estimateLineCount(BODY_PARA_1);
   const d_para1 = d_para_group;
   const d_para2 = d_para_group;
@@ -400,7 +406,10 @@ export default function UrtuuSection() {
                 text={BODY_PARA_1}
                 delay={d_para1}
                 lineOffset={offset_p1}
+                lineStagger={LINE_STAGGER_MS}
+                duration={LINE_FADE_DURATION_MS}
                 trigger={entered}
+                slide
               />
             </p>
             <p className="font-sans text-[16px] font-light leading-[1.4] text-white sm:text-[22px] sm:leading-[1.7]">
@@ -408,7 +417,10 @@ export default function UrtuuSection() {
                 text={BODY_PARA_2}
                 delay={d_para2}
                 lineOffset={offset_p2}
+                lineStagger={LINE_STAGGER_MS}
+                duration={LINE_FADE_DURATION_MS}
                 trigger={entered}
+                slide
               />
             </p>
           </div>

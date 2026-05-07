@@ -73,6 +73,12 @@ export default function GalaSection() {
   // line count of earlier paragraphs, so the four body paragraphs
   // read as one uninterrupted top-to-bottom wave (paragraph N+1
   // line 0 fires the instant paragraph N's last line ends).
+  // Cadence values mirror CEO's body so the three letter-cascade
+  // sections (CEO, Urtuu, Gala) share one reveal vocabulary —
+  // tight stagger + slow per-line fade with the slide-and-fade
+  // <LineFade slide /> mode.
+  const LINE_STAGGER_MS = 50;
+  const LINE_FADE_DURATION_MS = 1500;
   const linesP1 = estimateLineCount(GALA_PARA_1);
   const linesP2 = estimateLineCount(GALA_PARA_2);
   const linesP3 = estimateLineCount(GALA_PARA_3);
@@ -233,7 +239,10 @@ export default function GalaSection() {
                 text={GALA_PARA_1}
                 delay={d_para1}
                 lineOffset={offset_p1}
+                lineStagger={LINE_STAGGER_MS}
+                duration={LINE_FADE_DURATION_MS}
                 trigger={entered}
+                slide
               />
             </p>
             <p className="font-sans text-[16px] font-light leading-[1.4] text-white sm:text-[24px] sm:font-light sm:leading-[1.55] sm:text-white/90">
@@ -241,7 +250,10 @@ export default function GalaSection() {
                 text={GALA_PARA_2}
                 delay={d_para2}
                 lineOffset={offset_p2}
+                lineStagger={LINE_STAGGER_MS}
+                duration={LINE_FADE_DURATION_MS}
                 trigger={entered}
+                slide
               />
             </p>
             <p className="font-sans text-[16px] font-light leading-[1.4] text-white sm:text-[24px] sm:font-light sm:leading-[1.55] sm:text-white/90">
@@ -249,7 +261,10 @@ export default function GalaSection() {
                 text={GALA_PARA_3}
                 delay={d_para3}
                 lineOffset={offset_p3}
+                lineStagger={LINE_STAGGER_MS}
+                duration={LINE_FADE_DURATION_MS}
                 trigger={entered}
+                slide
               />
             </p>
             <p className="font-sans text-[16px] font-light leading-[1.4] text-white sm:text-[24px] sm:font-light sm:leading-[1.55] sm:text-white/90">
@@ -257,7 +272,10 @@ export default function GalaSection() {
                 text={GALA_PARA_4}
                 delay={d_para4}
                 lineOffset={offset_p4}
+                lineStagger={LINE_STAGGER_MS}
+                duration={LINE_FADE_DURATION_MS}
                 trigger={entered}
+                slide
               />
             </p>
           </div>
