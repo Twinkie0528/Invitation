@@ -53,17 +53,15 @@ const NAME_LETTER_FADE_MS = 420;
 const ENVELOPE_AFTER_NAME_MS = 350;
 const CHEVRON_AFTER_ENVELOPE_MS = 600;
 
-// Stage-3 cascade timing — JP-style stagger fade.  Each line glides
-// up 10 px while fading in opacity 0 → 1 over 1.0 s on a smooth
-// `ease` curve.  Per-line stagger 150 ms gives a clear top-to-
-// bottom cascade with enough overlap (~7 lines mid-resolve at
-// once) that the wave reads as one motion.  No blur — softer
-// because of the gentle translateY rise rather than a dust
-// dispersal.
-const TITLE_FADE_MS = 1000;
+// Stage-3 cascade timing — JP-style stagger fade, smoothed.
+// Per-line fade trimmed slightly (1.6 → 1.2 s, title 1.2 → 0.9 s)
+// for a snappier reveal — same easing, same translateY, just less
+// per-element settle time.  Stagger 120 ms keeps the heavy overlap
+// so the cascade still reads as a continuous silky wave.
+const TITLE_FADE_MS = 400;
 const TITLE_TO_BODY_MS = 250;
-const BODY_LINE_STAGGER_MS = 200;
-const BODY_LINE_FADE_MS = 1000;
+const BODY_LINE_STAGGER_MS = 50;
+const BODY_LINE_FADE_MS = 2000;
 
 const BODY_PARA_1 =
   "Unitel group invites you to an exclusive evening where you become part of the story.";
@@ -126,10 +124,10 @@ export default function DearSection() {
 
   // --- Scroll lock during animation + cascade ------------------------
   // Trigger a manual scroll lock the moment the user kicks off the
-  // stage-2 animation.  Duration covers the 8 s mp4 plus the JP-
-  // style stagger fade (title 1.0 s + 250 ms breath + 5 × 150 ms
-  // stagger + 1.0 s last-line fade ≈ 3.0 s) plus a small buffer so
-  // the user can't skip past dear before the cascade settles.
+  // stage-2 animation.  Duration covers the 8 s mp4 plus the
+  // snappier cascade (title 0.9 s + 250 ms breath + 5 × 120 ms
+  // stagger + 1.2 s last-line fade ≈ 2.95 s) plus a small buffer
+  // so the user can't skip past dear before the cascade settles.
   useEffect(() => {
     if (phase !== "playing") return;
     lockDearAnimation(11500);
@@ -241,7 +239,7 @@ export default function DearSection() {
   const [cascadeOn, setCascadeOn] = useState(false);
   useEffect(() => {
     if (phase !== "ended") return;
-    const t = window.setTimeout(() => setCascadeOn(true), 30);
+    const t = window.setTimeout(() => setCascadeOn(true), 15);
     return () => window.clearTimeout(t);
   }, [phase]);
 
@@ -500,7 +498,7 @@ export default function DearSection() {
             INVITATION
           </h2>
 
-          <p className="mt-3 max-w-[64vw] font-sans text-[12px] font-normal leading-[1.55] text-white/80 md:max-w-[22vw] md:text-[0.85vw]">
+          <p className="mt-3 max-w-[50vw] font-sans text-[12px] font-normal leading-[1.55] text-white/80 md:max-w-[16vw] md:text-[0.85vw]">
             <LineFade
               text={BODY_PARA_1}
               delay={bodyDelay}
@@ -512,7 +510,7 @@ export default function DearSection() {
             />
           </p>
 
-          <p className="mt-4 max-w-[64vw] font-sans text-[12px] font-normal leading-[1.55] text-white/80 md:max-w-[22vw] md:text-[0.85vw]">
+          <p className="mt-4 max-w-[50vw] font-sans text-[12px] font-normal leading-[1.55] text-white/80 md:max-w-[16vw] md:text-[0.85vw]">
             <LineFade
               text={BODY_PARA_2}
               delay={bodyDelay}
@@ -524,7 +522,7 @@ export default function DearSection() {
             />
           </p>
 
-          <p className="mt-4 max-w-[64vw] font-sans text-[12px] font-normal leading-[1.55] text-white/80 md:max-w-[22vw] md:text-[0.85vw]">
+          <p className="mt-4 max-w-[50vw] font-sans text-[12px] font-normal leading-[1.55] text-white/80 md:max-w-[16vw] md:text-[0.85vw]">
             <LineFade
               text={BODY_PARA_3}
               delay={bodyDelay}

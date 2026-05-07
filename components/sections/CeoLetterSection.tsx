@@ -94,8 +94,8 @@ export default function CeoLetterSection() {
   // with enough overlap (~7 lines mid-resolve at once) that the
   // wave reads as one motion.  Mirrors Dear's Invitation cascade
   // values for a shared reveal vocabulary.
-  const LINE_STAGGER_MS = 150;
-  const LINE_FADE_DURATION_MS = 1500;
+  const LINE_STAGGER_MS = 50;
+  const LINE_FADE_DURATION_MS = 2000;
   // Buffer between the body's final line settling and the signature
   // row beginning its fade-in.  Per user feedback the signature must
   // appear AFTER the body has fully resolved, not partway through.
@@ -341,7 +341,7 @@ export default function CeoLetterSection() {
           // settle so the eye has time to register the rise.
           transform: entered ? "translateY(0) scale(1)" : "translateY(28px) scale(0.93)",
           filter: entered ? "blur(0px)" : "blur(5px)",
-          transition: `opacity 2200ms cubic-bezier(0.22, 1, 0.36, 1) ${d_signature}ms, transform 2400ms cubic-bezier(0.22, 1, 0.36, 1) ${d_signature}ms, filter 2200ms cubic-bezier(0.22, 1, 0.36, 1) ${d_signature}ms`,
+          transition: `opacity 1700ms cubic-bezier(0.22, 1, 0.36, 1) ${d_signature}ms, transform 1900ms cubic-bezier(0.22, 1, 0.36, 1) ${d_signature}ms, filter 1700ms cubic-bezier(0.22, 1, 0.36, 1) ${d_signature}ms`,
         }}
       >
         {/* Name + title block — Figma `Mobile Version` (canvas 440×956)

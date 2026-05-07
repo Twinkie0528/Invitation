@@ -61,7 +61,7 @@ export function LineFade({
   text,
   delay = 0,
   lineOffset = 0,
-  lineStagger = 100,
+  lineStagger = 500,
   duration = 4000,
   trigger,
   blur = false,
@@ -127,51 +127,96 @@ export function LineFade({
   const chars = Array.from(text);
   const ready = lineIndices.length === chars.length;
 
+  const renderLetter = (char: string, i: number) => {
+    const lineIdx = (lineIndices[i] ?? 0) + lineOffset;
+    const lineDelay = delay + lineIdx * lineStagger;
+    const easing = slide ? "ease" : "cubic-bezier(0.16, 1, 0.3, 1)";
+    const transitionParts: string[] = [
+      `opacity ${duration}ms ${easing} ${lineDelay}ms`,
+    ];
+    if (blur) {
+      transitionParts.push(
+        `filter ${duration}ms ${easing} ${lineDelay}ms`,
+      );
+    }
+    if (slide) {
+      transitionParts.push(
+        `transform ${duration}ms ${easing} ${lineDelay}ms`,
+      );
+    }
+    const transition = ready ? transitionParts.join(", ") : "none";
+    const willChangeParts = ["opacity"];
+    if (blur) willChangeParts.push("filter");
+    if (slide) willChangeParts.push("transform");
+    return (
+      <span
+        key={i}
+        data-letter
+        style={{
+          display: slide ? "inline-block" : undefined,
+          whiteSpace: slide ? "pre" : undefined,
+          opacity: trigger && ready ? 1 : 0,
+          filter: blur ? (trigger && ready ? "blur(0px)" : "blur(12px)") : undefined,
+          transform: slide
+            ? trigger && ready
+              ? "translateY(0)"
+              : "translateY(10px)"
+            : undefined,
+          transition,
+          willChange:
+            blur || slide ? willChangeParts.join(", ") : undefined,
+        }}
+      >
+        {char}
+      </span>
+    );
+  };
+
+  // When `slide` is on, every letter is `display: inline-block` so
+  // transforms apply.  Inline-blocks create wrap opportunities
+  // between every adjacent letter, so a long body line collapses to
+  // mid-word breaks once the column gets narrow ("exclusiv | e",
+  // "th | e").  Group consecutive non-space letters into a per-word
+  // inline-block container so the word wraps as a unit; spaces stay
+  // as standalone data-letter spans between containers, preserving
+  // the natural soft-wrap opportunity at every space.  When `slide`
+  // is off, letters stay default-inline and word wrapping works
+  // without any grouping.
+  if (!slide) {
+    return <span ref={ref}>{chars.map(renderLetter)}</span>;
+  }
+
+  type Token =
+    | { kind: "word"; entries: { char: string; idx: number }[] }
+    | { kind: "space"; char: string; idx: number };
+  const tokens: Token[] = [];
+  let currentWord: { char: string; idx: number }[] = [];
+  chars.forEach((char, idx) => {
+    if (char === " ") {
+      if (currentWord.length > 0) {
+        tokens.push({ kind: "word", entries: currentWord });
+        currentWord = [];
+      }
+      tokens.push({ kind: "space", char, idx });
+    } else {
+      currentWord.push({ char, idx });
+    }
+  });
+  if (currentWord.length > 0) {
+    tokens.push({ kind: "word", entries: currentWord });
+  }
+
   return (
     <span ref={ref}>
-      {chars.map((char, i) => {
-        const lineIdx = (lineIndices[i] ?? 0) + lineOffset;
-        const lineDelay = delay + lineIdx * lineStagger;
-        const easing = slide
-          ? "ease"
-          : "cubic-bezier(0.16, 1, 0.3, 1)";
-        const transitionParts: string[] = [
-          `opacity ${duration}ms ${easing} ${lineDelay}ms`,
-        ];
-        if (blur) {
-          transitionParts.push(
-            `filter ${duration}ms ${easing} ${lineDelay}ms`,
-          );
+      {tokens.map((token, ti) => {
+        if (token.kind === "space") {
+          return renderLetter(token.char, token.idx);
         }
-        if (slide) {
-          transitionParts.push(
-            `transform ${duration}ms ${easing} ${lineDelay}ms`,
-          );
-        }
-        const transition = ready ? transitionParts.join(", ") : "none";
-        const willChangeParts = ["opacity"];
-        if (blur) willChangeParts.push("filter");
-        if (slide) willChangeParts.push("transform");
         return (
-          <span
-            key={i}
-            data-letter
-            style={{
-              display: slide ? "inline-block" : undefined,
-              whiteSpace: slide ? "pre" : undefined,
-              opacity: trigger && ready ? 1 : 0,
-              filter: blur ? (trigger && ready ? "blur(0px)" : "blur(12px)") : undefined,
-              transform: slide
-                ? trigger && ready
-                  ? "translateY(0)"
-                  : "translateY(10px)"
-                : undefined,
-              transition,
-              willChange:
-                blur || slide ? willChangeParts.join(", ") : undefined,
-            }}
-          >
-            {char}
+          <span key={`w${ti}`} style={{ display: "inline-block" }}>
+            {token.entries.map((entry) =>
+              renderLetter(entry.char, entry.idx),
+            )}
           </span>
         );
       })}
