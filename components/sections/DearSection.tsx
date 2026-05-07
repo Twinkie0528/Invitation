@@ -475,12 +475,14 @@ export default function DearSection() {
         {/* Stage-3 centre — INVITATION + body cascade.  Constrained
             column (max-w-[48vw] mobile) so the text stays inside the
             envelope's green letter area instead of spilling onto the
-            dark outer envelope frame.  Cascade parked at 22vh so the
-            INVITATION title lands near the upper edge of the letter
-            opening. */}
+            dark outer envelope frame.  Cascade nudged down a touch
+            (21 -> 25 vh mobile, 17 -> 21 vh desktop) per user
+            feedback so the block sits more comfortably inside the
+            envelope's letter area instead of crowding the upper
+            edge. */}
         <div
           aria-hidden={phase !== "ended"}
-          className="absolute inset-x-0 top-[21vh] flex flex-col items-center px-6 text-center md:top-[17vh]"
+          className="absolute inset-x-0 top-[25vh] flex flex-col items-center px-6 text-center md:top-[21vh]"
           style={{
             opacity: phase === "ended" ? 1 : 0,
             transition: "opacity 1000ms ease-out",
