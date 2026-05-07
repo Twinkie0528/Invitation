@@ -53,16 +53,18 @@ const NAME_LETTER_FADE_MS = 420;
 const ENVELOPE_AFTER_NAME_MS = 350;
 const CHEVRON_AFTER_ENVELOPE_MS = 600;
 
-// Stage-3 cascade timing — title settles quickly, then body
-// flows top-to-bottom in a smooth elegant wave.  Each body line
-// still breathes ~2.2 s but the gap between title and the first
-// body line is short (200 ms), and the line-to-line stagger is
-// tightened so the cascade reads as one fluid motion rather than
-// independent beats.
-const TITLE_FADE_MS = 1200;
-const TITLE_TO_BODY_MS = 200;
-const BODY_LINE_STAGGER_MS = 220;
-const BODY_LINE_FADE_MS = 2200;
+// Stage-3 cascade timing — title settles, then body flows
+// top-to-bottom in a slow, tranquil blur-into-focus wave.  Per-line
+// `filter: blur(6px) → blur(0)` (via <LineFade blur />) paired with
+// the opacity fade so each visual line resolves as cosmic dust
+// gathering, not a discrete beat.  Update3 follow-up: cadence
+// stretched (stagger 120 → 200, fade 2000 → 3000) so the wave
+// reads as deliberately calm rather than pacy.  Scroll lock
+// bumped to 14.5 s to cover the new settle window.
+const TITLE_FADE_MS = 1600;
+const TITLE_TO_BODY_MS = 350;
+const BODY_LINE_STAGGER_MS = 200;
+const BODY_LINE_FADE_MS = 3000;
 
 const BODY_PARA_1 =
   "Unitel group invites you to an exclusive evening where you become part of the story.";
@@ -125,12 +127,13 @@ export default function DearSection() {
 
   // --- Scroll lock during animation + cascade ------------------------
   // Trigger a manual scroll lock the moment the user kicks off the
-  // stage-2 animation.  Duration covers the 8 s mp4 plus the ~4.7 s
-  // INVITATION cascade plus a small buffer so the user can't skip
-  // past dear before the cascade has finished settling.
+  // stage-2 animation.  Duration covers the 8 s mp4 plus the slowed
+  // INVITATION cascade (title 1.6 s + 350 ms breath + ~6 lines × 200 ms
+  // stagger + 3 s per-line fade ≈ 6.2 s) plus a small buffer so the
+  // user can't skip past dear before the cascade has finished settling.
   useEffect(() => {
     if (phase !== "playing") return;
-    lockDearAnimation(13500);
+    lockDearAnimation(14500);
   }, [phase]);
 
   // --- Stage-1 loop video --------------------------------------------
@@ -274,56 +277,9 @@ export default function DearSection() {
       data-reveal
       className="pointer-events-none fixed inset-0 z-20 overflow-hidden bg-black"
     >
-      {/* ---------- Shader (BEHIND the envelope) ----------
-          Full-screen atmospheric plate rendered in DOM-first
-          position with no z-index so it sits BEHIND the envelope
-          videos.  Radial mask centred on the envelope so the
-          shader concentrates its tone behind the letter area —
-          providing depth/anchor for the envelope without ever
-          painting over it (the envelope's opaque mp4 covers the
-          shader's centre).  Visible bleed happens only in the
-          tiny margins beyond the envelope's bounding box, where
-          it gives the cosmic decoration a soft atmospheric base. */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0"
-        style={{
-          backgroundImage: "url(/media/common/shader.png)",
-          backgroundSize: "cover",
-          backgroundPosition: "center center",
-          maskImage:
-            "radial-gradient(ellipse 70% 55% at 50% 45%, black 0%, rgba(0,0,0,0.7) 60%, transparent 100%)",
-          WebkitMaskImage:
-            "radial-gradient(ellipse 70% 55% at 50% 45%, black 0%, rgba(0,0,0,0.7) 60%, transparent 100%)",
-          opacity: envelopeReady ? 1 : 0,
-          transition: "opacity 3000ms cubic-bezier(0.16, 1, 0.3, 1)",
-        }}
-      />
-
-      {/* ---------- Cosmic background (OVER envelope) ----------
-          Painted at z-[6] (above the envelope videos) but masked
-          with a TIGHT vertical gradient so the cosmic decoration
-          appears ONLY in the very top (~14 vh) and very bottom
-          (~14 vh) strips of the viewport — never over the
-          envelope itself.  No `mix-blend-mode` and no brightness
-          filter so the envelope reads as fully opaque (the
-          cosmic does not leak any luminance onto the envelope's
-          dark mp4 frame). */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 z-[6]"
-        style={{
-          backgroundImage: "url(/media/dear/background.png)",
-          backgroundSize: "cover",
-          backgroundPosition: "center center",
-          maskImage:
-            "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.65) 7%, transparent 14%, transparent 86%, rgba(0,0,0,0.65) 93%, rgba(0,0,0,1) 100%)",
-          WebkitMaskImage:
-            "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.65) 7%, transparent 14%, transparent 86%, rgba(0,0,0,0.65) 93%, rgba(0,0,0,1) 100%)",
-          opacity: envelopeReady ? 1 : 0,
-          transition: "opacity 3000ms cubic-bezier(0.16, 1, 0.3, 1)",
-        }}
-      />
+      {/* Background dressing (radial shader + cosmic plate) was
+          retired in update3 — the envelope mp4 + the section's
+          plain `bg-black` is now the entire visual floor. */}
 
       {/* ---------- Stage-1 envelope (loop video) ----------
           Inline render (no BackgroundVideoFrame wrapper) so the
@@ -436,9 +392,12 @@ export default function DearSection() {
       {/* ---------- Foreground content ---------- */}
       <div className="relative z-10 flex h-full w-full">
         {/* TOP — anniversary lockup.  Persists across all three
-            phases.  The id="hero-lockup" preserves the LoadingOverlay
-            FLIP target now that the Hero scene has been removed. */}
-        <div className="absolute inset-x-0 top-[7vh] flex justify-center sm:top-[8vh] md:top-[6vh]">
+            phases.  Shrunk ~40 % in update3 (h-8 → h-5, w-30vw →
+            w-18vw) per user feedback that the previous treatment
+            dominated the page.  The id="hero-lockup" stayed in
+            place for legacy compatibility — it's no longer a FLIP
+            target now that the splash fades out in place. */}
+        <div className="absolute inset-x-0 top-[5vh] flex justify-center sm:top-[6vh] md:top-[5vh]">
           <Image
             id="hero-lockup"
             src="/media/hero/unitel-20-lockup.svg"
@@ -446,7 +405,7 @@ export default function DearSection() {
             width={520}
             height={58}
             priority
-            className="h-8 w-auto sm:h-auto sm:w-[30vw]"
+            className="h-5 w-auto sm:h-auto sm:w-[18vw]"
             style={{
               opacity: introDone ? 1 : 0,
               transform: introDone ? "scale(1)" : "scale(0.92)",
@@ -528,17 +487,19 @@ export default function DearSection() {
           }}
         >
           <h2
-            className="font-lora text-[30px] font-normal text-white sm:text-[32px] md:text-[2.3vw]"
+            className="font-lora text-[22px] font-normal text-white sm:text-[24px] md:text-[1.7vw]"
             style={{
               letterSpacing: "0.04em",
               opacity: cascadeOn ? 1 : 0,
-              transition: `opacity ${TITLE_FADE_MS}ms cubic-bezier(0.16, 1, 0.3, 1)`,
+              filter: cascadeOn ? "blur(0px)" : "blur(8px)",
+              transition: `opacity ${TITLE_FADE_MS}ms cubic-bezier(0.16, 1, 0.3, 1), filter ${TITLE_FADE_MS}ms cubic-bezier(0.16, 1, 0.3, 1)`,
+              willChange: "opacity, filter",
             }}
           >
             INVITATION
           </h2>
 
-          <p className="mt-6 max-w-[64vw] font-sans text-[14px] font-normal leading-[1.55] text-white/80 md:max-w-[22vw] md:text-[1vw]">
+          <p className="mt-3 max-w-[64vw] font-sans text-[12px] font-normal leading-[1.55] text-white/80 md:max-w-[22vw] md:text-[0.85vw]">
             <LineFade
               text={BODY_PARA_1}
               delay={bodyDelay}
@@ -546,10 +507,11 @@ export default function DearSection() {
               lineStagger={BODY_LINE_STAGGER_MS}
               duration={BODY_LINE_FADE_MS}
               trigger={cascadeOn}
+              blur
             />
           </p>
 
-          <p className="mt-6 max-w-[64vw] font-sans text-[14px] font-normal leading-[1.55] text-white/80 md:max-w-[22vw] md:text-[1vw]">
+          <p className="mt-4 max-w-[64vw] font-sans text-[12px] font-normal leading-[1.55] text-white/80 md:max-w-[22vw] md:text-[0.85vw]">
             <LineFade
               text={BODY_PARA_2}
               delay={bodyDelay}
@@ -557,10 +519,11 @@ export default function DearSection() {
               lineStagger={BODY_LINE_STAGGER_MS}
               duration={BODY_LINE_FADE_MS}
               trigger={cascadeOn}
+              blur
             />
           </p>
 
-          <p className="mt-6 max-w-[64vw] font-sans text-[14px] font-normal leading-[1.55] text-white/80 md:max-w-[22vw] md:text-[1vw]">
+          <p className="mt-4 max-w-[64vw] font-sans text-[12px] font-normal leading-[1.55] text-white/80 md:max-w-[22vw] md:text-[0.85vw]">
             <LineFade
               text={BODY_PARA_3}
               delay={bodyDelay}
@@ -568,6 +531,7 @@ export default function DearSection() {
               lineStagger={BODY_LINE_STAGGER_MS}
               duration={BODY_LINE_FADE_MS}
               trigger={cascadeOn}
+              blur
             />
           </p>
         </div>

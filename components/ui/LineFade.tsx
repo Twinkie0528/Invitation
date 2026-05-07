@@ -23,6 +23,13 @@ type Props = {
   /** Toggle that arms the animation (typically the section's
    *  `entered` flag).  When false, every letter stays at opacity 0. */
   trigger: boolean;
+  /** When true, each letter additionally transitions
+   *  `filter: blur(6px) → blur(0)` on the same per-line delay so the
+   *  paragraph reads as cosmic dust gathering into focus rather than
+   *  a clean opacity stagger.  Per-line delay (not per-letter) keeps
+   *  the top-to-bottom wave shape — every letter on a given visual
+   *  line transitions together. */
+  blur?: boolean;
 };
 
 // LINE-BY-LINE fade.  Reuses the line-measurement strategy from the
@@ -47,6 +54,7 @@ export function LineFade({
   lineStagger = 100,
   duration = 4000,
   trigger,
+  blur = false,
 }: Props) {
   const ref = useRef<HTMLSpanElement>(null);
   const [lineIndices, setLineIndices] = useState<number[]>([]);
@@ -113,15 +121,20 @@ export function LineFade({
       {chars.map((char, i) => {
         const lineIdx = (lineIndices[i] ?? 0) + lineOffset;
         const lineDelay = delay + lineIdx * lineStagger;
+        const transition = ready
+          ? blur
+            ? `opacity ${duration}ms cubic-bezier(0.16, 1, 0.3, 1) ${lineDelay}ms, filter ${duration}ms cubic-bezier(0.16, 1, 0.3, 1) ${lineDelay}ms`
+            : `opacity ${duration}ms cubic-bezier(0.16, 1, 0.3, 1) ${lineDelay}ms`
+          : "none";
         return (
           <span
             key={i}
             data-letter
             style={{
               opacity: trigger && ready ? 1 : 0,
-              transition: ready
-                ? `opacity ${duration}ms cubic-bezier(0.16, 1, 0.3, 1) ${lineDelay}ms`
-                : "none",
+              filter: blur ? (trigger && ready ? "blur(0px)" : "blur(6px)") : undefined,
+              transition,
+              willChange: blur ? "opacity, filter" : undefined,
             }}
           >
             {char}

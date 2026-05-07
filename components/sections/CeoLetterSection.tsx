@@ -87,16 +87,15 @@ export default function CeoLetterSection() {
   // the closing flourish feels detached from the letter and
   // arrives as a separate event 1.5–2 s after the body looks
   // visually "done".
-  // The calligraphy header was retired, so the body paragraphs are
-  // now the FIRST thing on the scene and need to land quickly
-  // enough that the user sees text the moment they enter CEO,
-  // rather than waiting through a slow 1.6 s per-line ramp.  Each
-  // line fades in over 1.0 s with 60 ms between adjacent lines so
-  // the four paragraphs read as one snappy top-to-bottom wave that
-  // settles in well under 2 s — fast enough to feel responsive
-  // without losing the "deliberate convergence" character.
-  const LINE_STAGGER_MS = 77;
-  const LINE_FADE_DURATION_MS = 1430;
+  // Update3 cadence — match the Urtuu header chain's elegant clock
+  // (eyebrow 1.8 s + title 1.6 s).  Each body line fades in slowly
+  // with the <LineFade blur /> mode so each line resolves from
+  // cosmic dust rather than a clean opacity stagger.  Update3
+  // follow-up bumped both values 25 % so the body breathes more
+  // (stagger 220 → 275, fade 1800 → 2250) per user feedback that
+  // the previous reveal still felt slightly hurried.
+  const LINE_STAGGER_MS = 275;
+  const LINE_FADE_DURATION_MS = 2250;
   const SIGNATURE_SETTLE_MS = 400;
   const SIGNATURE_SPEEDUP_FACTOR = 0.5;
   const linesP2 = estimateLineCount(CEO_PARA_2);
@@ -266,6 +265,7 @@ export default function CeoLetterSection() {
               lineStagger={LINE_STAGGER_MS}
               duration={LINE_FADE_DURATION_MS}
               trigger={entered}
+              blur
             />
           </p>
           <p className="mt-6 text-[16px] font-normal leading-[1.4] text-white sm:mt-7 sm:text-[24px] sm:font-light sm:leading-[1.55] sm:text-white/90">
@@ -276,6 +276,7 @@ export default function CeoLetterSection() {
               lineStagger={LINE_STAGGER_MS}
               duration={LINE_FADE_DURATION_MS}
               trigger={entered}
+              blur
             />
           </p>
           <p className="mt-6 text-[16px] font-normal leading-[1.4] text-white sm:mt-7 sm:text-[24px] sm:font-light sm:leading-[1.55] sm:text-white/90">
@@ -286,6 +287,7 @@ export default function CeoLetterSection() {
               lineStagger={LINE_STAGGER_MS}
               duration={LINE_FADE_DURATION_MS}
               trigger={entered}
+              blur
             />
           </p>
           <p className="mt-6 text-[16px] font-normal leading-[1.4] text-white sm:mt-7 sm:text-[24px] sm:font-light sm:leading-[1.55] sm:text-white/90">
@@ -296,6 +298,7 @@ export default function CeoLetterSection() {
               lineStagger={LINE_STAGGER_MS}
               duration={LINE_FADE_DURATION_MS}
               trigger={entered}
+              blur
             />
           </p>
         </div>
