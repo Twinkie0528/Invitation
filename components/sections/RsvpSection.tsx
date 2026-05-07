@@ -219,7 +219,7 @@ export default function RsvpSection() {
             statement closes on brand.  Desktop drifts up to 24 px to
             keep parity with the larger pillar. */}
         <p
-          className="max-w-[318px] text-center font-sans text-[20px] font-normal leading-[1.3] text-white sm:max-w-[420px] sm:text-[22px] md:text-[24px]"
+          className="max-w-[318px] text-center font-sans text-[20px] font-normal leading-[1.3] text-white sm:max-w-[550px] sm:text-[28px] md:text-[34px]"
           style={{
             opacity: entered ? 1 : 0,
             transform: entered ? "scale(1)" : "scale(0.96)",
@@ -237,9 +237,12 @@ export default function RsvpSection() {
         </p>
 
         {/* Event details block — label + 5 detail rows, all sharing a
-            single delay so the list reads as one unit. */}
+            single delay so the list reads as one unit.  Desktop adds
+            a shader plate behind the block + drops it slightly lower
+            on the page; mobile keeps its tighter margin and bare
+            background. */}
         <div
-          className="mt-12 flex flex-col items-center text-center sm:mt-16"
+          className="relative mt-12 flex flex-col items-center text-center sm:mt-24"
           style={{
             opacity: entered ? 1 : 0,
             transform: entered ? "scale(1)" : "scale(0.94)",
@@ -247,7 +250,29 @@ export default function RsvpSection() {
             transition: `opacity 2200ms cubic-bezier(0.16, 1, 0.3, 1) ${d_details}ms, transform 2400ms cubic-bezier(0.16, 1, 0.3, 1) ${d_details}ms, filter 2400ms cubic-bezier(0.16, 1, 0.3, 1) ${d_details}ms`,
           }}
         >
-          <p className="font-sans text-[16px] font-bold uppercase tracking-[0.2em] text-white sm:text-[18px]">
+          {/* Desktop-only atmospheric shader plate behind the
+              event-details list.  Negative insets so the soft
+              radial mask extends past the text, giving the block
+              a glow halo on the cosmos backdrop.  Hidden on
+              mobile to preserve the existing tight composition. */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -z-10 hidden sm:block"
+            style={{
+              left: "-12vw",
+              right: "-12vw",
+              top: "-6vh",
+              bottom: "-6vh",
+              backgroundImage: "url(/media/common/shader.png)",
+              backgroundSize: "cover",
+              backgroundPosition: "center center",
+              maskImage:
+                "radial-gradient(ellipse 70% 60% at 50% 50%, black 25%, transparent 100%)",
+              WebkitMaskImage:
+                "radial-gradient(ellipse 70% 60% at 50% 50%, black 25%, transparent 100%)",
+            }}
+          />
+          <p className="font-sans text-[16px] font-bold uppercase tracking-[0.2em] text-white sm:text-[19px]">
             Event Details
           </p>
           {/* Time + date capsule — the time row sits between two
@@ -256,11 +281,11 @@ export default function RsvpSection() {
               so the eye reads "Event Details → time → date" as a tidy
               vertical stack instead of a flat list of <p> rows. */}
           <div className="mt-4 w-44 border-y border-white/30 py-2.5 sm:mt-5 sm:w-56 sm:py-3">
-            <p className="font-sans text-[18px] font-normal leading-[1.5] text-white sm:text-[22px]">
+            <p className="font-sans text-[18px] font-normal leading-[1.5] text-white sm:text-[23px]">
               {EVENT_TIME}
             </p>
           </div>
-          <p className="mt-2.5 font-sans text-[18px] font-normal leading-[1.5] text-white sm:mt-3 sm:text-[22px]">
+          <p className="mt-2.5 font-sans text-[18px] font-normal leading-[1.5] text-white sm:mt-3 sm:text-[23px]">
             {month} {day}, {EVENT_YEAR}
           </p>
           {/* Venue — Figma spec (node 4:177): Manrope 16 px / 100 %
@@ -271,12 +296,12 @@ export default function RsvpSection() {
               "Academic" / "Drama Theatre", matching the design's 3-line
               cadence.  `<br />` separates the two semantic lines so a
               very wide viewport can never collapse them onto one row. */}
-          <p className="mt-6 max-w-[259px] text-center font-sans text-[16px] font-normal leading-[1.25] text-white sm:mt-8 sm:max-w-[340px] sm:text-[18px]">
+          <p className="mt-6 max-w-[259px] text-center font-sans text-[16px] font-normal leading-[1.25] text-white sm:mt-8 sm:max-w-[340px] sm:text-[19px]">
             {VENUE_LINE_1}
             <br />
             {VENUE_LINE_2}
           </p>
-          <p className="mt-6 font-sans text-[15px] font-normal leading-[1.5] text-white sm:mt-8 sm:text-[18px]">
+          <p className="mt-6 font-sans text-[15px] font-normal leading-[1.5] text-white sm:mt-8 sm:text-[19px]">
             <span className="font-bold">Dress code:</span> Cocktail attire
           </p>
         </div>

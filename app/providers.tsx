@@ -32,18 +32,13 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     // unlock instantly.
     loadVisitedFromStorage();
 
-    // The cap values in `sceneLock.ts` were measured against the
-    // mobile scroll layout — desktop has its own scroll mapping
-    // that we haven't characterised, so the lock is gated to
-    // viewports below the `sm` breakpoint (768 px).  A `change`
-    // listener handles the unlikely case of a guest rotating
-    // their tablet between portrait/landscape mid-session.
-    const mobileMql = window.matchMedia("(max-width: 767px)");
-    setLockEnabled(mobileMql.matches);
-    const onMobileChange = (e: MediaQueryListEvent) => {
-      setLockEnabled(e.matches);
-    };
-    mobileMql.addEventListener("change", onMobileChange);
+    // Scene lock active on all viewports.  Cap values in
+    // `sceneLock.ts` are scroll PROGRESS (0..1) not pixel
+    // positions, so they apply identically to mobile and
+    // desktop scroll layouts — the user wants the same asset
+    // lock (Dear stage-2 mp4 + scene reveal holds) on desktop
+    // as mobile.
+    setLockEnabled(true);
 
     const lenis = new Lenis({
       duration: 1.4,
@@ -126,7 +121,6 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     return () => {
       detach();
       unsubScene();
-      mobileMql.removeEventListener("change", onMobileChange);
       lenis.off("scroll", onScroll);
       cancelAnimationFrame(rafId);
       lenis.destroy();

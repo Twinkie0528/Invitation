@@ -69,9 +69,10 @@ let lockState: LockState = {
 let unlockTimer: ReturnType<typeof setTimeout> | null = null;
 const lockListeners = new Set<(s: LockState) => void>();
 
-// Lock module is a no-op outside mobile viewports — desktop layouts
-// don't share the same scroll mapping the cap values were tuned
-// against.  Toggled from `app/providers.tsx` via `setLockEnabled`.
+// Lock module gate.  Toggled from `app/providers.tsx` via
+// `setLockEnabled`.  Currently enabled on all viewports — the cap
+// values are scroll PROGRESS (0..1) so they apply uniformly across
+// mobile and desktop scroll layouts.
 let lockEnabled = false;
 
 export function setLockEnabled(enabled: boolean) {

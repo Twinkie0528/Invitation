@@ -265,8 +265,8 @@ export default function DearSection() {
   // reads as one continuous envelope rather than a jump.
   const ENVELOPE_FRAME_CLASSES =
     "pointer-events-none absolute w-[290vw] left-[-91vw] top-[1vh] " +
-    "md:w-[106vw] md:left-[0vw] md:top-[22vh] " +
-    "lg:w-[73vw] lg:left-[17vw] lg:top-[22vh]";
+    "md:w-[106vw] md:left-[0vw] md:top-[-2vh] " +
+    "lg:w-[95vw] lg:left-[3vw] lg:top-[-5vh]";
 
   return (
     <section
@@ -402,7 +402,7 @@ export default function DearSection() {
             width={520}
             height={58}
             priority
-            className="h-5 w-auto sm:h-auto sm:w-[18vw]"
+            className="h-5 w-auto sm:h-auto sm:w-[28vw]"
             style={{
               opacity: introDone ? 1 : 0,
               transform: introDone ? "scale(1)" : "scale(0.92)",
@@ -420,7 +420,7 @@ export default function DearSection() {
             with breathing room above the envelope. */}
         <div
           aria-hidden={phase !== "loop"}
-          className="absolute inset-x-0 top-[26vh] flex flex-col items-center justify-center gap-3 px-4 text-center md:top-[20vh] md:gap-4 lg:top-[16vh]"
+          className="absolute inset-x-0 top-[26vh] flex flex-col items-center justify-center gap-3 px-4 text-center md:top-[31vh] md:gap-4 lg:top-[27vh]"
           style={{
             opacity: phase === "loop" ? 1 : 0,
             transition: "opacity 600ms ease-out",
@@ -432,7 +432,7 @@ export default function DearSection() {
               the entry reads as a slow, deliberate convergence
               rather than a fast slide-in. */}
           <div
-            className="font-sans text-[16px] font-light tracking-[0.18em] text-white/85 md:text-[1.2vw]"
+            className="font-sans text-[16px] font-light tracking-[0.18em] text-white/85 md:text-[1.6vw]"
             style={{
               opacity: introDone ? 1 : 0,
               transform: introDone ? "scale(1)" : "scale(0.96)",
@@ -447,7 +447,7 @@ export default function DearSection() {
               Per Figma node 19-240 spec: Lora 400, 40 px, 100 % line
               height, 0 letter-spacing, white, centred. */}
           <div
-            className="font-lora whitespace-pre text-[40px] font-normal leading-none text-white md:text-[3vw] lg:text-[2.4vw]"
+            className="font-lora whitespace-pre text-[40px] font-normal leading-none text-white md:text-[4vw] lg:text-[3.2vw]"
             style={{ letterSpacing: 0 }}
           >
             {nameChars.map((char, i) => {
@@ -479,14 +479,14 @@ export default function DearSection() {
             edge. */}
         <div
           aria-hidden={phase !== "ended"}
-          className="absolute inset-x-0 top-[25vh] flex flex-col items-center px-6 text-center md:top-[21vh]"
+          className="absolute inset-x-0 top-[25vh] flex flex-col items-center px-6 text-center md:top-[31vh] lg:top-[33vh]"
           style={{
             opacity: phase === "ended" ? 1 : 0,
             transition: "opacity 1000ms ease-out",
           }}
         >
           <h2
-            className="font-lora text-[22px] font-normal text-white sm:text-[24px] md:text-[1.7vw]"
+            className="font-lora text-[22px] font-normal text-white sm:text-[24px] md:text-[2.4vw]"
             style={{
               letterSpacing: "0.04em",
               opacity: cascadeOn ? 1 : 0,
@@ -498,7 +498,7 @@ export default function DearSection() {
             INVITATION
           </h2>
 
-          <p className="mt-3 max-w-[50vw] font-sans text-[12px] font-normal leading-[1.55] text-white/80 md:max-w-[16vw] md:text-[0.85vw]">
+          <p className="mt-3 max-w-[50vw] font-sans text-[12px] font-normal leading-[1.55] text-white/80 md:max-w-[26vw] md:text-[1.1vw]">
             <LineFade
               text={BODY_PARA_1}
               delay={bodyDelay}
@@ -510,7 +510,7 @@ export default function DearSection() {
             />
           </p>
 
-          <p className="mt-4 max-w-[50vw] font-sans text-[12px] font-normal leading-[1.55] text-white/80 md:max-w-[16vw] md:text-[0.85vw]">
+          <p className="mt-4 max-w-[50vw] font-sans text-[12px] font-normal leading-[1.55] text-white/80 md:max-w-[26vw] md:text-[1.1vw]">
             <LineFade
               text={BODY_PARA_2}
               delay={bodyDelay}
@@ -522,7 +522,7 @@ export default function DearSection() {
             />
           </p>
 
-          <p className="mt-4 max-w-[50vw] font-sans text-[12px] font-normal leading-[1.55] text-white/80 md:max-w-[16vw] md:text-[0.85vw]">
+          <p className="mt-4 max-w-[50vw] font-sans text-[12px] font-normal leading-[1.55] text-white/80 md:max-w-[26vw] md:text-[1.1vw]">
             <LineFade
               text={BODY_PARA_3}
               delay={bodyDelay}
