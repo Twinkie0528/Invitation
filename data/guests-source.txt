@@ -44,7 +44,7 @@ Ts.Altantsetseg | 6.19
 B.Solongo | 6.19
 Ts.Purevdorj | 6.19
 B.Temuulen | 6.19
-Batjargal | 6.19
+P.Batjargal | 6.19
 L.Magsarjav | 6.19
 G.Battsengel | 6.19
 D.Odgerel | 6.19
