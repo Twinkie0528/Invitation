@@ -4,20 +4,15 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useSectionReveal } from "@/hooks/useSectionReveal";
 import { useLoadGate } from "@/hooks/useLoadGate";
-import { sceneRef, subscribeScene } from "@/hooks/useScrollProgress";
 import { formatGuestName, useGuestName } from "@/lib/guestContext";
 import { lockDearAnimation } from "@/lib/sceneLock";
 import { LineFade, estimateLineCount } from "@/components/ui/LineFade";
 
-// Two video assets carry the entire Dear scene:
-//   1. LOOP_VIDEO    — 2 s ambient loop with the personalised name
-//                      panel.  Sits as the resting state until the
-//                      user scrolls.
-//   2. STAGE2_VIDEO  — 8 s one-shot animation that morphs the loop
-//                      framing into the final INVITATION envelope.
-//                      Holds its last frame as the static backdrop
-//                      for the stage-3 text cascade.
-const LOOP_VIDEO = "/media/dear/default-final-invitation.mp4";
+// TEST MODE — the stage-1 ambient loop video has been removed; the
+// 8 s STAGE2_VIDEO now starts auto-playing as soon as the splash
+// hand-off finishes, without a scroll trigger.  The dear lock still
+// fires when the animation begins so the user is pinned through
+// the 8 s playback + invitation cascade.
 const STAGE2_VIDEO = "/media/dear/final-invitation-animation.mp4";
 
 // Reveal range — Dear is now scene 1 of 5 (Hero was absorbed into
@@ -32,11 +27,6 @@ const REVEAL_RANGE = {
   hold: 0.16,
   end: 0.19,
 };
-
-// Tiny scroll threshold — any input past this flips loop → playing.
-// Kept well below the lock cap (0.16) so the lock then pins the user
-// while the 8 s mp4 plays through.
-const SCROLL_TRIGGER_PROGRESS = 0.003;
 
 // Stage-1 sequential reveal cadence (after introDone):
 //   1. "Dear" eyebrow fades in           — DEAR_DELAY_MS
@@ -59,9 +49,38 @@ const CHEVRON_AFTER_ENVELOPE_MS = 600;
 // per-element settle time.  Stagger 120 ms keeps the heavy overlap
 // so the cascade still reads as a continuous silky wave.
 const TITLE_FADE_MS = 400;
-const TITLE_TO_BODY_MS = 250;
+const TITLE_TO_BODY_MS = 120;
 const BODY_LINE_STAGGER_MS = 50;
 const BODY_LINE_FADE_MS = 2000;
+
+// Pre-roll the cascade BEFORE the stage-2 video ends so the
+// INVITATION letter starts revealing while the envelope is still
+// finishing its open animation — without this the user sees a
+// fully-open envelope sitting empty for a beat before the text
+// fades in.  Triggered from the stage-2 onTimeUpdate handler.
+const CASCADE_PREROLL_S = 1.2;
+
+// Mobile-only delay before the stage-2 mp4 starts playing.  The
+// video element is mounted + visible (paused on its first frame)
+// the moment phase flips to "playing", but we hold off on calling
+// play() until the guest name has had its solo beat.  Without this
+// the personalised name overlaps the unfolding envelope flap and
+// looks crowded on small screens.  Desktop has more horizontal
+// breathing room so it doesn't need the delay.
+const MOBILE_ASSET_PLAY_DELAY_MS = 2000;
+
+// Independent scene-lock durations per viewport — measured from the
+// moment phase flips to "playing".  Lock pins the user at the dear
+// scene cap until it releases, so this needs to cover the asset
+// playback (8 s) + cascade settle on each viewport.  Tune each in
+// isolation by editing its own constant.
+const LOCK_MS_DESKTOP = 10500;
+const LOCK_MS_MOBILE = 11500;
+
+// Tailwind's default `md` breakpoint is 768 px, so mobile is
+// anything below that.  Used to gate MOBILE_ASSET_PLAY_DELAY_MS
+// and shift the name fade-out + scene-lock durations on phones.
+const MOBILE_QUERY = "(max-width: 767px)";
 
 const BODY_PARA_1 =
   "Unitel group invites you to an exclusive evening where you become part of the story.";
@@ -101,6 +120,21 @@ export default function DearSection() {
   const envelopeDelayMs = nameTypeEndMs + ENVELOPE_AFTER_NAME_MS;
   const chevronDelayMs = envelopeDelayMs + CHEVRON_AFTER_ENVELOPE_MS;
 
+  // --- Mobile viewport detection -------------------------------------
+  // Drives MOBILE_ASSET_PLAY_DELAY_MS (paused first frame for 2 s
+  // before play()) and the +2 s offsets on the name fade-out timer
+  // and scene-lock duration so the name's solo beat doesn't collide
+  // with the envelope flap on small screens.
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia(MOBILE_QUERY);
+    const apply = () => setIsMobile(mq.matches);
+    apply();
+    mq.addEventListener("change", apply);
+    return () => mq.removeEventListener("change", apply);
+  }, []);
+
   // --- Phase machine -------------------------------------------------
   const [phase, setPhase] = useState<Phase>("loop");
   const phaseRef = useRef<Phase>("loop");
@@ -108,18 +142,14 @@ export default function DearSection() {
     phaseRef.current = phase;
   }, [phase]);
 
-  // Watch scroll: any input past the threshold flips loop → playing
-  // (provided the splash hand-off has finished).  One-way transition.
+  // TEST MODE — auto-advance loop → playing the moment the splash
+  // hand-off finishes.  The stage-1 ambient loop has been removed,
+  // so there's nothing to watch for; we simply kick the 8 s mp4
+  // immediately so the lock + cascade run their normal course.
   useEffect(() => {
     if (!introDone) return;
     if (phase !== "loop") return;
-    const check = (p: number) => {
-      if (p > SCROLL_TRIGGER_PROGRESS && phaseRef.current === "loop") {
-        setPhase("playing");
-      }
-    };
-    check(sceneRef.current.progress);
-    return subscribeScene((s) => check(s.progress));
+    setPhase("playing");
   }, [introDone, phase]);
 
   // --- Scroll lock during animation + cascade ------------------------
@@ -128,56 +158,12 @@ export default function DearSection() {
   // snappier cascade (title 0.9 s + 250 ms breath + 5 × 120 ms
   // stagger + 1.2 s last-line fade ≈ 2.95 s) plus a small buffer
   // so the user can't skip past dear before the cascade settles.
+  // Mobile pads MOBILE_ASSET_PLAY_DELAY_MS on top because the asset
+  // sits paused on its first frame for those 2 s before playback.
   useEffect(() => {
     if (phase !== "playing") return;
-    lockDearAnimation(11500);
-  }, [phase]);
-
-  // --- Stage-1 loop video --------------------------------------------
-  // Rendered inline (not via BackgroundVideoFrame) so the wrapper
-  // stays transparent and the cosmic background image painted at the
-  // section root is visible in the letterbox margins around the
-  // envelope graphic.
-  const loopRef = useRef<HTMLVideoElement | null>(null);
-
-  // X5 hints + first-gesture autoplay retry, mirroring the
-  // BackgroundVideoFrame iOS hardening (so MIUI / Samsung Internet /
-  // iOS Low-Power Mode don't refuse the loop's autoplay).
-  useEffect(() => {
-    if (!introDone) return;
-    const v = loopRef.current;
-    if (!v) return;
-    v.setAttribute("x5-video-player-type", "h5-page");
-    v.setAttribute("x5-video-player-fullscreen", "false");
-    v.setAttribute("x5-playsinline", "true");
-    v.setAttribute("webkit-playsinline", "true");
-    const attempt = () => {
-      const r = v.play();
-      if (r && typeof r.catch === "function") {
-        r.catch(() => {
-          const retry = () => attempt();
-          document.addEventListener("touchstart", retry, {
-            passive: true,
-            once: true,
-          });
-          document.addEventListener("click", retry, { once: true });
-          document.addEventListener("scroll", retry, {
-            passive: true,
-            once: true,
-          });
-        });
-      }
-    };
-    attempt();
-  }, [introDone]);
-
-  // Pause the loop when phase moves past "loop" so the decoder slot
-  // is freed up while the stage-2 animation plays.
-  useEffect(() => {
-    const v = loopRef.current;
-    if (!v) return;
-    if (phase !== "loop") v.pause();
-  }, [phase]);
+    lockDearAnimation(isMobile ? LOCK_MS_MOBILE : LOCK_MS_DESKTOP);
+  }, [phase, isMobile]);
 
   // --- Stage-2 video --------------------------------------------------
   const stage2Ref = useRef<HTMLVideoElement | null>(null);
@@ -186,6 +172,9 @@ export default function DearSection() {
   // Kick the one-shot animation playing the moment phase flips.
   // Set X5 hints + arm a one-shot retry on first gesture so MIUI /
   // Samsung Internet / iOS Low-Power Mode don't refuse autoplay.
+  // On mobile we hold the video paused on its first frame for
+  // MOBILE_ASSET_PLAY_DELAY_MS so the personalised name has a solo
+  // beat before the envelope flap unfolds underneath it.
   useEffect(() => {
     if (phase !== "playing") return;
     const v = stage2Ref.current;
@@ -216,16 +205,14 @@ export default function DearSection() {
         });
       }
     };
-    attempt();
-  }, [phase]);
-
-  // --- Envelope reveal gate (after name typewriter settles) ----------
-  const [envelopeReady, setEnvelopeReady] = useState(false);
-  useEffect(() => {
-    if (!introDone) return;
-    const t = window.setTimeout(() => setEnvelopeReady(true), envelopeDelayMs);
+    const startDelay = isMobile ? MOBILE_ASSET_PLAY_DELAY_MS : 0;
+    if (startDelay <= 0) {
+      attempt();
+      return;
+    }
+    const t = window.setTimeout(attempt, startDelay);
     return () => window.clearTimeout(t);
-  }, [introDone, envelopeDelayMs]);
+  }, [phase, isMobile]);
 
   // --- Chevron mounted gate (last in the stage-1 cadence) ------------
   const [chevronReady, setChevronReady] = useState(false);
@@ -236,12 +223,44 @@ export default function DearSection() {
   }, [introDone, chevronDelayMs]);
 
   // --- Cascade trigger -----------------------------------------------
+  // Primary trigger: stage-2 video's onTimeUpdate flips cascadeOn
+  // CASCADE_PREROLL_S before the clip ends, so INVITATION starts
+  // revealing while the envelope is still finishing its open frames.
+  // This effect is the safety net — if the video onEnded fires
+  // without timeUpdate having tripped (seek, very short clips,
+  // throttled tabs), make sure the cascade still kicks off.
   const [cascadeOn, setCascadeOn] = useState(false);
   useEffect(() => {
     if (phase !== "ended") return;
+    if (cascadeOn) return;
     const t = window.setTimeout(() => setCascadeOn(true), 15);
     return () => window.clearTimeout(t);
-  }, [phase]);
+  }, [phase, cascadeOn]);
+
+  // --- Stage-1 name fade-out gate ------------------------------------
+  // The 8 s animation opens the envelope and stretches it upward —
+  // the guest name overlaps the unfolding flap badly.  Hold the name
+  // for ~4 s after the animation starts (the envelope is still
+  // closed/early-morphing then) and then fade it out gently before
+  // the flap reaches the name's territory.
+  // Independent fade timers per viewport — both measured from the
+  // moment phase flips to "playing" (NOT from actual asset playback).
+  // Desktop: asset plays immediately, so 4500 ms = name fades 4.5 s
+  // into the envelope animation.
+  // Mobile: asset is held paused MOBILE_ASSET_PLAY_DELAY_MS first,
+  // so 6500 ms here ≈ 4.5 s into the actual flap unfold.  Tune each
+  // viewport in isolation by editing its own constant.
+  const NAME_FADE_AFTER_PLAYING_MS_DESKTOP = 4500;
+  const NAME_FADE_AFTER_PLAYING_MS_MOBILE = 4300;
+  const [nameFadeOut, setNameFadeOut] = useState(false);
+  useEffect(() => {
+    if (phase !== "playing") return;
+    const fadeMs = isMobile
+      ? NAME_FADE_AFTER_PLAYING_MS_MOBILE
+      : NAME_FADE_AFTER_PLAYING_MS_DESKTOP;
+    const t = window.setTimeout(() => setNameFadeOut(true), fadeMs);
+    return () => window.clearTimeout(t);
+  }, [phase, isMobile]);
 
   const linesP1 = estimateLineCount(BODY_PARA_1);
   const linesP2 = estimateLineCount(BODY_PARA_2);
@@ -278,58 +297,6 @@ export default function DearSection() {
           retired in update3 — the envelope mp4 + the section's
           plain `bg-black` is now the entire visual floor. */}
 
-      {/* ---------- Stage-1 envelope (loop video) ----------
-          Inline render (no BackgroundVideoFrame wrapper) so the
-          element is a single <video> with no fallback bg colour.
-          Held invisible until the name typewriter settles, then
-          crossfades in.  Looping uses the seek-before-EOS trick to
-          avoid the native loop's single-frame decoder glitch. */}
-      <div
-        aria-hidden
-        className={ENVELOPE_FRAME_CLASSES}
-        style={{
-          aspectRatio: "183 / 145",
-          opacity: phase === "loop" && envelopeReady ? 1 : 0,
-          transition: "opacity 800ms cubic-bezier(0.16, 1, 0.3, 1)",
-          overflow: "hidden",
-        }}
-      >
-        <video
-          ref={loopRef}
-          src={LOOP_VIDEO}
-          autoPlay
-          muted
-          playsInline
-          preload="auto"
-          aria-hidden
-          controlsList="nodownload nofullscreen noremoteplayback noplaybackrate"
-          disablePictureInPicture
-          disableRemotePlayback
-          onTimeUpdate={(e) => {
-            const v = e.currentTarget;
-            if (v.duration && v.duration - v.currentTime < 0.18) {
-              v.currentTime = 0;
-            }
-          }}
-          onEnded={(e) => {
-            const v = e.currentTarget;
-            v.currentTime = 0;
-            const r = v.play();
-            if (r && typeof r.catch === "function") r.catch(() => {});
-          }}
-          style={{
-            position: "absolute",
-            inset: 0,
-            width: "100%",
-            height: "100%",
-            objectFit: "contain",
-            backgroundColor: "transparent",
-            transform: "translateZ(0)",
-            willChange: "opacity, transform",
-          }}
-        />
-      </div>
-
       {/* ---------- Stage-2/3 envelope (animation video) ----------
           Sits in the SAME positioned frame as the stage-1 loop so
           the morph between videos reads as one continuous envelope
@@ -365,6 +332,15 @@ export default function DearSection() {
             onLoadedData={() => {
               if (phaseRef.current !== "loop" && !stage2Visible) {
                 setStage2Visible(true);
+              }
+            }}
+            onTimeUpdate={(e) => {
+              const v = e.currentTarget;
+              if (
+                v.duration &&
+                v.duration - v.currentTime <= CASCADE_PREROLL_S
+              ) {
+                setCascadeOn((prev) => (prev ? prev : true));
               }
             }}
             onEnded={() => {
@@ -419,11 +395,11 @@ export default function DearSection() {
             Mobile parks at 29vh — sits below the anniversary lockup
             with breathing room above the envelope. */}
         <div
-          aria-hidden={phase !== "loop"}
+          aria-hidden={phase === "ended" || nameFadeOut}
           className="absolute inset-x-0 top-[26vh] flex flex-col items-center justify-center gap-3 px-4 text-center md:top-[31vh] md:gap-4 lg:top-[27vh]"
           style={{
-            opacity: phase === "loop" ? 1 : 0,
-            transition: "opacity 600ms ease-out",
+            opacity: phase === "ended" || nameFadeOut ? 0 : 1,
+            transition: "opacity 1400ms cubic-bezier(0.22, 1, 0.36, 1)",
           }}
         >
           {/* Dear eyebrow — first beat of the cadence.  Effect
@@ -478,11 +454,11 @@ export default function DearSection() {
             envelope's letter area instead of crowding the upper
             edge. */}
         <div
-          aria-hidden={phase !== "ended"}
+          aria-hidden={!cascadeOn}
           className="absolute inset-x-0 top-[25vh] flex flex-col items-center px-6 text-center md:top-[31vh] lg:top-[33vh]"
           style={{
-            opacity: phase === "ended" ? 1 : 0,
-            transition: "opacity 1000ms ease-out",
+            opacity: cascadeOn ? 1 : 0,
+            transition: "opacity 500ms ease-out",
           }}
         >
           <h2
