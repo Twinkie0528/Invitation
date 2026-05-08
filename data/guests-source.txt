@@ -12,91 +12,91 @@
 # Засаад дараах командыг ажиллуулна:
 #   npm run guests
 
-R.Ganbold
-G.Myagmarjav
-D.Enkhbat
-S.Tsengel
-B.Ariunaa
-Attilla Vitai
-B.Delgersaikhan
-L.Enkh-Amgalan
-A.Gankhuyag
-Ts.Amaraa
-B.Biliguun
-HaYuong Park
-G.Enkhtuvshin
-D.Enkhtuvshin
-N.Enkhbold
-J.Odjargal
-J.Od
-D.Enkhtsetseg
-L.Gantumur
-G.Bold
-Ch.Davaakhuu
-N.Nyamdavaa
-B.Davaa-Ochir
-J.Urantsetseg
-L.Myagmarjav
-Ts.Khandaa
-D.Bolormaa
-B.Ochirbat
-Ts.Altantsetseg
-B.Solongo
-Ts.Purevdorj
-B.Temuulen
-Batjargal
-L.Magsarjav
-G.Battsengel
-D.Odgerel
-Ya.Nyamtogtokh
-O.Anand
-D.Jamyansharav
-B.Enkhtuvshin
-G.Batkhuu
-S.Oyunsuren
-O.Tulga
-G.Bars
-A.Enkhchimeg
-L.Pagamsuren
-B.Juldyz
-Ts.Urtnasan
-E.Baasan
-E.Mandakh-Erdene
-G.Bat-Erdene
-D.Ariunbaatar
-G.Dolgoon
-E.Munkhbat
-Ch.Enkhmend
-Su.Batbold
-B.Battushig
-P. Batsaikhan
-R. Munkhtuya
-O.Orkhon
-A.Odonbaatar
-G. Tsevegjav
-V.Enkhbaatar
-Ts.Sanjjav
-D.Ganbaatar
-Kh.Anand
-M.Yesunmunkh
-B.Khaliunaa
-G.Chinzorig
-B.Bolormaa
-A.Chinbishrelt
-Ts.Tuvshinbayar
-Sh.Bayarsaikhan
-Ya.Navaan
-O.Damjin
-O.Narankhuu
-Sh.Ulambayar
-Ch.Darkhanbaatar
-B.Khishigjargal
-T.Gantumur
-B.Jargalsaikhan
-N.Tselmuun
-B.Battuul
-B.Chuluunkhuu
-J.Ganbayar
-Ch.Chinbat
-G.Javkhlan
-Kh.Batbold
+R.Ganbold | 6.19
+G.Myagmarjav | 6.19
+D.Enkhbat | 6.19
+S.Tsengel | 6.19
+B.Ariunaa | 6.19
+Attilla Vitai | 6.19
+B.Delgersaikhan | 6.19
+L.Enkh-Amgalan | 6.19
+A.Gankhuyag | 6.19
+Ts.Amaraa | 6.19
+B.Biliguun | 6.19
+HaYuong Park | 6.19
+G.Enkhtuvshin | 6.19
+D.Enkhtuvshin | 6.19
+N.Enkhbold | 6.19
+J.Odjargal | 6.19
+J.Od | 6.19
+D.Enkhtsetseg | 6.19
+L.Gantumur | 6.19
+G.Bold | 6.19
+Ch.Davaakhuu | 6.19
+N.Nyamdavaa | 6.19
+B.Davaa-Ochir | 6.19
+J.Urantsetseg | 6.19
+L.Myagmarjav | 6.19
+Ts.Khandaa | 6.19
+D.Bolormaa | 6.19
+B.Ochirbat | 6.19
+Ts.Altantsetseg | 6.19
+B.Solongo | 6.19
+Ts.Purevdorj | 6.19
+B.Temuulen | 6.19
+Batjargal | 6.19
+L.Magsarjav | 6.19
+G.Battsengel | 6.19
+D.Odgerel | 6.19
+Ya.Nyamtogtokh | 6.19
+O.Anand | 6.19
+D.Jamyansharav | 6.19
+B.Enkhtuvshin | 6.19
+G.Batkhuu | 6.19
+S.Oyunsuren | 6.19
+O.Tulga | 6.19
+G.Bars | 6.19
+A.Enkhchimeg | 6.19
+L.Pagamsuren | 6.19
+B.Juldyz | 6.19
+Ts.Urtnasan | 6.19
+E.Baasan | 6.19
+E.Mandakh-Erdene | 6.19
+G.Bat-Erdene | 6.19
+D.Ariunbaatar | 6.19
+G.Dolgoon | 6.19
+E.Munkhbat | 6.19
+Ch.Enkhmend | 6.19
+Su.Batbold | 6.19
+B.Battushig | 6.19
+P. Batsaikhan | 6.19
+R. Munkhtuya | 6.19
+O.Orkhon | 6.19
+A.Odonbaatar | 6.19
+G. Tsevegjav | 6.19
+V.Enkhbaatar | 6.19
+Ts.Sanjjav | 6.19
+D.Ganbaatar | 6.19
+Kh.Anand | 6.19
+M.Yesunmunkh | 6.19
+B.Khaliunaa | 6.19
+G.Chinzorig | 6.19
+B.Bolormaa | 6.19
+A.Chinbishrelt | 6.19
+Ts.Tuvshinbayar | 6.19
+Sh.Bayarsaikhan | 6.19
+Ya.Navaan | 6.19
+O.Damjin | 6.19
+O.Narankhuu | 6.19
+Sh.Ulambayar | 6.19
+Ch.Darkhanbaatar | 6.19
+B.Khishigjargal | 6.19
+T.Gantumur | 6.19
+B.Jargalsaikhan | 6.19
+N.Tselmuun | 6.19
+B.Battuul | 6.19
+B.Chuluunkhuu | 6.19
+J.Ganbayar | 6.19
+Ch.Chinbat | 6.19
+G.Javkhlan | 6.19
+Kh.Batbold | 6.19
