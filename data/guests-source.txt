@@ -50,7 +50,7 @@ G.Battsengel | 6.19
 D.Odgerel | 6.19
 Ya.Nyamtogtokh | 6.19
 O.Anand | 6.19
-D.Jamyansharav | 6.19
+D.Jamiyansharav | 6.19
 B.Enkhtuvshin | 6.19
 G.Batkhuu | 6.19
 S.Oyunsuren | 6.19
@@ -64,7 +64,7 @@ E.Baasan | 6.19
 E.Mandakh-Erdene | 6.19
 G.Bat-Erdene | 6.19
 D.Ariunbaatar | 6.19
-G.Dolgoon | 6.19
+G.Dulguun | 6.19
 E.Munkhbat | 6.19
 Ch.Enkhmend | 6.19
 Su.Batbold | 6.19
