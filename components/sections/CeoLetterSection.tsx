@@ -376,7 +376,7 @@ export default function CeoLetterSection() {
           width={56}
           height={100}
           priority={false}
-          className="h-[56px] w-auto sm:h-[70px] md:h-[84px]"
+          className="h-[70px] w-auto sm:h-[88px] md:h-[105px]"
           style={{ filter: "brightness(1.12) contrast(1.06)" }}
         />
       </div>
