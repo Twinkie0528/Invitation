@@ -102,7 +102,7 @@ export default function RootLayout({
         <link rel="prefetch" as="image" href="/media/rsvp/cosmos.png" />
         <link rel="prefetch" as="image" href="/media/rsvp/invitation-title.png" />
         <link rel="prefetch" as="image" href="/media/rsvp/full.png" />
-        <link rel="prefetch" as="image" href="/media/ceo/signature.svg" />
+        <link rel="prefetch" as="image" href="/media/ceo/CEO_Logo.svg" />
       </head>
       <body>
         <LumaAlphaFilter />

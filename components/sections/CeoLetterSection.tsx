@@ -20,7 +20,7 @@ const CEO_PARA_5 = "I sincerely look forward to welcoming you.";
 const BG_VIDEO = "/media/ceo/mascot.mp4";
 // Signature SVG — `next/image` accepts a string `src` for files in
 // /public; we just supply the width/height here.
-const CEO_SIGNATURE_SRC = "/media/ceo/signature.svg";
+const CEO_SIGNATURE_SRC = "/media/ceo/CEO_Logo.svg";
 // No poster — the section bg is already solid black, so we let
 // BackgroundVideoFrame fall through to its plain dark stand-in until
 // the mp4 mounts.  Saves ~7 MB of needless image fetch.
@@ -373,10 +373,11 @@ export default function CeoLetterSection() {
         <Image
           src={CEO_SIGNATURE_SRC}
           alt="Jamiyansharav D. signature"
-          width={107}
-          height={64}
+          width={56}
+          height={100}
           priority={false}
-          className="h-[52px] w-auto sm:h-[64px] md:h-[78px]"
+          className="h-[56px] w-auto sm:h-[70px] md:h-[84px]"
+          style={{ filter: "brightness(1.12) contrast(1.06)" }}
         />
       </div>
     </section>
