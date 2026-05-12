@@ -62,12 +62,12 @@ function parseGuestDate(raw?: string): { month: string; day: string } | null {
 // particles painted underneath in the lower half.
 export default function RsvpSection() {
   const ref = useSectionReveal<HTMLElement>({
-    start: 0.82,
-    peak: 0.86,
+    start: 0.76,
+    peak: 0.81,
     hold: 1.0,
     end: 1.05,
   });
-  const entered = useSceneEntered(0.84);
+  const entered = useSceneEntered(0.78);
   const guest = useGuest();
   const parsed = parseGuestDate(guest?.date);
   // Reveal cadence — preamble (1.6 s convergence) → details block
@@ -164,7 +164,7 @@ export default function RsvpSection() {
       </div>
 
       {/* ---------- Shader plate behind the text ----------
-          Same `common/shader.png` the Urtuu / CEO sections use.  The
+          Same `common/shader.png` the Urtuu section uses.  The
           cosmos rider mp4 was reading right through the title + dress
           code + date row, so we drop the shader in between the video
           (z-auto) and the foreground content (z-10) and mask it with
@@ -190,7 +190,7 @@ export default function RsvpSection() {
 
       {/* TopMark renders the centred mobile wordmark; on sm+ we hide
           it and drop a right-corner copy at 74×17 to match the
-          desktop Figma frame (same pattern as Gala / CEO / Urtuu). */}
+          desktop Figma frame (same pattern as Gala / Urtuu). */}
       <div className="sm:hidden">
         <TopMark />
       </div>

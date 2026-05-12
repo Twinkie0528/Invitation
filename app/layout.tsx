@@ -95,14 +95,12 @@ export default function RootLayout({
             is already cached and enters via `loadeddata`. */}
         <link rel="prefetch" as="video" href="/media/urtuu/urtuu-script.mp4" type="video/mp4" />
         <link rel="prefetch" as="video" href="/media/common/gala-bloom.mp4" type="video/mp4" />
-        <link rel="prefetch" as="video" href="/media/ceo/mascot.mp4" type="video/mp4" />
         <link rel="prefetch" as="video" href="/media/rsvp/cosmos.mp4" type="video/mp4" />
         <link rel="prefetch" as="image" href="/media/urtuu/floor.jpg" />
         <link rel="prefetch" as="image" href="/media/common/shader.png" />
         <link rel="prefetch" as="image" href="/media/rsvp/cosmos.png" />
         <link rel="prefetch" as="image" href="/media/rsvp/invitation-title.png" />
         <link rel="prefetch" as="image" href="/media/rsvp/full.png" />
-        <link rel="prefetch" as="image" href="/media/ceo/CEO_Logo.svg" />
       </head>
       <body>
         <LumaAlphaFilter />

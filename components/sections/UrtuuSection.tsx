@@ -27,16 +27,16 @@ const BG_VIDEO = "/media/urtuu/urtuu-script.mp4";
 const BG_POSTER = "/media/urtuu/urtuu-script.webp";
 
 // Reveal range — also drives the video play/pause window.
-// Urtuu is page 3 (Dear → CEO → Urtuu → Gala → RSVP):
-// scroll progress 0.42 → 0.62.  Reveal aligned with scene
-// boundaries (start at 0.42, hold 0.60, end 0.63) so the CEO →
+// Urtuu is page 2 (Dear → Urtuu → Gala → RSVP):
+// scroll progress 0.24 → 0.50.  Reveal aligned with scene
+// boundaries (start at 0.24, hold 0.47, end 0.51) so the Dear →
 // Urtuu and Urtuu → Gala handoffs share the same minimal-overlap
-// pattern as the Dear → CEO transition.
+// pattern.
 const REVEAL_RANGE = {
-  start: 0.42,
-  peak: 0.46,
-  hold: 0.60,
-  end: 0.63,
+  start: 0.24,
+  peak: 0.29,
+  hold: 0.47,
+  end: 0.51,
 };
 
 // Covers scene `urtuu` — "The Urtuu" immersive experience reveal.
@@ -59,7 +59,7 @@ const BODY_PARA_2 = "Unitel Group proudly presents Mongolia’s largest immersiv
 
 export default function UrtuuSection() {
   const ref = useSectionReveal<HTMLElement>(REVEAL_RANGE);
-  const entered = useSceneEntered(0.44);
+  const entered = useSceneEntered(0.26);
   // Chain every reveal in this section so the eyebrow → title → body
   // copy plays as one continuous typewriter.  String steps are
   // word-counted; the title is a single inline opacity/transform
@@ -88,10 +88,9 @@ export default function UrtuuSection() {
   // the instant paragraph 1's last line ends.  No breath, no
   // per-paragraph delay — the body reads as ONE long top-to-bottom
   // glow that doesn't notice the paragraph boundary.
-  // Cadence values mirror CEO's body so the three letter-cascade
-  // sections (CEO, Urtuu, Gala) share one reveal vocabulary —
-  // tight stagger + slow per-line fade with the slide-and-fade
-  // <LineFade slide /> mode.
+  // Cadence shared with Gala so the two letter-cascade body sections
+  // (Urtuu, Gala) read with one reveal vocabulary — tight stagger +
+  // slow per-line fade with the slide-and-fade <LineFade slide /> mode.
   const LINE_STAGGER_MS = 50;
   const LINE_FADE_DURATION_MS = 2000;
   const linesP1 = estimateLineCount(BODY_PARA_1);

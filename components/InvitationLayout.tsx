@@ -4,7 +4,6 @@ import ScrollRunway from "@/components/ui/ScrollRunway";
 import ScrollHud from "@/components/ui/ScrollHud";
 import SectionDots from "@/components/ui/SectionDots";
 import DearSection from "@/components/sections/DearSection";
-import CeoLetterSection from "@/components/sections/CeoLetterSection";
 import GalaSection from "@/components/sections/GalaSection";
 import UrtuuSection from "@/components/sections/UrtuuSection";
 import RsvpSection from "@/components/sections/RsvpSection";
@@ -20,7 +19,6 @@ export default function InvitationLayout() {
       <EdgeGradient />
 
       <DearSection />
-      <CeoLetterSection />
       <UrtuuSection />
       <GalaSection />
       <RsvpSection />

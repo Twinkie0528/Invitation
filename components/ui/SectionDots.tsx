@@ -5,7 +5,7 @@ import { sceneRef, subscribeScene } from "@/hooks/useScrollProgress";
 import { SCENES } from "@/lib/scenes";
 
 // Page-step pagination — one dot per scroll-bound page from the master
-// timeline (currently hero / ceo / urtuu / gala / rsvp).  Sourcing the
+// timeline (currently dear / urtuu / gala / rsvp).  Sourcing the
 // list from SCENES means the dot count tracks any future reorder or
 // scene addition without a separate edit here.  "cold" is the pre-roll
 // padding before hero, so it gets filtered out.

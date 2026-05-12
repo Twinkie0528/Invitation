@@ -1,7 +1,7 @@
 // Single source of truth for scroll → scene state.
 // Every shader uniform, DOM fade, and audio layer reads from this.
 
-export type SceneId = "cold" | "dear" | "ceo" | "gala" | "urtuu" | "rsvp";
+export type SceneId = "cold" | "dear" | "gala" | "urtuu" | "rsvp";
 
 export type SceneBreakpoint = {
   id: SceneId;
@@ -14,17 +14,15 @@ export type SceneBreakpoint = {
 //   1. Dear — personalised welcome card → INVITATION reveal
 //      (absorbs the former Hero scene; stage 3 carries the
 //      INVITATION title + body that Hero used to render).
-//   2. CEO Letter — formal welcome from Jamiyan-Sharav D.
-//   3. Urtuu — "The Urtuu" immersive experience
-//   4. Gala — "Immersive Gala Dinner"
-//   5. RSVP
+//   2. Urtuu — "The Urtuu" immersive experience
+//   3. Gala — "Immersive Gala Dinner"
+//   4. RSVP
 export const SCENES: SceneBreakpoint[] = [
   { id: "cold", start: -0.01, end: 0.0, label: "Cold start" },
-  { id: "dear", start: 0.0, end: 0.18, label: "Dear · Welcome + Invitation" },
-  { id: "ceo", start: 0.18, end: 0.42, label: "CEO letter" },
-  { id: "urtuu", start: 0.42, end: 0.62, label: "Urtuu journey" },
-  { id: "gala", start: 0.62, end: 0.82, label: "Gala bloom" },
-  { id: "rsvp", start: 0.82, end: 1.01, label: "Convergence · RSVP" },
+  { id: "dear", start: 0.0, end: 0.24, label: "Dear · Welcome + Invitation" },
+  { id: "urtuu", start: 0.24, end: 0.50, label: "Urtuu journey" },
+  { id: "gala", start: 0.50, end: 0.76, label: "Gala bloom" },
+  { id: "rsvp", start: 0.76, end: 1.01, label: "Convergence · RSVP" },
 ];
 
 // Sub-scenes inside Urtuu for the 5a/5b/5c beats.  Ranges sit inside

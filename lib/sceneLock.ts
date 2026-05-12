@@ -4,14 +4,13 @@
 // scene for a few seconds while the section's reveal animations get
 // their attention.  Caps target a content-meaningful boundary in
 // each scene (signature settled, final paragraph in view, etc.).
-// Page narrative is now Dear → CEO → Urtuu → Gala → RSVP (Hero
-// scene was absorbed into Dear's stage-3 INVITATION reveal):
+// Page narrative is now Dear → Urtuu → Gala → RSVP (Hero scene was
+// absorbed into Dear's stage-3 INVITATION reveal; CEO removed):
 //
-//   Dear  — cap 0.16 (animation playback boundary)
-//   CEO   — cap 0.40 (signature row settled)
-//   Urtuu — cap 0.60 ("…you to experience it" final paragraph)
-//   Gala  — cap 0.80 ("…for invited guests" final paragraph)
-//   RSVP  — cap 1.0   (no cap; final scene)
+//   Dear  — cap 0.21 (animation playback boundary)
+//   Urtuu — cap 0.47 ("…you to experience it" final paragraph)
+//   Gala  — cap 0.73 ("…for invited guests" final paragraph)
+//   RSVP  — cap 1.0  (no cap; final scene)
 //
 // After the per-scene timer fires the cap releases and the user
 // can continue scrolling.  Visited scene ids are written to
@@ -28,10 +27,9 @@ const VISITED_STORAGE_KEY = "unitel_visited_scenes_v1";
 // scene ends.  RSVP intentionally sits at 1.0 (no cap).
 const SCENE_CAP_PROGRESS: Record<SceneId, number> = {
   cold: 0,
-  dear: 0.16,
-  ceo: 0.40,
-  urtuu: 0.60,
-  gala: 0.80,
+  dear: 0.21,
+  urtuu: 0.47,
+  gala: 0.73,
   rsvp: 1.0,
 };
 
@@ -48,7 +46,6 @@ const SCENE_LOCK_MS: Record<SceneId, number> = {
   dear: 0,
   urtuu: 3000,
   gala: 3000,
-  ceo: 3000,
   rsvp: 0,
 };
 

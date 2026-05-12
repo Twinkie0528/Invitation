@@ -10,7 +10,7 @@ import TopMark from "@/components/ui/TopMark";
 
 const GALA_PARA_1 = "Created exclusively for you, this immersive gala dinner is designed as an evening beyond the ordinary where storytelling is not simply observed, but experienced.";
 const GALA_PARA_2 = "Throughout the night, you will move through three distinct thematic settings, each offering its own atmosphere for dining and discovery.";
-const GALA_PARA_3 = "Live performances unfold seamlessly around you, blending space, sound, and visuals into a continuous sensory experience. A night where you don’t just attend—you step in, explore, and become part of the moment.";
+const GALA_PARA_3 = "Live performances unfold seamlessly around you, blending space, sound, and visuals into a continuous sensory experience. A night where you don’t just attend you step in, explore, and become part of the moment.";
 const GALA_PARA_4 = "A night designed exclusively for invited guests.";
 
 // Cinematic background — Gala bloom particles, mounted only once
@@ -25,15 +25,15 @@ const BG_VIDEO = "/media/common/gala-bloom.mp4";
 const BG_POSTER = "/media/common/gala-bloom.webp";
 
 // Reveal range — also drives the video play/pause window.
-// Gala is page 4 (Dear → CEO → Urtuu → Gala → RSVP):
-// scroll progress 0.62 → 0.82.  Reveal aligned with scene
+// Gala is page 3 (Dear → Urtuu → Gala → RSVP):
+// scroll progress 0.50 → 0.76.  Reveal aligned with scene
 // boundaries so the Urtuu → Gala and Gala → RSVP handoffs share
-// the same minimal-overlap pattern as the Dear → CEO transition.
+// the same minimal-overlap pattern.
 const REVEAL_RANGE = {
-  start: 0.62,
-  peak: 0.66,
-  hold: 0.80,
-  end: 0.83,
+  start: 0.50,
+  peak: 0.55,
+  hold: 0.73,
+  end: 0.77,
 };
 
 // Covers scene `gala` — "Immersive Gala Dinner" reveal.
@@ -51,7 +51,7 @@ const REVEAL_RANGE = {
 //   - Multi-paragraph body — gala dinner copy.
 export default function GalaSection() {
   const ref = useSectionReveal<HTMLElement>(REVEAL_RANGE);
-  const entered = useSceneEntered(0.64);
+  const entered = useSceneEntered(0.53);
   // Continuous typewriter: eyebrow → headline (inline 800 ms) → 4
   // paragraphs.  Each step starts the moment the previous one settles.
   // Reveal cadence — eyebrow → title (2 s convergence) → 1 s
@@ -73,10 +73,9 @@ export default function GalaSection() {
   // line count of earlier paragraphs, so the four body paragraphs
   // read as one uninterrupted top-to-bottom wave (paragraph N+1
   // line 0 fires the instant paragraph N's last line ends).
-  // Cadence values mirror CEO's body so the three letter-cascade
-  // sections (CEO, Urtuu, Gala) share one reveal vocabulary —
-  // tight stagger + slow per-line fade with the slide-and-fade
-  // <LineFade slide /> mode.
+  // Cadence shared with Urtuu so the two letter-cascade body sections
+  // (Urtuu, Gala) read with one reveal vocabulary — tight stagger +
+  // slow per-line fade with the slide-and-fade <LineFade slide /> mode.
   const LINE_STAGGER_MS = 50;
   const LINE_FADE_DURATION_MS = 2000;
   const linesP1 = estimateLineCount(GALA_PARA_1);

@@ -15,17 +15,18 @@ import { LineFade, estimateLineCount } from "@/components/ui/LineFade";
 // the 8 s playback + invitation cascade.
 const STAGE2_VIDEO = "/media/dear/final-invitation-animation.mp4";
 
-// Reveal range — Dear is now scene 1 of 5 (Hero was absorbed into
-// stage 3 so its slot is gone).  Hold extends to 0.16 (matching the
-// lock cap) so stage-3 stays fully visible until the user is freed
-// to scroll.  Fade-out 0.16-0.19 and CEO's fade-in 0.18-0.22 share
-// only a 0.01 overlap zone at intermediate opacities — the two
-// scenes' DOM content stops cross-bleeding during the handoff.
+// Reveal range — Dear is scene 1 of 4 (Hero was absorbed into
+// stage 3 so its slot is gone; CEO was removed).  Hold extends to
+// 0.21 (matching the lock cap) so stage-3 stays fully visible until
+// the user is freed to scroll.  Fade-out 0.21-0.25 and Urtuu's
+// fade-in (0.24-0.29) share only a 0.01 overlap zone at intermediate
+// opacities — the two scenes' DOM content stops cross-bleeding
+// during the handoff.
 const REVEAL_RANGE = {
   start: -0.02,
   peak: 0.0,
-  hold: 0.16,
-  end: 0.19,
+  hold: 0.21,
+  end: 0.25,
 };
 
 // Stage-1 sequential reveal cadence (after introDone):

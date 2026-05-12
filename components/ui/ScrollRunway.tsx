@@ -6,7 +6,7 @@ export default function ScrollRunway() {
   return (
     <div
       aria-hidden
-      style={{ height: "700vh" }}
+      style={{ height: "530vh" }}
       className="pointer-events-none"
     />
   );
