@@ -19,12 +19,6 @@ import { SCENES, type SceneId } from "@/lib/scenes";
 // there's no "next" to advance to.
 const HIDDEN_ON: ReadonlySet<SceneId> = new Set<SceneId>(["cold", "rsvp"]);
 
-// Chapters represented as dots in the pagination pill.  Mirrors the
-// master SCENES order but excludes cold (the pre-roll never gets a
-// dot).  The active scene's slot renders the "Next" action instead
-// of a dot.
-const CHAPTER_ORDER: readonly SceneId[] = ["dear", "urtuu", "gala", "rsvp"];
-
 // Click-driven page transition phases:
 //   idle       — button waiting for user
 //   fading-out — black overlay 0 -> 1, blocks content during scroll
@@ -261,66 +255,52 @@ export default function NextButton() {
       />
 
       <div
-        className={`pointer-events-none fixed inset-x-0 bottom-[7vh] z-50 flex justify-center sm:bottom-[3vh] ${
+        className={`pointer-events-none fixed inset-x-0 bottom-[1vh] z-50 flex justify-center sm:bottom-[1.5vh] ${
           hidden ? "opacity-0" : "opacity-100"
         }`}
         style={{ transition: "opacity 400ms ease-out" }}
         aria-hidden={hidden}
       >
-        {/* Gradient-border wrapper — 1px dark navy -> warm light
-            linear gradient around the pill.  The hard rim is paired
-            with a wide, soft outer halo so the button's edges dissolve
-            into the surrounding scene (no "block dropped on top"
-            silhouette).  Halo uses two layered shadows: a near, dim
-            spread and a wider faint one that fades into pure black. */}
-        <div
-          className="pointer-events-none relative inline-block rounded-full p-[1px]"
+        {/* Pulse-ring "Scroll" affordance (Variant B, borderless).
+            Vertical stack: a 36px green ring with a downward chevron +
+            slow concentric pulse on top, plain "Scroll" caption below.
+            A soft radial vignette sits behind the ring so it stays
+            legible against scenes with bright spots (e.g. dear's
+            envelope green glow).  Clicking runs the existing advance-
+            to-next-chapter pipeline. */}
+        <button
+          type="button"
+          onClick={handleClick}
+          disabled={hidden || transition !== "idle"}
+          aria-label={label}
+          className="pointer-events-auto relative inline-flex cursor-pointer flex-col items-center gap-2.5 transition-opacity duration-300 hover:opacity-70 disabled:cursor-default"
           style={{
-            background:
-              "linear-gradient(135deg, #1C2439 0%, #1C2439 55%, #B0B6C4 100%)",
-            boxShadow: [
-              "0 0 22px rgba(0, 0, 0, 0.55)",
-              "0 0 56px rgba(0, 0, 0, 0.28)",
-              "0 4px 14px rgba(0, 0, 0, 0.22)",
-            ].join(", "),
+            fontFamily: "var(--font-manrope), system-ui, sans-serif",
           }}
         >
-          {/* Minimal music-player style pill — one slot per chapter,
-              the current scene's slot renders the green "Next"
-              action, others collapse to small grey dots so the
-              pagination reads as a single compact control. */}
-          <button
-            type="button"
-            onClick={handleClick}
-            disabled={hidden || transition !== "idle"}
-            aria-label={label}
-            className="group pointer-events-auto relative inline-flex items-center gap-3 whitespace-nowrap rounded-full px-5 py-2.5 backdrop-blur-md transition-colors duration-300 disabled:cursor-default"
+          <span className="relative inline-block">
+            {/* Soft dark vignette behind the ring — gives the green
+                outline a contrast pad so it doesn't dissolve into
+                scenes with bright midtones. */}
+            <span
+              aria-hidden
+              className="pointer-events-none absolute inset-0 -m-4 rounded-full"
+              style={{
+                background:
+                  "radial-gradient(circle, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0.30) 45%, rgba(0, 0, 0, 0) 80%)",
+              }}
+            />
+            <span aria-hidden className="scroll-pulse-ring" />
+          </span>
+          <span
+            className="text-[11px] font-normal leading-none tracking-[0.18em] text-white"
             style={{
-              fontFamily: "var(--font-manrope), system-ui, sans-serif",
-              background: "rgba(217, 217, 217, 0.05)",
+              textShadow: "0 0 8px rgba(0, 0, 0, 0.75)",
             }}
           >
-            {CHAPTER_ORDER.map((scene) => {
-              if (scene === active) {
-                return (
-                  <span
-                    key={scene}
-                    className="text-[13px] font-medium leading-none text-unitel-green"
-                  >
-                    {label}
-                  </span>
-                );
-              }
-              return (
-                <span
-                  key={scene}
-                  aria-hidden
-                  className="h-1 w-1 rounded-full bg-[#D9D9D9]"
-                />
-              );
-            })}
-          </button>
-        </div>
+            Scroll
+          </span>
+        </button>
       </div>
     </>
   );

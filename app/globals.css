@@ -108,17 +108,57 @@ html.lenis body {
   50%, 100% { opacity: 0; }
 }
 
-/* NextButton (chapter pill) — ambient green glow that breathes in
-   idle so the affordance reads as a soft beacon rather than a static
-   chrome element.  Paired with `breathe-dot` for the brand-dot
-   indicator that pulses on the same cadence. */
-@keyframes breathe-glow {
-  0%, 100% { opacity: 0.25; transform: translate(-50%, -50%) scale(0.95); }
-  50%      { opacity: 0.55; transform: translate(-50%, -50%) scale(1.05); }
+/* NextButton — pulse-ring "Scroll" affordance.  The ring carries a
+   chevron (rotated borders on ::after) and a slow concentric pulse
+   (::before with an expanding box-shadow animation) so the
+   advance-to-next-chapter prompt reads as a beacon rather than a
+   static chrome control.  Brand green is #46C800; the pulse opacity
+   is intentionally low (.18) so it dissolves softly into the dark
+   scene instead of strobing. */
+@keyframes pulse-ring {
+  0%   { opacity: 0; }
+  30%  { opacity: 1; }
+  60%  {
+    box-shadow: 0 0 0 60px rgba(70, 200, 0, 0.18);
+    opacity: 0;
+  }
+  100% { opacity: 0; }
 }
-@keyframes breathe-dot {
-  0%, 100% { opacity: 0.5; box-shadow: 0 0 4px rgba(0, 200, 83, 0.4); }
-  50%      { opacity: 1;   box-shadow: 0 0 10px rgba(0, 200, 83, 0.9), 0 0 18px rgba(0, 200, 83, 0.4); }
+.scroll-pulse-ring {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  border: 1px solid #46C800;
+  border-radius: 50%;
+  display: inline-block;
+}
+.scroll-pulse-ring::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  margin: -8px 0 0 -5px;
+  border-left: 1px solid #46C800;
+  border-bottom: 1px solid #46C800;
+  transform: rotate(-45deg);
+}
+.scroll-pulse-ring::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 0 rgba(70, 200, 0, 0.18);
+  opacity: 0;
+  animation: pulse-ring 3s infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .scroll-pulse-ring::before { animation: none; }
 }
 
 /* Gala bloom drift — slow vertical breathing + subtle scale pulse so
