@@ -33,16 +33,11 @@ const REVEAL_RANGE = {
 //   1. "Dear" eyebrow fades in           — DEAR_DELAY_MS
 //   2. Name letters type in left-to-right — start NAME_START_DELAY_MS,
 //      each letter offset by NAME_LETTER_STAGGER_MS
-//   3. Envelope (loop video) fades in    — once name typing has
-//      settled + ENVELOPE_AFTER_NAME_MS breathing room
-//   4. Chevron + helper text fade in     — last, ~600 ms after envelope
 const DEAR_DELAY_MS = 600;
 const DEAR_FADE_MS = 1200;
 const NAME_START_DELAY_MS = 1500;
 const NAME_LETTER_STAGGER_MS = 85;
 const NAME_LETTER_FADE_MS = 420;
-const ENVELOPE_AFTER_NAME_MS = 350;
-const CHEVRON_AFTER_ENVELOPE_MS = 600;
 
 // Stage-3 cascade timing — JP-style stagger fade, smoothed.
 // Per-line fade trimmed slightly (1.6 → 1.2 s, title 1.2 → 0.9 s)
@@ -110,16 +105,6 @@ export default function DearSection() {
   const guestName = rawGuestName
     ? formatGuestName(rawGuestName)
     : "Esteemed Guest";
-
-  // Total ms from introDone to the moment the name's final letter
-  // has finished its opacity transition — drives the envelope's
-  // fade-in delay.
-  const nameTypeEndMs =
-    NAME_START_DELAY_MS +
-    Math.max(0, guestName.length - 1) * NAME_LETTER_STAGGER_MS +
-    NAME_LETTER_FADE_MS;
-  const envelopeDelayMs = nameTypeEndMs + ENVELOPE_AFTER_NAME_MS;
-  const chevronDelayMs = envelopeDelayMs + CHEVRON_AFTER_ENVELOPE_MS;
 
   // --- Mobile viewport detection -------------------------------------
   // Drives MOBILE_ASSET_PLAY_DELAY_MS (paused first frame for 2 s
@@ -214,14 +199,6 @@ export default function DearSection() {
     const t = window.setTimeout(attempt, startDelay);
     return () => window.clearTimeout(t);
   }, [phase, isMobile]);
-
-  // --- Chevron mounted gate (last in the stage-1 cadence) ------------
-  const [chevronReady, setChevronReady] = useState(false);
-  useEffect(() => {
-    if (!introDone) return;
-    const t = window.setTimeout(() => setChevronReady(true), chevronDelayMs);
-    return () => window.clearTimeout(t);
-  }, [introDone, chevronDelayMs]);
 
   // --- Cascade trigger -----------------------------------------------
   // Primary trigger: stage-2 video's onTimeUpdate flips cascadeOn
@@ -512,47 +489,7 @@ export default function DearSection() {
           </p>
         </div>
 
-        {/* BOTTOM — chevron + helper text.  Helper text label switches
-            from "Scroll down to see more" (loop) to "Discover what
-            awaits" (ended).  Hidden during the playing animation so
-            the user's eyes stay on the centre transition. */}
-        <div
-          className="absolute inset-x-0 bottom-[6vh] flex flex-col items-center gap-2 text-white/60 md:bottom-[8vh]"
-          style={{
-            opacity: chevronReady && phase !== "playing" ? 1 : 0,
-            transition: "opacity 700ms cubic-bezier(0.22, 1, 0.36, 1)",
-          }}
-        >
-          <span className="font-sans text-[11px] font-light tracking-[0.14em] md:text-[0.78vw]">
-            {phase === "ended"
-              ? "Discover what awaits"
-              : "Scroll down to see more"}
-          </span>
-          <ChevronDown />
-        </div>
       </div>
     </section>
-  );
-}
-
-function ChevronDown() {
-  return (
-    <svg
-      width="22"
-      height="12"
-      viewBox="0 0 22 12"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden
-      className="opacity-80"
-    >
-      <path
-        d="M1 1L11 11L21 1"
-        stroke="currentColor"
-        strokeWidth="1.4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
   );
 }

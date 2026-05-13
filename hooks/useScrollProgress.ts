@@ -27,13 +27,28 @@ export function subscribeScene(l: Listener) {
   };
 }
 
+// Module-level handle to the active Lenis instance.  Set by
+// `attachLenis` (called from Providers) and consumed by anything that
+// needs to drive scroll programmatically — e.g. NextButton's "advance
+// to the next scene" click.  Null until Providers mounts and after
+// teardown.
+let lenisInstance: Lenis | null = null;
+
+export function getLenis(): Lenis | null {
+  return lenisInstance;
+}
+
 // Bind a Lenis instance to scene state.
 export function attachLenis(lenis: Lenis) {
+  lenisInstance = lenis;
   const handler = ({ progress }: { progress: number }) => {
     pushSceneProgress(progress);
   };
   lenis.on("scroll", handler);
-  return () => lenis.off("scroll", handler);
+  return () => {
+    lenis.off("scroll", handler);
+    if (lenisInstance === lenis) lenisInstance = null;
+  };
 }
 
 // Hook form — useful for DOM components that genuinely need to re-render.

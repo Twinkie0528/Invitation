@@ -2,7 +2,7 @@ import dynamic from "next/dynamic";
 import EdgeGradient from "@/components/ui/EdgeGradient";
 import ScrollRunway from "@/components/ui/ScrollRunway";
 import ScrollHud from "@/components/ui/ScrollHud";
-import SectionDots from "@/components/ui/SectionDots";
+import NextButton from "@/components/ui/NextButton";
 import DearSection from "@/components/sections/DearSection";
 import GalaSection from "@/components/sections/GalaSection";
 import UrtuuSection from "@/components/sections/UrtuuSection";
@@ -23,7 +23,7 @@ export default function InvitationLayout() {
       <GalaSection />
       <RsvpSection />
 
-      <SectionDots />
+      <NextButton />
       <ScrollRunway />
       <ScrollHud />
     </>

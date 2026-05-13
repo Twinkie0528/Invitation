@@ -108,6 +108,19 @@ html.lenis body {
   50%, 100% { opacity: 0; }
 }
 
+/* NextButton (chapter pill) — ambient green glow that breathes in
+   idle so the affordance reads as a soft beacon rather than a static
+   chrome element.  Paired with `breathe-dot` for the brand-dot
+   indicator that pulses on the same cadence. */
+@keyframes breathe-glow {
+  0%, 100% { opacity: 0.25; transform: translate(-50%, -50%) scale(0.95); }
+  50%      { opacity: 0.55; transform: translate(-50%, -50%) scale(1.05); }
+}
+@keyframes breathe-dot {
+  0%, 100% { opacity: 0.5; box-shadow: 0 0 4px rgba(0, 200, 83, 0.4); }
+  50%      { opacity: 1;   box-shadow: 0 0 10px rgba(0, 200, 83, 0.9), 0 0 18px rgba(0, 200, 83, 0.4); }
+}
+
 /* Gala bloom drift — slow vertical breathing + subtle scale pulse so
    the magenta halo feels alive on top of its own internal particle
    motion. Runs on the compositor (transform-only) so it costs ~0

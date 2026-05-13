@@ -55,6 +55,12 @@ type LockState = {
   // Maximum scroll progress (0..1) allowed during this lock.
   // 1.0 when no lock is active.
   maxProgress: number;
+  // Performance.now() timestamp when the current lock began, or null
+  // when no lock is active.  Subscribers use this together with
+  // `lockDurationMs` to drive countdown UI (NextButton fade-in).
+  lockStartedAt: number | null;
+  // Lock duration in ms for the current lock.  0 when no lock active.
+  lockDurationMs: number;
 };
 
 let visitedScenes: Set<SceneId> = new Set();
@@ -62,6 +68,8 @@ let lockState: LockState = {
   locked: false,
   lockedScene: null,
   maxProgress: 1.0,
+  lockStartedAt: null,
+  lockDurationMs: 0,
 };
 let unlockTimer: ReturnType<typeof setTimeout> | null = null;
 const lockListeners = new Set<(s: LockState) => void>();
@@ -79,7 +87,13 @@ export function setLockEnabled(enabled: boolean) {
       clearTimeout(unlockTimer);
       unlockTimer = null;
     }
-    lockState = { locked: false, lockedScene: null, maxProgress: 1.0 };
+    lockState = {
+      locked: false,
+      lockedScene: null,
+      maxProgress: 1.0,
+      lockStartedAt: null,
+      lockDurationMs: 0,
+    };
     notifyLockChange();
   }
 }
@@ -156,18 +170,26 @@ export function tryLockScene(scene: SceneId) {
   const cap = SCENE_CAP_PROGRESS[scene];
   const boundedCap = sceneDef ? Math.min(cap, sceneDef.end - 0.001) : cap;
 
+  const duration = SCENE_LOCK_MS[scene];
   lockState = {
     locked: true,
     lockedScene: scene,
     maxProgress: Math.max(0, boundedCap),
+    lockStartedAt: performance.now(),
+    lockDurationMs: duration,
   };
   notifyLockChange();
 
-  const duration = SCENE_LOCK_MS[scene];
   unlockTimer = setTimeout(() => {
     visitedScenes.add(scene);
     persistVisited();
-    lockState = { locked: false, lockedScene: null, maxProgress: 1.0 };
+    lockState = {
+      locked: false,
+      lockedScene: null,
+      maxProgress: 1.0,
+      lockStartedAt: null,
+      lockDurationMs: 0,
+    };
     unlockTimer = null;
     notifyLockChange();
   }, duration);
@@ -194,15 +216,48 @@ export function lockDearAnimation(durationMs: number) {
     locked: true,
     lockedScene: "dear",
     maxProgress: Math.max(0, boundedCap),
+    lockStartedAt: performance.now(),
+    lockDurationMs: durationMs,
   };
   notifyLockChange();
   unlockTimer = setTimeout(() => {
     visitedScenes.add("dear");
     persistVisited();
-    lockState = { locked: false, lockedScene: null, maxProgress: 1.0 };
+    lockState = {
+      locked: false,
+      lockedScene: null,
+      maxProgress: 1.0,
+      lockStartedAt: null,
+      lockDurationMs: 0,
+    };
     unlockTimer = null;
     notifyLockChange();
   }, durationMs);
+}
+
+// Release the active lock immediately and mark its scene as visited
+// so subsequent re-entries don't re-trigger it.  Called by the
+// NextButton click handler before scrolling the user forward — if we
+// scrolled without releasing first, the Providers `onScroll` clamp
+// would snap progress back to the current cap.
+export function releaseActiveLock() {
+  if (!lockState.locked) return;
+  if (unlockTimer) {
+    clearTimeout(unlockTimer);
+    unlockTimer = null;
+  }
+  if (lockState.lockedScene) {
+    visitedScenes.add(lockState.lockedScene);
+    persistVisited();
+  }
+  lockState = {
+    locked: false,
+    lockedScene: null,
+    maxProgress: 1.0,
+    lockStartedAt: null,
+    lockDurationMs: 0,
+  };
+  notifyLockChange();
 }
 
 if (typeof window !== "undefined") {
@@ -214,7 +269,13 @@ if (typeof window !== "undefined") {
       clearTimeout(unlockTimer);
       unlockTimer = null;
     }
-    lockState = { locked: false, lockedScene: null, maxProgress: 1.0 };
+    lockState = {
+      locked: false,
+      lockedScene: null,
+      maxProgress: 1.0,
+      lockStartedAt: null,
+      lockDurationMs: 0,
+    };
     notifyLockChange();
   };
 }

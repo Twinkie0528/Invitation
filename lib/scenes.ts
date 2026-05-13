@@ -7,6 +7,12 @@ export type SceneBreakpoint = {
   id: SceneId;
   start: number; // 0..1 scroll progress
   end: number;
+  // Where this scene's primary content is fully revealed.  NextButton
+  // uses this so "advance to next" lands the user mid-content (where
+  // the headline + body have settled) instead of at the boundary
+  // where the reveal cascade is still ramping up.  Defaults to
+  // `start` when omitted (e.g. cold / dear, which we never jump to).
+  entry?: number;
   label: string;
 };
 
@@ -20,9 +26,9 @@ export type SceneBreakpoint = {
 export const SCENES: SceneBreakpoint[] = [
   { id: "cold", start: -0.01, end: 0.0, label: "Cold start" },
   { id: "dear", start: 0.0, end: 0.24, label: "Dear · Welcome + Invitation" },
-  { id: "urtuu", start: 0.24, end: 0.50, label: "Urtuu journey" },
-  { id: "gala", start: 0.50, end: 0.76, label: "Gala bloom" },
-  { id: "rsvp", start: 0.76, end: 1.01, label: "Convergence · RSVP" },
+  { id: "urtuu", start: 0.24, entry: 0.30, end: 0.50, label: "Urtuu journey" },
+  { id: "gala", start: 0.50, entry: 0.56, end: 0.76, label: "Gala bloom" },
+  { id: "rsvp", start: 0.76, entry: 0.82, end: 1.01, label: "Convergence · RSVP" },
 ];
 
 // Sub-scenes inside Urtuu for the 5a/5b/5c beats.  Ranges sit inside
