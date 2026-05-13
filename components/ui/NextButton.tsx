@@ -51,6 +51,29 @@ function nextSceneEntry(current: SceneId | null): number | null {
 // is "done" enough to advance.
 const REVEAL_BEFORE_UNLOCK_MS = 1000;
 
+// Per-scene scroll-icon palette.  Each scene gets a hue that echoes
+// its dominant visual tone so the green outline doesn't feel like a
+// branded sticker pasted on top: dear keeps the brand green (matches
+// the envelope's interior glow), urtuu rides the section's blue
+// gradient accent, gala picks up the lavender of its particle bloom,
+// rsvp lands on a warm cream pulled from its cosmic palette.  Each
+// entry pairs an opaque outline colour with the matching rgba pulse
+// fill (kept at 0.18 alpha so the halo dissolves softly).
+const SCROLL_ICON_COLOR: Record<SceneId, string> = {
+  cold: "#46C800",
+  dear: "#46C800",
+  urtuu: "#73A4FF",
+  gala: "#C2B8E0",
+  rsvp: "#E8E0C0",
+};
+const SCROLL_ICON_PULSE: Record<SceneId, string> = {
+  cold: "rgba(70, 200, 0, 0.18)",
+  dear: "rgba(70, 200, 0, 0.18)",
+  urtuu: "rgba(115, 164, 255, 0.18)",
+  gala: "rgba(194, 184, 224, 0.18)",
+  rsvp: "rgba(232, 224, 192, 0.18)",
+};
+
 // Whether entering `scene` is expected to fire a lock event.  Dear's
 // lock fires once per session (via lockDearAnimation when phase flips
 // to "playing"), so it's only "expected" until that first fire has
@@ -290,7 +313,16 @@ export default function NextButton() {
                   "radial-gradient(circle, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0.30) 45%, rgba(0, 0, 0, 0) 80%)",
               }}
             />
-            <span aria-hidden className="scroll-pulse-ring" />
+            <span
+              aria-hidden
+              className="scroll-pulse-ring"
+              style={
+                {
+                  "--scroll-icon-color": SCROLL_ICON_COLOR[active],
+                  "--scroll-icon-pulse": SCROLL_ICON_PULSE[active],
+                } as React.CSSProperties
+              }
+            />
           </span>
           <span
             className="text-[11px] font-normal leading-none tracking-[0.18em] text-white"

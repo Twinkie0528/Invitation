@@ -112,25 +112,38 @@ html.lenis body {
    chevron (rotated borders on ::after) and a slow concentric pulse
    (::before with an expanding box-shadow animation) so the
    advance-to-next-chapter prompt reads as a beacon rather than a
-   static chrome control.  Brand green is #46C800; the pulse opacity
-   is intentionally low (.18) so it dissolves softly into the dark
-   scene instead of strobing. */
-@keyframes pulse-ring {
-  0%   { opacity: 0; }
-  30%  { opacity: 1; }
-  60%  {
-    box-shadow: 0 0 0 60px rgba(70, 200, 0, 0.18);
-    opacity: 0;
-  }
-  100% { opacity: 0; }
+   static chrome control.  The accent colour comes from the CSS
+   variables `--scroll-icon-color` + `--scroll-icon-pulse` set by
+   NextButton per active scene so the ring blends with each page's
+   palette; defaults fall back to the brand green (#46C800).
+
+   `@property` registers both variables as typed <color> custom
+   properties — without that registration the browser would swap the
+   colours discretely on a scene change.  Typed registration lets the
+   `transition` rules below interpolate the variable itself, so the
+   ring/chevron borders + pulse halo cross-fade smoothly between
+   palettes as the user advances between scenes. */
+@property --scroll-icon-color {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #46C800;
+}
+@property --scroll-icon-pulse {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: rgba(70, 200, 0, 0.18);
 }
 .scroll-pulse-ring {
   position: relative;
   width: 36px;
   height: 36px;
-  border: 1px solid #46C800;
+  border: 1px solid var(--scroll-icon-color, #46C800);
   border-radius: 50%;
   display: inline-block;
+  transition:
+    --scroll-icon-color 1200ms cubic-bezier(0.22, 1, 0.36, 1),
+    --scroll-icon-pulse 1200ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 1200ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 .scroll-pulse-ring::after {
   content: '';
@@ -140,9 +153,10 @@ html.lenis body {
   width: 10px;
   height: 10px;
   margin: -8px 0 0 -5px;
-  border-left: 1px solid #46C800;
-  border-bottom: 1px solid #46C800;
+  border-left: 1px solid var(--scroll-icon-color, #46C800);
+  border-bottom: 1px solid var(--scroll-icon-color, #46C800);
   transform: rotate(-45deg);
+  transition: border-color 1200ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 .scroll-pulse-ring::before {
   content: '';
@@ -153,9 +167,18 @@ html.lenis body {
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  box-shadow: 0 0 0 0 rgba(70, 200, 0, 0.18);
+  box-shadow: 0 0 0 0 var(--scroll-icon-pulse, rgba(70, 200, 0, 0.18));
   opacity: 0;
   animation: pulse-ring 3s infinite;
+}
+@keyframes pulse-ring {
+  0%   { opacity: 0; }
+  30%  { opacity: 1; }
+  60%  {
+    box-shadow: 0 0 0 60px var(--scroll-icon-pulse, rgba(70, 200, 0, 0.18));
+    opacity: 0;
+  }
+  100% { opacity: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
   .scroll-pulse-ring::before { animation: none; }
