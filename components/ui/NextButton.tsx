@@ -4,9 +4,14 @@ import { useEffect, useRef, useState } from "react";
 import { sceneRef, subscribeScene, getLenis } from "@/hooks/useScrollProgress";
 import {
   getLockState,
+  isSceneVisited,
   releaseActiveLock,
   subscribeLock,
 } from "@/lib/sceneLock";
+import {
+  getState as getLoadState,
+  subscribe as subscribeLoadGate,
+} from "@/lib/loadGate";
 import { SCENES, type SceneId } from "@/lib/scenes";
 
 // Scenes where the NextButton has no meaningful destination — cold is
@@ -52,6 +57,19 @@ function nextSceneEntry(current: SceneId | null): number | null {
 // is "done" enough to advance.
 const REVEAL_BEFORE_UNLOCK_MS = 1000;
 
+// Whether entering `scene` is expected to fire a lock event.  Dear's
+// lock fires once per session (via lockDearAnimation when phase flips
+// to "playing"), so it's only "expected" until that first fire has
+// been observed — tracked via a ref so subsequent entries to dear
+// (e.g. user scrolling back up) don't keep the button hidden after
+// the lock has already run its course.  Other scenes lock only on the
+// user's very first visit.
+function expectsLock(scene: SceneId, dearLockSeen: boolean): boolean {
+  if (HIDDEN_ON.has(scene)) return false;
+  if (scene === "dear") return !dearLockSeen;
+  return !isSceneVisited(scene);
+}
+
 // Persistent "advance to next chapter" button.  Minimal music-player
 // style pill — one dot per chapter with the active scene's slot
 // rendering the green "Next" action.  Clicking triggers a soft black
@@ -64,10 +82,27 @@ export default function NextButton() {
   // Click transition state — gates the overlay opacity + locks out
   // double-clicks while a fade is in flight.
   const [transition, setTransition] = useState<TransitionPhase>("idle");
-  // True while a scene lock is ticking and there's still more than
-  // REVEAL_BEFORE_UNLOCK_MS to wait — keeps the button hidden during
-  // the bulk of the countdown so guests don't skip past the reveal.
-  const [lockHiding, setLockHiding] = useState<boolean>(false);
+  // True while we're still waiting for the active scene's lock to
+  // approach its release (or, on a fresh load, while we haven't yet
+  // confirmed a lock isn't coming).  Default starts true for any
+  // scene that expects a lock so the button stays hidden during the
+  // splash / first-paint window before lockDearAnimation fires.
+  const [lockHiding, setLockHiding] = useState<boolean>(() =>
+    expectsLock(sceneRef.current.active, false),
+  );
+  // True while the LoadingOverlay splash is still up (loadGate hasn't
+  // reported `introDone` yet).  Suppresses the button during the
+  // UNITEL wordmark FLIP / fade so it doesn't visibly sit underneath
+  // the splash before the scenes have settled.
+  const [splashUp, setSplashUp] = useState<boolean>(
+    () => !getLoadState().introDone,
+  );
+
+  // Session-scoped flag — flips true the first time we observe a lock
+  // event for dear, so subsequent revisits to dear (after the lock
+  // has run + released) don't keep the button hidden waiting for a
+  // lock that won't fire again this session.
+  const dearLockSeenRef = useRef(false);
 
   const transitionTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
   const lockRevealTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -80,58 +115,65 @@ export default function NextButton() {
       }
     };
 
-    // Inspect a lock state snapshot and decide whether the button
-    // should be hidden right now.  If there's more than the reveal
-    // threshold remaining, schedule a timer to flip `lockHiding`
-    // back to false once we're inside the last second; if the lock
-    // is already inside that window (or not active), show the
-    // button immediately.
-    const applyLockState = (
-      locked: boolean,
-      lockedScene: SceneId | null,
-      lockStartedAt: number | null,
-      lockDurationMs: number,
-    ) => {
+    // Single source of truth for `lockHiding`.  Re-evaluated whenever
+    // the scene changes or a lock event fires so the button surfaces
+    // at the right moment in every flow: hidden during the splash /
+    // pre-lock window on dear, hidden through the bulk of any active
+    // countdown, visible inside the final REVEAL_BEFORE_UNLOCK_MS, and
+    // visible immediately on visited scenes (where no lock will fire).
+    const evaluate = (scene: SceneId) => {
       clearLockRevealTimer();
+      if (HIDDEN_ON.has(scene)) {
+        // Outer wrapper hides via opacity anyway — nothing to wait for.
+        setLockHiding(false);
+        return;
+      }
+      const lock = getLockState();
       if (
-        !locked ||
-        !lockedScene ||
-        lockStartedAt === null ||
-        HIDDEN_ON.has(lockedScene)
+        lock.locked &&
+        lock.lockedScene === scene &&
+        lock.lockStartedAt !== null &&
+        !HIDDEN_ON.has(lock.lockedScene)
       ) {
-        setLockHiding(false);
+        const elapsed = performance.now() - lock.lockStartedAt;
+        const remaining = lock.lockDurationMs - elapsed;
+        if (remaining <= REVEAL_BEFORE_UNLOCK_MS) {
+          setLockHiding(false);
+          return;
+        }
+        setLockHiding(true);
+        lockRevealTimer.current = setTimeout(() => {
+          lockRevealTimer.current = null;
+          setLockHiding(false);
+        }, remaining - REVEAL_BEFORE_UNLOCK_MS);
         return;
       }
-      const elapsed = performance.now() - lockStartedAt;
-      const remaining = lockDurationMs - elapsed;
-      if (remaining <= REVEAL_BEFORE_UNLOCK_MS) {
-        // Already within the reveal window — keep the button visible.
-        setLockHiding(false);
-        return;
-      }
-      setLockHiding(true);
-      lockRevealTimer.current = setTimeout(() => {
-        lockRevealTimer.current = null;
-        setLockHiding(false);
-      }, remaining - REVEAL_BEFORE_UNLOCK_MS);
+      // No lock active for this scene right now — decide based on
+      // whether one is expected to fire.  Dear's lock is a one-shot
+      // (lockDearAnimation runs once when phase flips to "playing"),
+      // so after we've observed it, no more locks are coming.  Other
+      // scenes lock only on the user's very first visit.
+      setLockHiding(expectsLock(scene, dearLockSeenRef.current));
     };
 
-    // Seed from whatever the lock module currently reports so a
-    // late-mounting button doesn't miss an in-progress lock.
-    const initial = getLockState();
-    applyLockState(
-      initial.locked,
-      initial.lockedScene,
-      initial.lockStartedAt,
-      initial.lockDurationMs,
-    );
+    // Seed from the current scene + lock state so a late-mounting
+    // button picks up an in-progress lock or a visited scene.
+    evaluate(sceneRef.current.active);
 
     const unsubLock = subscribeLock((s) => {
-      applyLockState(s.locked, s.lockedScene, s.lockStartedAt, s.lockDurationMs);
+      if (s.locked && s.lockedScene === "dear") {
+        dearLockSeenRef.current = true;
+      }
+      evaluate(sceneRef.current.active);
     });
 
     const unsubScene = subscribeScene(({ active: nextActive }) => {
       setActive(nextActive);
+      evaluate(nextActive);
+    });
+
+    const unsubLoad = subscribeLoadGate(() => {
+      setSplashUp(!getLoadState().introDone);
     });
 
     return () => {
@@ -140,6 +182,7 @@ export default function NextButton() {
       transitionTimers.current = [];
       unsubLock();
       unsubScene();
+      unsubLoad();
     };
   }, []);
 
@@ -179,7 +222,7 @@ export default function NextButton() {
     transitionTimers.current.push(t3);
   };
 
-  const hidden = HIDDEN_ON.has(active) || lockHiding;
+  const hidden = HIDDEN_ON.has(active) || splashUp || lockHiding;
 
   // Overlay opacity per phase.  `fading-out` and `scrolling` both hold
   // the curtain fully black; `fading-in` ramps back to transparent.
@@ -224,17 +267,22 @@ export default function NextButton() {
         style={{ transition: "opacity 400ms ease-out" }}
         aria-hidden={hidden}
       >
-        {/* Gradient-border wrapper — 1px linear-gradient (dark navy ->
-            warm white) ringed around the pill via the standard
-            two-background padding-box + border-box trick.  Pairs with
-            the button's 5%-white frosted fill so the chapter chip
-            reads as a soft glass control. */}
+        {/* Gradient-border wrapper — 1px dark navy -> warm light
+            linear gradient around the pill.  The hard rim is paired
+            with a wide, soft outer halo so the button's edges dissolve
+            into the surrounding scene (no "block dropped on top"
+            silhouette).  Halo uses two layered shadows: a near, dim
+            spread and a wider faint one that fades into pure black. */}
         <div
           className="pointer-events-none relative inline-block rounded-full p-[1px]"
           style={{
             background:
               "linear-gradient(135deg, #1C2439 0%, #1C2439 55%, #B0B6C4 100%)",
-            boxShadow: "0 10px 28px rgba(0, 0, 0, 0.45)",
+            boxShadow: [
+              "0 0 22px rgba(0, 0, 0, 0.55)",
+              "0 0 56px rgba(0, 0, 0, 0.28)",
+              "0 4px 14px rgba(0, 0, 0, 0.22)",
+            ].join(", "),
           }}
         >
           {/* Minimal music-player style pill — one slot per chapter,
