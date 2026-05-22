@@ -10,7 +10,7 @@ import { useLoadGate } from "@/hooks/useLoadGate";
 // the wordmark itself; everything else preloads via <link rel="...">
 // hints in app/layout.tsx.
 const GATE_IMAGES = [
-  "/media/common/unitel-wordmark.svg",
+  "/media/common/Artboard%201100%201.svg",
 ];
 
 const GATE_VIDEOS: string[] = [];
@@ -125,7 +125,7 @@ export default function LoadingOverlay() {
         }}
       >
         <Image
-          src="/media/common/unitel-wordmark.svg"
+          src="/media/common/Artboard%201100%201.svg"
           alt="Unitel"
           width={148}
           height={34}

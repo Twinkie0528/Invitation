@@ -351,7 +351,7 @@ export default function DearSection() {
         <div className="absolute inset-x-0 top-[5vh] flex justify-center sm:top-[6vh] md:top-[5vh]">
           <Image
             id="hero-lockup"
-            src="/media/hero/unitel-20-lockup.svg"
+            src="/media/hero/Anniversary_Logo.svg"
             alt="Unitel 20th Anniversary"
             width={520}
             height={58}

@@ -83,7 +83,7 @@ export default function RootLayout({
             clears; the animation mp4 plays the instant the user
             scrolls.  `fetchpriority="high"` lifts these above other
             late-discovered resources on Chromium engines. */}
-        <link rel="preload" as="image" href="/media/hero/unitel-20-lockup.svg" fetchPriority="high" />
+        <link rel="preload" as="image" href="/media/hero/Anniversary_Logo.svg" fetchPriority="high" />
         <link rel="preload" as="video" href="/media/dear/default-final-invitation.mp4" type="video/mp4" fetchPriority="high" />
         <link rel="preload" as="video" href="/media/dear/final-invitation-animation.mp4" type="video/mp4" fetchPriority="high" />
 

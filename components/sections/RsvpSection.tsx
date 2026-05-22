@@ -196,7 +196,7 @@ export default function RsvpSection() {
       </div>
       <div className="pointer-events-none fixed right-6 top-5 z-40 hidden sm:block md:right-8 md:top-8 lg:right-10 lg:top-10">
         <Image
-          src="/media/common/unitel-wordmark.svg"
+          src="/media/common/Artboard%201100%201.svg"
           alt="Unitel"
           width={74}
           height={17}

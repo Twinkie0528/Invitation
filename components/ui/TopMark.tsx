@@ -9,7 +9,7 @@ export default function TopMark() {
   return (
     <div className="pointer-events-none fixed inset-x-0 top-5 z-40 flex justify-center md:top-8 lg:top-10">
       <Image
-        src="/media/common/unitel-wordmark.svg"
+        src="/media/common/Artboard%201100%201.svg"
         alt="Unitel"
         width={120}
         height={28}

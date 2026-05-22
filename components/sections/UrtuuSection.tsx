@@ -12,7 +12,7 @@ import TopMark from "@/components/ui/TopMark";
 // asset as TopMark, sized to match.  We render this in addition to
 // TopMark on desktop and hide TopMark via `sm:hidden` so the mobile
 // composition (centred wordmark) keeps reading correctly.
-const WORDMARK_SRC = "/media/common/unitel-wordmark.svg";
+const WORDMARK_SRC = "/media/common/Artboard%201100%201.svg";
 
 // Cinematic background — Urtuu particle figure animation, mounted
 // only once the user is within scroll range so the initial page load
