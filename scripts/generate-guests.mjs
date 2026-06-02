@@ -62,15 +62,21 @@ if (entries.length === 0) {
   process.exit(1);
 }
 
-// Existing slugs by name — keeps already-sent links stable.
-const existingByName = new Map();
+// Existing slugs by (name, date) — keeps already-sent links stable
+// even when two guests share the same name but attend on different
+// dates (e.g. "G.Chinzorig | 6.19" and "G.Chinzorig | 6.18" are two
+// different people).  Keying by name alone caused the second entry
+// to overwrite the first in the Map, swapping slugs on the next
+// regen and silently invalidating already-distributed links.
+const keyOf = (name, date) => `${name}|${date ?? ""}`;
+const existingByKey = new Map();
 if (existsSync(GUESTS_FILE)) {
   try {
     const prev = JSON.parse(readFileSync(GUESTS_FILE, "utf8"));
     if (Array.isArray(prev)) {
       for (const g of prev) {
         if (g && typeof g.name === "string" && typeof g.slug === "string") {
-          existingByName.set(g.name, g.slug);
+          existingByKey.set(keyOf(g.name, g.date), g.slug);
         }
       }
     }
@@ -81,7 +87,7 @@ if (existsSync(GUESTS_FILE)) {
 
 const usedSlugs = new Set();
 const guests = entries.map(({ name, date }) => {
-  let slug = existingByName.get(name);
+  let slug = existingByKey.get(keyOf(name, date));
   if (!slug || usedSlugs.has(slug)) {
     do {
       slug = randomBytes(3).toString("hex");
@@ -114,7 +120,7 @@ for (const g of guests) {
 // BOM so Excel decodes UTF-8 (Cyrillic) on Windows.
 writeFileSync(CSV_FILE, "﻿" + csvRows.join("\r\n") + "\r\n", "utf8");
 
-const reused = guests.filter((g) => existingByName.get(g.name) === g.slug).length;
+const reused = guests.filter((g) => existingByKey.get(keyOf(g.name, g.date)) === g.slug).length;
 const fresh = guests.length - reused;
 
 console.log(`Generated ${guests.length} guests (${reused} reused, ${fresh} new).`);
