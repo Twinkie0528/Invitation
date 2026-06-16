@@ -62,12 +62,14 @@ if (entries.length === 0) {
   process.exit(1);
 }
 
-// Existing slugs by (name, date) — keeps already-sent links stable
-// even when two guests share the same name but attend on different
-// dates (e.g. "G.Chinzorig | 6.19" and "G.Chinzorig | 6.18" are two
-// different people).  Keying by name alone caused the second entry
-// to overwrite the first in the Map, swapping slugs on the next
-// regen and silently invalidating already-distributed links.
+// Existing slugs keyed by (name, date) — but stored as ORDERED LISTS,
+// not single values.  When source.txt has two entries with the exact
+// same name and date (different physical people who happen to share
+// both), the first source.txt occurrence pairs with the first
+// guests.json occurrence, the second with the second, and so on.
+// Earlier versions stored a single slug per key, so a Map overwrite
+// silently swapped slugs across regens and invalidated already-sent
+// links.
 const keyOf = (name, date) => `${name}|${date ?? ""}`;
 const existingByKey = new Map();
 if (existsSync(GUESTS_FILE)) {
@@ -76,7 +78,9 @@ if (existsSync(GUESTS_FILE)) {
     if (Array.isArray(prev)) {
       for (const g of prev) {
         if (g && typeof g.name === "string" && typeof g.slug === "string") {
-          existingByKey.set(keyOf(g.name, g.date), g.slug);
+          const k = keyOf(g.name, g.date);
+          if (!existingByKey.has(k)) existingByKey.set(k, []);
+          existingByKey.get(k).push(g.slug);
         }
       }
     }
@@ -86,8 +90,12 @@ if (existsSync(GUESTS_FILE)) {
 }
 
 const usedSlugs = new Set();
+const consumedIndex = new Map();
 const guests = entries.map(({ name, date }) => {
-  let slug = existingByKey.get(keyOf(name, date));
+  const k = keyOf(name, date);
+  const idx = consumedIndex.get(k) ?? 0;
+  consumedIndex.set(k, idx + 1);
+  let slug = existingByKey.get(k)?.[idx];
   if (!slug || usedSlugs.has(slug)) {
     do {
       slug = randomBytes(3).toString("hex");
@@ -120,7 +128,7 @@ for (const g of guests) {
 // BOM so Excel decodes UTF-8 (Cyrillic) on Windows.
 writeFileSync(CSV_FILE, "﻿" + csvRows.join("\r\n") + "\r\n", "utf8");
 
-const reused = guests.filter((g) => existingByKey.get(keyOf(g.name, g.date)) === g.slug).length;
+const reused = guests.filter((g) => existingByKey.get(keyOf(g.name, g.date))?.includes(g.slug)).length;
 const fresh = guests.length - reused;
 
 console.log(`Generated ${guests.length} guests (${reused} reused, ${fresh} new).`);
